@@ -1,0 +1,7 @@
+{
+  "name": "EcoSmart",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
