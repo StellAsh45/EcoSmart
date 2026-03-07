@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
             <ng-content></ng-content>
         </div>
         <h3 class="text-xl font-black text-primary-400 mb-3 tracking-tight">{{title}}</h3>
-        <p class="text-slate-400 leading-relaxed font-medium">{{description}}</p>
+        <p class="text-primary-50 leading-relaxed font-medium">{{description}}</p>
 
         <div class="absolute bottom-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-300"
              [ngClass]="color"></div>
