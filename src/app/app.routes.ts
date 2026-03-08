@@ -26,4 +26,8 @@ export const routes: Routes = [
     path: 'politica',
     loadComponent: () => import('./politica/politica.page').then( m => m.PoliticaPage)
   },
+  {
+    path: 'dashboard-estudiante',
+    loadComponent: () => import('./dashboard-estudiante/dashboard-estudiante.page').then( m => m.DashboardEstudiantePage)
+  },
 ];

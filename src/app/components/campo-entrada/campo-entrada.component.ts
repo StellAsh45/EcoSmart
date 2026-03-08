@@ -11,7 +11,7 @@ import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
   imports: [CommonModule, ReactiveFormsModule, IonIcon],
   template: `
     <div class="space-y-2">
-      <label class="block text-sm font-bold text-primary-500 ml-1">{{etiqueta}}</label>
+      <label *ngIf="mostrarEtiqueta" class="block text-sm font-bold text-primary-500 ml-1">{{etiqueta}}</label>
       <div class="relative group/input">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-primary-400 transition-colors">
           <ion-icon [icon]="icono" class="text-xl text-primary-400"></ion-icon>
@@ -40,6 +40,7 @@ import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
         <ng-content select="[errores]"></ng-content>
         <p *ngIf="control.errors?.['required'] && !tieneErroresPersonalizados">Este campo es requerido.</p>
         <p *ngIf="control.errors?.['email']">Por favor, introduce un correo válido.</p>
+        <p *ngIf="control.errors?.['minlength'] && !tieneErroresPersonalizados">Debe tener al menos {{control.errors?.['minlength'].requiredLength}} caracteres.</p>
       </div>
     </div>
   `
@@ -51,6 +52,7 @@ export class CampoEntradaComponent {
   @Input() placeholder: string = '';
   @Input() control: FormControl = new FormControl();
   @Input() tieneErroresPersonalizados: boolean = false;
+  @Input() mostrarEtiqueta: boolean = true;
 
   mostrarContrasenaInterna: boolean = false;
   iconosToggle = {

@@ -35,3 +35,27 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* custom dark scrollbar matching the app theme */
+.scrollbar-custom {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #bef264 rgba(31,41,55,0.5);
+}
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: rgba(31,41,55,0.5);
+}
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #bef264;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #059669;
+}
+

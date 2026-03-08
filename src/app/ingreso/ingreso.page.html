@@ -1,13 +1,78 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>ingreso</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+    <div class="animate-[fadeIn_1s_ease-out]">
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">ingreso</ion-title>
-    </ion-toolbar>
-  </ion-header>
+        <!-- Vista de Ingreso -->
+        <app-contenedor-autenticacion 
+            titulo="Bienvenido de nuevo"
+            subtitulo="Continúa tu viaje hacia el aprendizaje." 
+            varianteFondo="misty"
+            [mostrarVolver]="true">
+
+            <!-- Mensaje de Error -->
+            <div *ngIf="errorMensaje"
+                class="mb-8 p-4 bg-red-500/10 text-red-400 rounded-2xl text-sm border border-red-500/20 backdrop-blur-md flex items-center gap-3 animate-[fadeIn_0.3s_ease-out]">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></span>
+                {{errorMensaje}}
+            </div>
+
+            <!-- Formulario -->
+            <form class="space-y-6" [formGroup]="formularioIngreso" (ngSubmit)="manejarIngreso()">
+
+                <!-- Correo -->
+                <app-campo-entrada 
+                    etiqueta="Correo electrónico" 
+                    [icono]="iconos.correo" 
+                    placeholder="tu@correo.com"
+                    tipo="email" 
+                    [control]="$any(formularioIngreso.get('correo'))">
+                </app-campo-entrada>
+
+                <!-- Contraseña -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="block text-sm font-bold text-slate-300">Contraseña</label>
+                        <a routerLink="/recuperacion" class="text-xs font-bold text-primary-400 hover:text-primary-300 transition-colors no-underline">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                    <app-campo-entrada 
+                        [icono]="iconos.contrasena" 
+                        placeholder="••••••••"
+                        tipo="password" 
+                        [control]="$any(formularioIngreso.get('contrasena'))"
+                        [mostrarEtiqueta]="false">
+                    </app-campo-entrada>
+                </div>
+
+                <!-- Botón de Ingreso -->
+                <button type="submit" [disabled]="cargando"
+                    class="w-full bg-primary-500 text-slate-950 py-4 rounded-2xl font-black hover:bg-primary-400 transition-all flex items-center justify-center gap-2 group/btn shadow-xl shadow-primary-500/20 active:scale-95 text-lg">
+                    <ng-container *ngIf="cargando; else loginText">
+                        <ion-icon name="sync-outline" class="w-6 h-6 animate-spin"></ion-icon>
+                    </ng-container>
+                    <ng-template #loginText>
+                        Entrar
+                        <ion-icon name="arrow-forward-outline"
+                            class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></ion-icon>
+                    </ng-template>
+                </button>
+            </form>
+
+            <!-- Link a Registro -->
+            <div class="mt-10 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-primary-50 font-medium text-sm">
+                    ¿No tienes cuenta?
+                    <a routerLink="/registro"
+                        class="font-black text-primary-400 hover:text-primary-300 transition-colors no-underline ml-1">
+                        Regístrate
+                    </a>
+                </p>
+            </div>
+        </app-contenedor-autenticacion>
+
+        <!-- Footer simple -->
+        <div class="mt-8 text-center pb-8">
+            <p class="text-primary-50 text-sm font-medium">© 2026 EcoSmart. Comprometidos con el planeta.</p>
+        </div>
+    </div>
 </ion-content>
