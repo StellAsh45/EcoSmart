@@ -34,17 +34,17 @@ const VARIANTS = {
             <!-- High-res Nature Image with Parallax & Blur -->
             <div class="absolute inset-0 animate-scale-down-slow">
                 <img
-                    [src]="config.image"
+                    [src]="configuracion.image"
                     alt="Nature Background"
                     class="w-full h-full object-cover grayscale-[0.2] contrast-[1.1]"
                 />
-                <div class="absolute inset-0 bg-gradient-to-b" [ngClass]="config.overlay"></div>
+                <div class="absolute inset-0 bg-gradient-to-b" [ngClass]="configuracion.overlay"></div>
             </div>
 
             <!-- Mesh Gradients Overlay -->
             <div class="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none">
-                <div class="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-[150px] animate-pulse" [ngClass]="config.gradient1"></div>
-                <div class="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full blur-[150px] animate-pulse delay-1000" [ngClass]="config.gradient2"></div>
+                <div class="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-[150px] animate-pulse" [ngClass]="configuracion.gradient1"></div>
+                <div class="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full blur-[150px] animate-pulse delay-1000" [ngClass]="configuracion.gradient2"></div>
             </div>
         </div>
 
@@ -89,12 +89,12 @@ const VARIANTS = {
   `]
 })
 export class FondoVisualComponent implements OnInit {
-  @Input() variant: VarianteFondo = 'primary';
+  @Input() variante: VarianteFondo = 'primary';
   
-  config = VARIANTS['primary'];
+  configuracion = VARIANTS['primary'];
 
   ngOnInit() {
-    this.config = VARIANTS[this.variant] || VARIANTS['primary'];
+    this.configuracion = VARIANTS[this.variante] || VARIANTS['primary'];
   }
 }
 

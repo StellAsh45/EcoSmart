@@ -5,64 +5,102 @@ import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { SupabaseService } from '../services/supabase';
-import { mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline } from 'ionicons/icons';
-import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
-import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
+import { mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
+import { CampoEntradaComponent } from '../components/campo-entrada/campo-entrada.component';
+import { ContenedorAutenticacionComponent } from '../components/contenedor-autenticacion/contenedor-autenticacion.component';
 
 @Component({
   selector: 'app-registro',
   templateUrl: './registro.page.html',
   styleUrls: ['./registro.page.scss'],
   standalone: true,
-  imports: [IonContent, IonIcon, CommonModule, ReactiveFormsModule, FondoVisualComponent, EcoSmartLogoComponent]
+  imports: [
+    IonContent,
+    IonIcon,
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    CampoEntradaComponent,
+    ContenedorAutenticacionComponent
+  ]
 })
 export class RegistroPage implements OnInit {
-  registerForm: FormGroup;
-  loading = false;
-  registrationSuccess = false;
-  error = '';
+  formularioRegistro: FormGroup;
+  cargando = false;
+  registroExitoso = false;
+  mostrarContrasena = false;
+  errorMensaje = '';
+
+  // Iconos para los campos
+  iconos = {
+    nombre: personOutline,
+    correo: mailOutline,
+    contrasena: lockClosedOutline
+  };
 
   constructor(
     private fb: FormBuilder,
     private supabase: SupabaseService,
     private router: Router
   ) {
-    addIcons({ mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline });
-    
-    this.registerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      acceptedTerms: [false, Validators.requiredTrue]
+    addIcons({ mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline, eyeOutline, eyeOffOutline });
+
+    this.formularioRegistro = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(3)]],
+      correo: ['', [Validators.required, Validators.email]],
+      contrasena: ['', [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,}$/)
+      ]],
+      terminosAceptados: [false, Validators.requiredTrue]
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
-  async handleRegister() {
-    if (this.registerForm.invalid) {
-      if (this.registerForm.get('acceptedTerms')?.errors?.['required']) {
-        this.error = 'Debes aceptar los términos y condiciones.';
+  toggleMostrarContrasena() {
+    this.mostrarContrasena = !this.mostrarContrasena;
+  }
+
+  async manejarRegistro() {
+    if (this.formularioRegistro.invalid) {
+      if (this.formularioRegistro.get('terminosAceptados')?.errors?.['required']) {
+        this.errorMensaje = 'Debes aceptar los términos y condiciones.';
       } else {
-        this.error = 'Por favor, completa todos los campos correctamente.';
+        this.errorMensaje = 'Por favor, completa todos los campos correctamente.';
       }
       return;
     }
 
     try {
-      this.loading = true;
-      this.error = '';
+      this.cargando = true;
+      this.errorMensaje = '';
 
-      const { name, email, password } = this.registerForm.value;
-      const { error } = await this.supabase.signUp(email, password, name);
+      const { nombre, correo, contrasena } = this.formularioRegistro.value;
+      const { data, error } = await this.supabase.registrarse(correo, contrasena, nombre);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('already registered') || error.message.includes('User already exists')) {
+          this.errorMensaje = 'Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.';
+        } else {
+          throw error;
+        }
+        return;
+      }
 
-      this.registrationSuccess = true;
+      // Supabase por seguridad no devuelve error si el correo ya existe,
+      // pero devuelve una lista de identidades vacía si el usuario ya está registrado.
+      if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        this.errorMensaje = 'Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.';
+        return;
+      }
+
+      this.registroExitoso = true;
     } catch (err: any) {
-      this.error = err.message || 'Error al registrar la cuenta.';
+      this.errorMensaje = err.message || 'Error al registrar la cuenta.';
     } finally {
-      this.loading = false;
+      this.cargando = false;
     }
   }
 }

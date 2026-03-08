@@ -1,0 +1,58 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+    <div class="min-h-screen relative py-20 px-6 flex flex-col items-center selection:bg-primary-500/30 selection:text-white">
+        <app-fondo-visual variante="deep"></app-fondo-visual>
+
+        <div class="w-full max-w-4xl z-10 animate-[slideUp_0.8s_ease-out]">
+            <div class="mb-10">
+                <a routerLink="/registro" class="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all no-underline font-bold group">
+                    <ion-icon name="arrow-back-outline" class="group-hover:-translate-x-1 transition-transform"></ion-icon>
+                    Volver al registro
+                </a>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-3xl p-10 md:p-14 rounded-[3rem] border border-white/20 shadow-2xl relative overflow-hidden">
+                <div class="flex flex-col items-center mb-12">
+                    <app-eco-smart-logo clasePersonalizada="w-20 h-20 mb-6"></app-eco-smart-logo>
+                    <h1 class="text-4xl sm:text-5xl font-black text-white text-center font-heading">Política de Privacidad</h1>
+                    <p class="text-emerald-400 font-bold mt-2 uppercase tracking-[0.2em] text-sm">Privacidad en EcoSmart</p>
+                </div>
+
+                <div class="prose prose-invert max-w-none text-primary-50/90 leading-relaxed space-y-8 h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-primary-500/30">
+                    <section>
+                        <h2 class="text-2xl font-black text-white mb-4">Información que Recopilamos</h2>
+                        <p>Recopilamos información personal como tu nombre y correo electrónico cuando te registras en EcoSmart. También recopilamos datos técnicos anónimos sobre cómo interactúas con nuestra plataforma para mejorar tu experiencia educativa.</p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-black text-white mb-4">Cómo Utilizamos tus Datos</h2>
+                        <p>Tus datos se utilizan exclusivamente para proporcionarte servicios personalizados, procesar tu registro y notificarte sobre novedades relevantes. No compartiremos nunca tu información personal con terceros con fines comerciales sin tu consentimiento explícito.</p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-black text-white mb-4">Protección de la Información</h2>
+                        <p>Implementamos medidas de seguridad avanzadas para proteger tus datos contra el acceso no autorizado, la alteración o la destrucción. Utilizamos servicios seguros como Supabase para gestionar la autenticación y el almacenamiento de datos.</p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-black text-white mb-4">Tus Derechos</h2>
+                        <p>Tienes derecho a acceder, rectificar o eliminar tus datos en cualquier momento. Si deseas ejercer estos derechos o tienes preguntas sobre tu privacidad, puedes contactarnos a través del panel de configuración de tu usuario.</p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-black text-white mb-4">Cookies</h2>
+                        <p>Utilizamos cookies para recordar tu sesión y preferencias de navegación. Puedes configurar tu navegador para rechazar todas las cookies, pero algunas partes de nuestro sitio podrían no funcionar correctamente.</p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-black text-white mb-4">Contacto</h2>
+                        <p>Si tienes cualquier duda sobre esta política de privacidad, no dudes en escribirnos a hola@ecosmart.edu.co. Estamos comprometidos con la transparencia y el planeta.</p>
+                    </section>
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-white/10 text-center">
+                    <p class="text-sm text-slate-400 font-medium">Última actualización: 07 de Marzo, 2026</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</ion-content>

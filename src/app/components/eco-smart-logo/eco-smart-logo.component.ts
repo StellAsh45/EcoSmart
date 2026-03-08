@@ -9,11 +9,11 @@ import { CommonModule } from '@angular/common';
     <img
       src="/assets/icon/EcoSmart-icon.png"
       alt="EcoSmart Logo"
-      [ngClass]="customClass"
+      [ngClass]="clasePersonalizada"
       class="brightness-110 contrast-125"
     />
   `,
 })
 export class EcoSmartLogoComponent {
-  @Input() customClass: string = "w-20 h-20";
+  @Input() clasePersonalizada: string = "w-20 h-20";
 }

@@ -9,7 +9,7 @@
         <a routerLink="/" class="flex items-center gap-5 group cursor-pointer no-underline">
           <div class="relative">
             <app-eco-smart-logo
-              [customClass]="'w-16 h-16 sm:w-20 sm:h-20 relative transition-all duration-500 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]'"></app-eco-smart-logo>
+              [clasePersonalizada]="'w-16 h-16 sm:w-20 sm:h-20 relative transition-all duration-500 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]'"></app-eco-smart-logo>
           </div>
           <span class="text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm font-heading">
           <span class="text-primary-800">Eco</span><span class="text-primary-900">Smart</span>
@@ -109,21 +109,21 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <app-tarjeta-funcionalidades title="Impacto Global"
-            description="Conéctate con proyectos reales de sostenibilidad en todo el mundo y haz la diferencia tangible."
-            color="bg-primary-500" shadow="shadow-none">
+          <app-tarjeta-funcionalidades titulo="Impacto Global"
+            descripcion="Conéctate con proyectos reales de sostenibilidad en todo el mundo y haz la diferencia tangible."
+            colorFondo="bg-primary-500" sombra="shadow-none">
             <ion-icon name="globe-outline" class="text-3xl"></ion-icon>
           </app-tarjeta-funcionalidades>
 
-          <app-tarjeta-funcionalidades title="Aprendizaje Práctico"
-            description="Cursos directos y actualizados semanalmente por líderes del sector. Aprende haciendo."
-            color="bg-emerald-400" shadow="shadow-none">
+          <app-tarjeta-funcionalidades titulo="Aprendizaje Práctico"
+            descripcion="Cursos directos y actualizados semanalmente por líderes del sector. Aprende haciendo."
+            colorFondo="bg-emerald-400" sombra="shadow-none">
             <ion-icon name="book-outline" class="text-3xl"></ion-icon>
           </app-tarjeta-funcionalidades>
 
-          <app-tarjeta-funcionalidades title="Certificación Oficial"
-            description="Obtén certificados validados por organizaciones ambientales internacionales de primer nivel."
-            color="bg-white" shadow="shadow-none" [darkIcon]="true">
+          <app-tarjeta-funcionalidades titulo="Certificación Oficial"
+            descripcion="Obtén certificados validados por organizaciones ambientales internacionales de primer nivel."
+            colorFondo="bg-white" sombra="shadow-none" [iconoOscuro]="true">
             <ion-icon name="shield-checkmark-outline" class="text-3xl"></ion-icon>
           </app-tarjeta-funcionalidades>
         </div>
@@ -140,7 +140,7 @@
           <div class="relative">
             <div class="absolute inset-0 bg-primary-400 blur-2xl opacity-30"></div>
             <app-eco-smart-logo
-              [customClass]="'w-20 h-20 relative group-hover:rotate-12 transition-transform duration-700 drop-shadow-2xl'"></app-eco-smart-logo>
+              [clasePersonalizada]="'w-20 h-20 relative group-hover:rotate-12 transition-transform duration-700 drop-shadow-2xl'"></app-eco-smart-logo>
           </div>
           <div>
             <span class="text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm font-heading">

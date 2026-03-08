@@ -14,34 +14,34 @@ export class SupabaseService {
     this.supabase = createClient(supabaseUrl, supabaseAnonKey);
   }
 
-  get client() {
+  get cliente() {
     return this.supabase;
   }
 
-  async signIn(email: string, password: string) {
+  async iniciarSesion(email: string, password: string) {
     return this.supabase.auth.signInWithPassword({
       email,
       password,
     });
   }
 
-  async signUp(email: string, password: string, fullName: string) {
+  async registrarse(email: string, password: string, nombreCompleto: string) {
     return this.supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: fullName,
+          full_name: nombreCompleto,
         },
       },
     });
   }
 
-  async signOut() {
+  async cerrarSesion() {
     return this.supabase.auth.signOut();
   }
 
-  getUser() {
+  obtenerUsuario() {
     return this.supabase.auth.getUser();
   }
 }
