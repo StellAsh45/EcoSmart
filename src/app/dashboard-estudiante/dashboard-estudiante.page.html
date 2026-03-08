@@ -4,7 +4,7 @@
 
         <!-- Cabecera de Navegación -->
         <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-6 sm:px-10 py-4 flex justify-between items-center">
-            <a routerLink="/" class="flex items-center gap-3 group no-underline text-white">
+            <a class="flex items-center gap-3 group no-underline text-white">
                 <div class="relative">
                     <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity"></div>
                     <app-eco-smart-logo clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
@@ -15,26 +15,18 @@
             </a>
 
             <div class="flex items-center gap-6">
-                <!-- Botón de Catálogo -->
-                <a routerLink="/home" class="hidden md:flex items-center gap-2 text-slate-300 hover:text-white font-bold transition-all no-underline group">
-                    <ion-icon name="layout-outline" class="text-xl group-hover:rotate-12 transition-transform"></ion-icon>
-                    Catálogo
-                </a>
-
                 <div class="w-px h-6 bg-white/10 hidden md:block"></div>
-
                 <!-- Perfil y Cierre de Sesión -->
-                <div class="flex items-center gap-4 group cursor-pointer relative">
+                <div class="flex items-center gap-4 relative">
                     <div class="text-right hidden sm:block">
-                        <p class="text-sm font-black text-white group-hover:text-primary-400 transition-colors uppercase">{{nombreUsuario}}</p>
-                        <p class="text-[10px] font-black text-primary-500 uppercase tracking-widest">Estudiante Elite</p>
+                        <p class="text-sm font-black text-primary-400 uppercase">{{nombreUsuario}}</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all overflow-hidden group/avatar">
-                        <ion-icon name="person-outline" class="text-white text-2xl group-hover/avatar:text-primary-400"></ion-icon>
-                    </div>
+                    <a class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden">
+                        <ion-icon name="person-outline" class="text-primary-400 text-2xl"></ion-icon>
+                    </a>
 
-                    <button (click)="cerrarSesion()" class="p-2.5 text-slate-400 hover:text-red-400 transition-colors bg-transparent border-none cursor-pointer" title="Cerrar sesión">
-                        <ion-icon name="log-out-outline" class="text-2xl"></ion-icon>
+                    <button (click)="cerrarSesion()" class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden">
+                        <ion-icon name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
                     </button>
                 </div>
             </div>
@@ -51,15 +43,14 @@
 
                     <div class="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
                         <div>
-                            <span class="inline-block px-4 py-1.5 rounded-full bg-primary-500/20 text-primary-400 text-xs font-black uppercase tracking-widest mb-6 border border-primary-500/20 shadow-sm animate-pulse">Panel del Estudiante</span>
                             <h2 class="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight font-heading">
-                                ¡Bienvenido, <br />
-                                <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 block mt-2">{{nombreUsuario}}</span>!
+                                ¡Bienvenido, <br/>
+                                <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 block mt-2">{{nombreUsuario}}!</span>
                             </h2>
-                            <p class="text-slate-400 text-xl mb-10 leading-relaxed font-medium max-w-md">
-                                Tu compromiso con el planeta es la semilla del cambio. Continúa tu especialización hoy mismo.
+                            <p class="text-primary-50 text-xl mb-10 leading-relaxed font-medium max-w-md">
+                                Tu compromiso con el planeta es la semilla del cambio. Continúa con tu aprendizaje.
                             </p>
-                            <button routerLink="/home" class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-10 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 flex items-center gap-3 group/btn active:scale-95 text-lg border-none cursor-pointer">
+                            <button routerLink="/catalogo" class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-10 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 flex items-center gap-3 group/btn active:scale-95 text-lg border-none cursor-pointer">
                                 Explorar Catálogo
                                 <ion-icon name="arrow-forward-outline" class="text-2xl group-hover/btn:translate-x-1 transition-transform"></ion-icon>
                             </button>
@@ -85,18 +76,7 @@
                         <ion-icon name="book-outline" class="text-3xl"></ion-icon>
                     </div>
                     <div>
-                        <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Cursos Activos</p>
-                        <p class="text-3xl font-black text-white">2</p>
-                    </div>
-                </div>
-
-                <!-- Certificados -->
-                <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
-                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
-                        <ion-icon name="ribbon-outline" class="text-3xl"></ion-icon>
-                    </div>
-                    <div>
-                        <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Certificados</p>
+                        <p class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-primary-400 transition-all">Cursos Activos</p>
                         <p class="text-3xl font-black text-white">1</p>
                     </div>
                 </div>
@@ -107,7 +87,7 @@
                         <ion-icon name="time-outline" class="text-3xl"></ion-icon>
                     </div>
                     <div>
-                        <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Horas de Estudio</p>
+                        <p class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-blue-400 transition-all">Horas de Estudio</p>
                         <p class="text-3xl font-black text-white">14h</p>
                     </div>
                 </div>
@@ -117,10 +97,9 @@
             <section>
                 <div class="flex items-end justify-between mb-8 px-2">
                     <div>
-                        <h3 class="text-3xl font-black text-white tracking-tight font-heading">Continuar Aprendiendo</h3>
-                        <p class="text-slate-500 font-medium">No pierdas el impulso, finaliza tu curso actual.</p>
+                        <h3 class="text-3xl font-black text-primary-400 tracking-tight font-heading">Continua aprendiendo</h3>
+                        <p class="text-primary-50 font-medium">Cursos que tienes pendientes hasta el momento</p>
                     </div>
-                    <a routerLink="/home" class="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all no-underline">Ver todo</a>
                 </div>
 
                 <div class="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 flex flex-col md:flex-row items-center gap-8 hover:bg-white/10 transition-all cursor-pointer group shadow-xl relative overflow-hidden">
