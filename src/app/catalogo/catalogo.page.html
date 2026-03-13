@@ -1,0 +1,257 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+  <div class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
+    
+    <!-- Fondo -->
+    <div class="absolute inset-0 -z-20">
+      <img
+        src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=80"
+        alt="Bosque"
+        class="h-full w-full object-cover"
+      />
+      <div class="absolute inset-0 bg-slate-950/35"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-slate-950/10 to-slate-950/55"></div>
+    </div>
+
+    <!-- Cabecera de Navegación -->
+    <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-6 sm:px-10 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <!-- Flecha -->
+        <button
+          type="button"
+          (click)="volverAlDashboard()"
+          class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all"
+          aria-label="Volver"
+        >
+          <ion-icon name="arrow-back-outline" class="text-primary-400 text-2xl"></ion-icon>
+        </button>
+
+        <!-- Logo + nombre -->
+        <a class="flex items-center gap-3 group no-underline text-white">
+          <div class="relative">
+            <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity"></div>
+            <img
+              src="assets/icon/EcoSmart-icon.png"
+              alt="Logo EcoSmart"
+              class="w-12 h-12 relative object-contain group-hover:scale-110 transition-all duration-500 ease-out"
+            />
+          </div>
+          <span class="text-2xl font-black tracking-tight drop-shadow-sm font-heading">
+            <span class="text-primary-800">Eco</span><span class="text-primary-900">Smart</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div class="w-px h-6 bg-white/10 hidden md:block"></div>
+
+        <!-- Perfil y Cierre de Sesión -->
+        <div class="flex items-center gap-4 relative">
+          <div class="text-right hidden sm:block">
+            <p class="text-sm font-black text-primary-400 uppercase">
+              {{ nombreUsuario }}
+            </p>
+          </div>
+
+          <a class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all">
+            <ion-icon name="person-outline" class="text-primary-400 text-2xl"></ion-icon>
+          </a>
+
+          <button
+            type="button"
+            (click)="cerrarSesion()"
+            class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all"
+          >
+            <ion-icon name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-1 pt-28 md:pt-32 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
+      <!-- Hero -->
+      <section>
+        <div>
+          <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 blur-[100px] -mr-48 -mt-48 rounded-full"></div>
+          <div class="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-[80px] -ml-32 -mb-32 rounded-full"></div>
+
+          <div class="relative z-10">
+            <p class="text-primary-50 font-bold mb-3">
+              Explora el Futuro
+            </p>
+
+            <h2 class="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight leading-tight font-heading">
+              Catálogo de Cursos
+            </h2>
+
+            <p class="max-w-4xl text-xl md:text-3xl font-bold leading-snug text-white/95">
+              Domina las habilidades necesarias para liderar la transformación sostenible del planeta.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filtros -->
+      <section class="flex flex-wrap gap-4">
+        <button type="button" class="rounded-full border border-white/10 bg-emerald-900/80 px-8 py-3 text-lg font-semibold text-white shadow-lg backdrop-blur-xl transition-all hover:bg-emerald-800">
+          Todos
+        </button>
+
+        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
+          Sostenibilidad
+        </button>
+
+        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
+          Energía
+        </button>
+
+        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
+          Residuos
+        </button>
+
+        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
+          Agricultura
+        </button>
+
+        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
+          Agua
+        </button>
+      </section>
+
+      <!-- Cards -->
+      <section class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <!-- Card 1 -->
+        <article class="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-white/10">
+          <div class="absolute inset-0 bg-primary-500/10 opacity-0 transition-opacity duration-700 group-hover:opacity-100"></div>
+
+          <div class="relative z-10">
+            <div class="relative mb-6 h-56 overflow-hidden rounded-[2rem] border border-white/10">
+              <img
+                src="https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80"
+                alt="Curso de sostenibilidad"
+                class="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+
+              <div class="absolute left-4 top-4">
+                <span class="rounded-full border border-primary-400/20 bg-primary-500/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-primary-300">
+                  Sostenibilidad
+                </span>
+              </div>
+            </div>
+
+            <h4 class="mb-3 text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary-400">
+              Fundamentos de Desarrollo Sostenible
+            </h4>
+
+            <p class="mb-6 text-sm leading-relaxed text-primary-50/80">
+              Comprende los principios clave para impulsar iniciativas con impacto ambiental, social y económico.
+            </p>
+
+            <div class="mb-5 flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-400">8 módulos</span>
+              <span class="text-sm font-black text-primary-400">Intermedio</span>
+            </div>
+
+            <div class="flex gap-3">
+              <button type="button" class="flex-1 rounded-2xl bg-primary-500 py-3 font-black text-slate-950 transition-all hover:bg-primary-400">
+                Empezar ahora
+              </button>
+              <button type="button" class="flex-1 rounded-2xl border border-white/10 bg-white/5 py-3 font-bold text-white transition-all hover:bg-white/10">
+                Ver detalles
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-white/10">
+          <div class="absolute inset-0 bg-emerald-500/10 opacity-0 transition-opacity duration-700 group-hover:opacity-100"></div>
+
+          <div class="relative z-10">
+            <div class="relative mb-6 h-56 overflow-hidden rounded-[2rem] border border-white/10">
+              <img
+                src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80"
+                alt="Curso de energía renovable"
+                class="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+
+              <div class="absolute left-4 top-4">
+                <span class="rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                  Energía
+                </span>
+              </div>
+            </div>
+
+            <h4 class="mb-3 text-2xl font-black leading-tight text-white transition-colors group-hover:text-emerald-400">
+              Introducción a las Energías Renovables
+            </h4>
+
+            <p class="mb-6 text-sm leading-relaxed text-primary-50/80">
+              Aprende cómo funcionan las fuentes renovables y su papel en la transición energética global.
+            </p>
+
+            <div class="mb-5 flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-400">10 módulos</span>
+              <span class="text-sm font-black text-emerald-400">Básico</span>
+            </div>
+
+            <div class="flex gap-3">
+              <button type="button" class="flex-1 rounded-2xl bg-primary-500 py-3 font-black text-slate-950 transition-all hover:bg-primary-400">
+                Empezar ahora
+              </button>
+              <button type="button" class="flex-1 rounded-2xl border border-white/10 bg-white/5 py-3 font-bold text-white transition-all hover:bg-white/10">
+                Ver detalles
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-white/10">
+          <div class="absolute inset-0 bg-cyan-500/10 opacity-0 transition-opacity duration-700 group-hover:opacity-100"></div>
+
+          <div class="relative z-10">
+            <div class="relative mb-6 h-56 overflow-hidden rounded-[2rem] border border-white/10">
+              <img
+                src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80"
+                alt="Curso sobre gestión de residuos"
+                class="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+
+              <div class="absolute left-4 top-4">
+                <span class="rounded-full border border-cyan-400/20 bg-cyan-500/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-cyan-300">
+                  Residuos
+                </span>
+              </div>
+            </div>
+
+            <h4 class="mb-3 text-2xl font-black leading-tight text-white transition-colors group-hover:text-cyan-400">
+              Gestión Inteligente de Residuos
+            </h4>
+
+            <p class="mb-6 text-sm leading-relaxed text-primary-50/80">
+              Explora modelos modernos de separación, reciclaje y economía circular aplicados a distintos sectores.
+            </p>
+
+            <div class="mb-5 flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-400">6 módulos</span>
+              <span class="text-sm font-black text-cyan-400">Práctico</span>
+            </div>
+
+            <div class="flex gap-3">
+              <button type="button" class="flex-1 rounded-2xl bg-primary-500 py-3 font-black text-slate-950 transition-all hover:bg-primary-400">
+                Empezar ahora
+              </button>
+              <button type="button" class="flex-1 rounded-2xl border border-white/10 bg-white/5 py-3 font-bold text-white transition-all hover:bg-white/10">
+                Ver detalles
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</ion-content>

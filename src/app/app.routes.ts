@@ -29,5 +29,9 @@ export const routes: Routes = [
   {
     path: 'dashboard-estudiante',
     loadComponent: () => import('./dashboard-estudiante/dashboard-estudiante.page').then( m => m.DashboardEstudiantePage)
+  },  
+  {
+    path: 'catalogo',
+    loadComponent: () => import('./catalogo/catalogo.page').then((m) => m.CatalogoPage),
   },
 ];
