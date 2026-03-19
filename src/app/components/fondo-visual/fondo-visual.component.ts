@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-type VarianteFondo = 'primary' | 'misty' | 'deep';
+type VarianteFondo = 'primary' | 'misty' | 'deep' | 'admin';
 
 const VARIANTS = {
   primary: {
@@ -21,6 +21,12 @@ const VARIANTS = {
     gradient1: 'bg-primary-500/40',
     gradient2: 'bg-accent-neon/40',
     overlay: 'from-slate-950/40 via-transparent to-slate-950/60'
+  },
+  admin: {
+    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    gradient1: 'bg-emerald-600/30',
+    gradient2: 'bg-slate-700/40',
+    overlay: 'from-slate-950/50 via-slate-950/30 to-slate-950/60'
   }
 };
 

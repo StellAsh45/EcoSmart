@@ -3,13 +3,13 @@
         <app-fondo-visual variante="deep"></app-fondo-visual>
 
         <!-- Cabecera de Navegación -->
-        <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-6 sm:px-10 py-4 flex justify-between items-center">
+        <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
             <a class="flex items-center gap-3 group no-underline text-white">
                 <div class="relative">
                     <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity"></div>
                     <app-eco-smart-logo clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
                 </div>
-                <span class="text-2xl font-black tracking-tight drop-shadow-sm font-heading">
+                <span class="text-2xl font-black tracking-tight drop-shadow-sm font-heading hidden md:block">
                     <span class="text-primary-800">Eco</span><span class="text-primary-900">Smart</span>
                 </span>
             </a>
@@ -18,7 +18,7 @@
                 <div class="w-px h-6 bg-white/10 hidden md:block"></div>
                 <!-- Perfil y Cierre de Sesión -->
                 <div class="flex items-center gap-4 relative">
-                    <div class="text-right hidden sm:block">
+                    <div class="text-right">
                         <p class="text-sm font-black text-primary-400 uppercase">{{nombreUsuario}}</p>
                     </div>
                     <a class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden">
@@ -34,7 +34,6 @@
 
         <!-- Contenedor Principal -->
         <main class="flex-1 pt-32 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
-            <!-- Hero Greeting -->
             <section>
                 <div class="bg-white/5 backdrop-blur-3xl rounded-[3rem] p-10 md:p-14 border border-white/10 relative overflow-hidden shadow-[0_32px_100px_-20px_rgba(0,0,0,0.5)] group">
                     <!-- Decoración de Fondo -->
@@ -48,11 +47,11 @@
                                 <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 block mt-2">{{nombreUsuario}}!</span>
                             </h2>
                             <p class="text-primary-50 text-xl mb-10 leading-relaxed font-medium max-w-md">
-                                Tu compromiso con el planeta es la semilla del cambio. Continúa con tu aprendizaje.
+                                Tu compromiso con el planeta es la semilla del cambio. Explora nuestro catálogo de cursos.
                             </p>
-                            <button routerLink="/catalogo" class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-10 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 flex items-center gap-3 group/btn active:scale-95 text-lg border-none cursor-pointer">
+                            <button routerLink="/catalogo" class="w-full sm:w-auto bg-primary-500 hover:bg-primary-400 text-slate-900 font-black py-4 px-10 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 hover:-translate-y-1 active:scale-95 group/btn flex items-center justify-center gap-3 text-lg border-none cursor-pointer no-underline">
                                 Explorar Catálogo
-                                <ion-icon name="arrow-forward-outline" class="text-2xl group-hover/btn:translate-x-1 transition-transform"></ion-icon>
+                                <ion-icon name="arrow-forward-outline" class="text-2xl group-hover/btn:translate-x-2 transition-transform duration-300"></ion-icon>
                             </button>
                         </div>
 
@@ -97,8 +96,8 @@
             <section>
                 <div class="flex items-end justify-between mb-8 px-2">
                     <div>
-                        <h3 class="text-3xl font-black text-primary-400 tracking-tight font-heading">Continua aprendiendo</h3>
-                        <p class="text-primary-50 font-medium">Cursos que tienes pendientes hasta el momento</p>
+                        <h3 class="text-3xl font-black text-primary-400 tracking-tight font-heading">Continua aprendiendo  :)</h3>
+                        <p class="text-primary-50 font-medium">Cursos que tienes pendientes hasta el momento.</p>
                     </div>
                 </div>
 

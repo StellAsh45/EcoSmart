@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, bookOutline, globeOutline, shieldCheckmarkOutline, sparklesOutline, star, timeOutline } from 'ionicons/icons';
-
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
 import { TarjetaCursoComponent } from '../components/tarjeta-curso/tarjeta-curso.component';

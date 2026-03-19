@@ -41,5 +41,10 @@ export const routes: Routes = [
   { 
     path: 'politica', 
     loadComponent: () => import('./politica/politica.page').then(m => m.PoliticaPage) 
-  }
+  },
+  {
+    path: 'catalogo',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./catalogo/catalogo.page').then((m) => m.CatalogoPage),
+  },
 ];

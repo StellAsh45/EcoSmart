@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonContent, IonIcon, IonHeader, IonToolbar, IonTitle, IonButton, IonInput, IonTextarea, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { IonContent, IonIcon} from '@ionic/angular/standalone';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -24,7 +24,6 @@ import {
   checkmarkCircleOutline,
   closeOutline,
   syncOutline,
-  schoolOutline,
   cameraOutline
 } from 'ionicons/icons';
 
@@ -66,15 +65,7 @@ interface Modulo {
     FormsModule, 
     ReactiveFormsModule,
     IonContent, 
-    IonIcon, 
-    IonHeader, 
-    IonToolbar, 
-    IonTitle, 
-    IonButton,
-    IonInput,
-    IonTextarea,
-    IonSelect,
-    IonSelectOption,
+    IonIcon,
     RouterLink, 
     FondoVisualComponent, 
     EcoSmartLogoComponent,

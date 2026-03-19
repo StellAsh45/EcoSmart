@@ -2,18 +2,10 @@
   <div class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
     
     <!-- Fondo -->
-    <div class="absolute inset-0 -z-20">
-      <img
-        src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=80"
-        alt="Bosque"
-        class="h-full w-full object-cover"
-      />
-      <div class="absolute inset-0 bg-slate-950/35"></div>
-      <div class="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-slate-950/10 to-slate-950/55"></div>
-    </div>
+    <app-fondo-visual></app-fondo-visual>
 
     <!-- Cabecera de Navegación -->
-    <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-6 sm:px-10 py-4 flex justify-between items-center">
+    <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
       <div class="flex items-center gap-4">
         <!-- Flecha -->
         <button
@@ -35,14 +27,14 @@
               class="w-12 h-12 relative object-contain group-hover:scale-110 transition-all duration-500 ease-out"
             />
           </div>
-          <span class="text-2xl font-black tracking-tight drop-shadow-sm font-heading">
-            <span class="text-primary-800">Eco</span><span class="text-primary-900">Smart</span>
+          <span class="text-xl font-black tracking-tight text-white font-heading">
+            Catálogo
           </span>
         </a>
       </div>
 
       <div class="flex items-center gap-6">
-        <div class="w-px h-6 bg-white/10 hidden md:block"></div>
+        <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
 
         <!-- Perfil y Cierre de Sesión -->
         <div class="flex items-center gap-4 relative">
@@ -75,182 +67,138 @@
           <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 blur-[100px] -mr-48 -mt-48 rounded-full"></div>
           <div class="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-[80px] -ml-32 -mb-32 rounded-full"></div>
 
-          <div class="relative z-10">
-            <p class="text-primary-50 font-bold mb-3">
-              Explora el Futuro
-            </p>
-
+          <div class="relative z-10 text-center">
             <h2 class="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight leading-tight font-heading">
-              Catálogo de Cursos
+              Catálogo de <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">cursos</span>
             </h2>
-
-            <p class="max-w-4xl text-xl md:text-3xl font-bold leading-snug text-white/95">
-              Domina las habilidades necesarias para liderar la transformación sostenible del planeta.
+            <p class="text-lg md:text-xl text-primary-50 font-medium max-w-2xl mx-auto">
+              Explora y domina nuevas habilidades que te permitirán impulsar tu educación ambiental.
             </p>
           </div>
         </div>
       </section>
 
-      <!-- Filtros -->
-      <section class="flex flex-wrap gap-4">
-        <button type="button" class="rounded-full border border-white/10 bg-emerald-900/80 px-8 py-3 text-lg font-semibold text-white shadow-lg backdrop-blur-xl transition-all hover:bg-emerald-800">
-          Todos
-        </button>
+      <!-- Tarjetas de curso -->
+      <section id="catalogo" class="bg-transparent relative z-10 w-full">
+        <!-- Spinner de carga -->
+        <div *ngIf="cargando" class="flex justify-center py-24">
+          <div class="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+        </div>
+        <!-- Sin cursos publicados -->
+        <p *ngIf="!cargando && cursos.length === 0" class="text-center text-primary-50 font-bold italic py-16">
+          No hay cursos disponibles todavía. ¡Vuelve pronto!
+        </p>
 
-        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
-          Sostenibilidad
-        </button>
-
-        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
-          Energía
-        </button>
-
-        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
-          Residuos
-        </button>
-
-        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
-          Agricultura
-        </button>
-
-        <button type="button" class="rounded-full border border-white/10 bg-white/10 px-8 py-3 text-lg font-medium text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/15">
-          Agua
-        </button>
-      </section>
-
-      <!-- Cards -->
-      <section class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-        <!-- Card 1 -->
-        <article class="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-white/10">
-          <div class="absolute inset-0 bg-primary-500/10 opacity-0 transition-opacity duration-700 group-hover:opacity-100"></div>
-
-          <div class="relative z-10">
-            <div class="relative mb-6 h-56 overflow-hidden rounded-[2rem] border border-white/10">
+        <div *ngIf="!cargando && cursos.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-8 xl:gap-12 items-start">
+          <div
+            *ngFor="let curso of cursos"
+            class="bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all group shadow-2xl relative flex flex-col"
+          >
+            <div class="relative h-60 overflow-hidden m-3 rounded-[2rem] shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80"
-                alt="Curso de sostenibilidad"
-                class="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
+                [src]="curso.imagen_url || 'assets/icon/logo_ecoaula.png'"
+                [alt]="curso.titulo"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.85] group-hover:brightness-100"
               />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-
-              <div class="absolute left-4 top-4">
-                <span class="rounded-full border border-primary-400/20 bg-primary-500/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-primary-300">
-                  Sostenibilidad
-                </span>
+              <div class="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
+                <ion-icon name="book-outline" class="text-primary-400 text-sm"></ion-icon>
+                <span class="text-xs font-bold text-white">{{ curso.totalLecciones }} lecciones</span>
               </div>
             </div>
 
-            <h4 class="mb-3 text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary-400">
-              Fundamentos de Desarrollo Sostenible
-            </h4>
-
-            <p class="mb-6 text-sm leading-relaxed text-primary-50/80">
-              Comprende los principios clave para impulsar iniciativas con impacto ambiental, social y económico.
-            </p>
-
-            <div class="mb-5 flex items-center justify-between">
-              <span class="text-sm font-bold text-slate-400">8 módulos</span>
-              <span class="text-sm font-black text-primary-400">Intermedio</span>
-            </div>
-
-            <div class="flex gap-3">
-              <button type="button" class="flex-1 rounded-2xl bg-primary-500 py-3 font-black text-slate-950 transition-all hover:bg-primary-400">
-                Empezar ahora
-              </button>
-              <button type="button" class="flex-1 rounded-2xl border border-white/10 bg-white/5 py-3 font-bold text-white transition-all hover:bg-white/10">
-                Ver detalles
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card 2 -->
-        <article class="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-white/10">
-          <div class="absolute inset-0 bg-emerald-500/10 opacity-0 transition-opacity duration-700 group-hover:opacity-100"></div>
-
-          <div class="relative z-10">
-            <div class="relative mb-6 h-56 overflow-hidden rounded-[2rem] border border-white/10">
-              <img
-                src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80"
-                alt="Curso de energía renovable"
-                class="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-
-              <div class="absolute left-4 top-4">
-                <span class="rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">
-                  Energía
+            <!-- Cuerpo -->
+            <div class="p-8 pt-4 flex-1 flex flex-col">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border"
+                    [ngClass]="{
+                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
+                        'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
+                        'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
+                        'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
+                    }">
+                    {{ curso.nivel || 'Sin Nivel' }}
                 </span>
+              </div>
+
+              <h3 class="text-2xl font-black text-primary-400 mb-3 drop-shadow-sm leading-tight group-hover:text-primary-300 transition-colors">
+                {{curso.titulo}}
+              </h3>
+              <p class="text-primary-50 text-sm font-medium line-clamp-2 mb-8 leading-relaxed flex-1">
+                {{curso.descripcion}}
+              </p>
+
+              <!-- Acciones  -->
+              <div class="flex flex-col sm:flex-row gap-4 mt-auto">
+                <button
+                  *ngIf="!curso.inscrito"
+                  (click)="inscribirse(curso.id)"
+                  class="flex-1 bg-primary-500 hover:bg-primary-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-primary-500/20 hover:-translate-y-1 active:scale-95 group/btn flex items-center justify-center gap-2 text-sm uppercase tracking-wider block no-underline"
+                >
+                  Inscribirse
+                  <ion-icon name="arrow-forward-outline" class="text-lg group-hover/btn:translate-x-2 transition-transform duration-300"></ion-icon>
+                </button>
+                <button
+                  *ngIf="curso.inscrito"
+                  (click)="continuarCurso(curso.id)"
+                  class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider block no-underline flex items-center justify-center gap-2"
+                >
+                  Continuar
+                  <ion-icon name="play-circle-outline" class="text-lg"></ion-icon>
+                </button>
+                <button
+                  (click)="toggleExpandirCurso(curso)"
+                  class="flex-none bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider flex items-center justify-center gap-2 border border-white/10"
+                >
+                  Detalles
+                  <ion-icon [name]="curso.expandido ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-lg"></ion-icon>
+                </button>
               </div>
             </div>
 
-            <h4 class="mb-3 text-2xl font-black leading-tight text-white transition-colors group-hover:text-emerald-400">
-              Introducción a las Energías Renovables
-            </h4>
+            <!-- Modulos y lecciones expandibles -->
+            <div *ngIf="curso.expandido" class="px-8 pb-8 pt-0 animate-[fadeIn_0.3s_ease-out]">
+              <div class="border-t border-white/10 pt-6">
+                <h4 class="text-lg font-black text-primary-500 mb-4 flex items-center gap-2">
+                  <ion-icon name="list-outline" class="text-primary-500"></ion-icon>
+                  Contenido del Curso
+                </h4>
 
-            <p class="mb-6 text-sm leading-relaxed text-primary-50/80">
-              Aprende cómo funcionan las fuentes renovables y su papel en la transición energética global.
-            </p>
+                <div *ngIf="curso.modulosDetalle?.length === 0" class="text-slate-500 text-sm italic">
+                  No hay módulos disponibles.
+                </div>
 
-            <div class="mb-5 flex items-center justify-between">
-              <span class="text-sm font-bold text-slate-400">10 módulos</span>
-              <span class="text-sm font-black text-emerald-400">Básico</span>
-            </div>
-
-            <div class="flex gap-3">
-              <button type="button" class="flex-1 rounded-2xl bg-primary-500 py-3 font-black text-slate-950 transition-all hover:bg-primary-400">
-                Empezar ahora
-              </button>
-              <button type="button" class="flex-1 rounded-2xl border border-white/10 bg-white/5 py-3 font-bold text-white transition-all hover:bg-white/10">
-                Ver detalles
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card 3 -->
-        <article class="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-white/10">
-          <div class="absolute inset-0 bg-cyan-500/10 opacity-0 transition-opacity duration-700 group-hover:opacity-100"></div>
-
-          <div class="relative z-10">
-            <div class="relative mb-6 h-56 overflow-hidden rounded-[2rem] border border-white/10">
-              <img
-                src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80"
-                alt="Curso sobre gestión de residuos"
-                class="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-
-              <div class="absolute left-4 top-4">
-                <span class="rounded-full border border-cyan-400/20 bg-cyan-500/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-cyan-300">
-                  Residuos
-                </span>
+                <div class="space-y-3">
+                  <div *ngFor="let mod of curso.modulosDetalle; let i = index" class="border border-white/5 rounded-xl bg-white/5 overflow-hidden">
+                    <button 
+                      (click)="toggleExpandirModulo(mod, $event)"
+                      class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors focus:outline-none"
+                    >
+                      <div class="flex items-center gap-3 text-left">
+                        <div class="w-8 h-8 rounded-full bg-primary-500/20 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0">
+                          {{ mod.orden || (i + 1) }}
+                        </div>
+                        <span class="text-white font-bold text-sm">{{ mod.titulo }}</span>
+                      </div>
+                      <ion-icon [name]="mod.expandido ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-primary-400 shrink-0"></ion-icon>
+                    </button>
+                    
+                    <div *ngIf="mod.expandido" class="px-4 pb-4 pt-2 bg-black/20">
+                      <ul class="space-y-2 mt-2">
+                        <li *ngFor="let lec of mod.leccionesDetalle; let j = index" class="flex items-start gap-3 text-sm text-primary-50">
+                          <ion-icon name="play-circle-outline" class="text-primary-500 mt-0.5 shrink-0"></ion-icon>
+                          <span>{{ lec.titulo }}</span>
+                        </li>
+                        <li *ngIf="mod.leccionesDetalle?.length === 0" class="text-xs text-slate-500 italic ml-6">
+                          Sin lecciones
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <h4 class="mb-3 text-2xl font-black leading-tight text-white transition-colors group-hover:text-cyan-400">
-              Gestión Inteligente de Residuos
-            </h4>
-
-            <p class="mb-6 text-sm leading-relaxed text-primary-50/80">
-              Explora modelos modernos de separación, reciclaje y economía circular aplicados a distintos sectores.
-            </p>
-
-            <div class="mb-5 flex items-center justify-between">
-              <span class="text-sm font-bold text-slate-400">6 módulos</span>
-              <span class="text-sm font-black text-cyan-400">Práctico</span>
-            </div>
-
-            <div class="flex gap-3">
-              <button type="button" class="flex-1 rounded-2xl bg-primary-500 py-3 font-black text-slate-950 transition-all hover:bg-primary-400">
-                Empezar ahora
-              </button>
-              <button type="button" class="flex-1 rounded-2xl border border-white/10 bg-white/5 py-3 font-bold text-white transition-all hover:bg-white/10">
-                Ver detalles
-              </button>
-            </div>
           </div>
-        </article>
+        </div>
       </section>
     </main>
   </div>

@@ -10,8 +10,8 @@ import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, IonIcon],
   template: `
-    <div class="space-y-2">
-      <label *ngIf="mostrarEtiqueta" class="block text-sm font-bold text-primary-500 ml-1">{{etiqueta}}</label>
+    <div class="flex flex-col gap-2.5">
+      <label *ngIf="mostrarEtiqueta" class="block text-xs sm:text-sm font-bold text-primary-500 ml-1">{{etiqueta}}</label>
       <div class="relative group/input">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-primary-400 transition-colors">
           <ion-icon [icon]="icono" class="text-xl text-primary-400"></ion-icon>
@@ -29,7 +29,7 @@ import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
           *ngIf="tipo === 'password'"
           type="button"
           (click)="toggleContrasena()"
-          class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-primary-400 transition-colors outline-none"
+          class="absolute inset-y-0 right-0 pr-4 flex items-center text-primary-50 hover:text-primary-400 transition-colors outline-none"
         >
           <ion-icon [icon]="mostrarContrasenaInterna ? iconosToggle.eyeOff : iconosToggle.eye" class="text-xl"></ion-icon>
         </button>

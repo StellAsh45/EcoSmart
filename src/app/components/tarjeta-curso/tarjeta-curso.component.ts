@@ -22,7 +22,15 @@ import { IonIcon } from '@ionic/angular/standalone';
 
       <div class="p-8 pt-4">
         <div class="flex items-center gap-3 mb-4">
-          <span class="text-[10px] font-black text-primary-50 uppercase tracking-widest">{{nivel}}</span>
+          <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border"
+                [ngClass]="{
+                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': nivel === 'Principiante',
+                    'bg-blue-500/10 text-blue-400 border-blue-500/20': nivel === 'Intermedio',
+                    'bg-purple-500/10 text-purple-400 border-purple-500/20': nivel === 'Avanzado',
+                    'bg-white/10 text-slate-300 border-white/20': !nivel || (nivel !== 'Principiante' && nivel !== 'Intermedio' && nivel !== 'Avanzado')
+                }">
+              {{ nivel || 'Sin Nivel' }}
+          </span>
         </div>
 
         <h3 class="text-2xl font-black text-primary-400 mb-3 drop-shadow-sm leading-tight group-hover:text-primary-300 transition-colors">
