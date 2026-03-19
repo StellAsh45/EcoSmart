@@ -8,6 +8,7 @@ import { arrowForwardOutline, bookOutline, globeOutline, shieldCheckmarkOutline,
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
 import { TarjetaCursoComponent } from '../components/tarjeta-curso/tarjeta-curso.component';
+import { SupabaseService } from '../services/supabase';
 
 @Component({
   selector: 'app-home',
@@ -27,46 +28,10 @@ import { TarjetaCursoComponent } from '../components/tarjeta-curso/tarjeta-curso
 export class HomePage {
   @ViewChild(IonContent) content?: IonContent;
 
-  cursos = [
-    {
-      id: '1',
-      titulo: 'Introducción a la Economía Circular',
-      descripcion: 'Aprende los principios fundamentales de la economía circular y cómo aplicarlos en la vida diaria.',
-      imagen: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=800',
-      progreso: 45,
-      lecciones: 12,
-      duracion: '6h 30m',
-      nivel: 'Principiante',
-      puntuacion: 4.8,
-      categoria: 'Sostenibilidad'
-    },
-    {
-      id: '2',
-      titulo: 'Energías Renovables para el Hogar',
-      descripcion: 'Descubre cómo implementar soluciones de energía solar y eólica a pequeña escala para tu vivienda.',
-      imagen: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800',
-      progreso: 0,
-      lecciones: 8,
-      duracion: '4h 15m',
-      nivel: 'Intermedio',
-      puntuacion: 4.9,
-      categoria: 'Energía'
-    },
-    {
-      id: '3',
-      titulo: 'Gestión Avanzada de Residuos',
-      descripcion: 'Técnicas profesionales para el manejo de residuos orgánicos e inorgánicos en entornos urbanos.',
-      imagen: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=800',
-      progreso: 0,
-      lecciones: 15,
-      duracion: '10h',
-      nivel: 'Avanzado',
-      puntuacion: 4.7,
-      categoria: 'Residuos'
-    }
-  ];
+  cursos: any[] = [];
+  cargando = true;
 
-  constructor() {
+  constructor(private supabaseSvc: SupabaseService) {
     addIcons({
       'arrow-forward-outline': arrowForwardOutline,
       'book-outline': bookOutline,
@@ -76,6 +41,50 @@ export class HomePage {
       'star': star,
       'time-outline': timeOutline
     });
+  }
+
+  async ngOnInit() { }
+
+  async ionViewWillEnter() {
+    await this.cargarCursos();
+  }
+
+  async cargarCursos() {
+    this.cargando = true;
+    try {
+      // Solo cursos publicados
+      const { data } = await this.supabaseSvc.cliente
+        .from('cursos')
+        .select('*')
+        .eq('estado', 'publicado')
+        .order('created_at', { ascending: false });
+
+      const cursosRaw = data || [];
+
+      // Contar lecciones totales por curso (a través de módulos)
+      for (const curso of cursosRaw) {
+        const { data: modulos } = await this.supabaseSvc.cliente
+          .from('modulos')
+          .select('id')
+          .eq('curso_id', curso.id);
+
+        let totalLecciones = 0;
+        for (const mod of modulos || []) {
+          const { count } = await this.supabaseSvc.cliente
+            .from('lecciones')
+            .select('*', { count: 'exact', head: true })
+            .eq('modulo_id', mod.id);
+          totalLecciones += count || 0;
+        }
+        curso.totalLecciones = totalLecciones;
+      }
+
+      this.cursos = cursosRaw;
+    } catch (error) {
+      console.error('Error al cargar cursos:', error);
+    } finally {
+      this.cargando = false;
+    }
   }
 
   scrollACatalogo() {

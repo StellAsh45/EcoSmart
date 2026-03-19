@@ -32,14 +32,10 @@ import { IonIcon } from '@ionic/angular/standalone';
           {{descripcion}}
         </p>
 
-        <div class="flex items-center justify-between text-primary-50 text-[10px] font-black uppercase tracking-widest mb-6 py-4 border-y border-white/5">
+        <div class="flex items-center text-primary-50 text-[10px] font-black uppercase tracking-widest mb-6 py-4 border-y border-white/5">
           <div class="flex items-center gap-2">
             <ion-icon name="book-outline" class="text-primary-500 text-sm"></ion-icon>
             <span>{{lecciones}} lecciones</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <ion-icon name="time-outline" class="text-primary-500 text-sm"></ion-icon>
-            <span>{{duracion}}</span>
           </div>
         </div>
       </div>
