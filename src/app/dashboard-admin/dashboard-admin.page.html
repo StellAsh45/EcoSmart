@@ -1,0 +1,224 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+    <div class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white">
+        <app-fondo-visual variante="deep"></app-fondo-visual>
+
+        <!-- Navbar -->
+        <header
+            class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3 group">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20"></div>
+                    <app-eco-smart-logo clasePersonalizada="w-10 h-10 relative"></app-eco-smart-logo>
+                </div>
+                <span class="text-xl font-black tracking-tight text-white font-heading">Panel Admin</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-black text-white">{{nombreUsuario}}</p>
+                        <p class="text-[10px] font-black text-primary-500 uppercase tracking-widest">Administrador
+                            General</p>
+                    </div>
+                    <button (click)="cerrarSesion()"
+                        class="p-2.5 text-slate-400 hover:text-red-400 transition-colors bg-transparent border-none cursor-pointer">
+                        <ion-icon name="log-out-outline" class="text-2xl"></ion-icon>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main
+            class="flex-1 pt-28 pb-20 px-6 max-w-7xl mx-auto w-full space-y-10 relative z-10 animate-[fadeIn_0.8s_ease-out]">
+
+            <!-- Resumen Estadístico -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div
+                    class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 flex items-center gap-6 group hover:bg-white/10 transition-all">
+                    <div
+                        class="w-14 h-14 bg-primary-500/10 rounded-2xl flex items-center justify-center text-primary-400 border border-primary-500/20">
+                        <ion-icon name="people-outline" class="text-2xl"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total
+                            Estudiantes</p>
+                        <p class="text-3xl font-black text-white">{{estadisticas.totalUsuarios}}</p>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 flex items-center gap-6 group hover:bg-white/10 transition-all">
+                    <div
+                        class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                        <ion-icon name="book-outline" class="text-2xl"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Cursos Creados
+                        </p>
+                        <p class="text-3xl font-black text-white">{{estadisticas.totalCursos}}</p>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 flex items-center gap-6 group hover:bg-white/10 transition-all">
+                    <div
+                        class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 border border-blue-500/20">
+                        <ion-icon name="stats-chart-outline" class="text-2xl"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Cursos
+                            Publicados</p>
+                        <p class="text-3xl font-black text-white">{{estadisticas.cursosPublicados}}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gestión de Cursos -->
+            <section class="space-y-6">
+                <div class="flex items-center justify-between px-2">
+                    <div>
+                        <h2 class="text-3xl font-black text-white tracking-tight font-heading">Gestión de Contenido</h2>
+                        <p class="text-slate-500 font-medium">Crea y administra los cursos de la plataforma.</p>
+                    </div>
+                    <button [routerLink]="['/constructor-curso', 'nuevo']"
+                        class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-3 px-6 rounded-xl transition-all flex items-center gap-2 group border-none cursor-pointer active:scale-95 shadow-lg shadow-primary-500/20">
+                        <ion-icon name="add-outline" class="text-xl"></ion-icon>
+                        Nuevo Curso
+                    </button>
+                </div>
+
+                <!-- Tabla/Lista de Cursos -->
+                <div
+                    class="bg-white/5 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/10 bg-white/5">
+                                    <th
+                                        class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        Curso</th>
+                                    <th
+                                        class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        Nivel</th>
+                                    <th
+                                        class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        Estado</th>
+                                    <th
+                                        class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        Módulos</th>
+                                    <th
+                                        class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+                                        Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr *ngIf="cargando">
+                                    <td colspan="5" class="px-8 py-20 text-center">
+                                        <div class="flex flex-col items-center gap-4">
+                                            <div
+                                                class="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin">
+                                            </div>
+                                            <p class="text-slate-500 font-bold animate-pulse">Cargando cursos...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="!cargando && cursos.length === 0">
+                                    <td colspan="5" class="px-8 py-20 text-center">
+                                        <p class="text-slate-500 font-bold italic">No hay cursos creados aún.</p>
+                                    </td>
+                                </tr>
+                                <tr *ngFor="let curso of cursos" class="group hover:bg-white/[0.02] transition-colors">
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center gap-4">
+                                            <div
+                                                class="w-12 h-12 rounded-xl bg-slate-800 border border-white/10 overflow-hidden">
+                                                <div
+                                                    class="w-full h-full bg-gradient-to-br from-primary-500/20 to-emerald-500/20 flex items-center justify-center">
+                                                    <ion-icon name="document-text-outline"
+                                                        class="text-white/40 text-xl"></ion-icon>
+                                                </div>
+                                            </div>
+                                            <span
+                                                class="font-bold text-white group-hover:text-primary-400 transition-colors">{{curso.titulo}}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <span
+                                            class="px-3 py-1 rounded-lg bg-white/5 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-white/10">
+                                            {{curso.nivel}}
+                                        </span>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <button (click)="toggleEstadoCurso(curso)"
+                                            [title]="curso.estado === 'publicado' ? 'Despublicar curso' : 'Publicar curso'"
+                                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all cursor-pointer"
+                                            [ngClass]="curso.estado === 'publicado' 
+                                                    ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20' 
+                                                    : 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'">
+                                            <div class="w-2 h-2 rounded-full flex-shrink-0"
+                                                [ngClass]="curso.estado === 'publicado' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'">
+                                            </div>
+                                            <span class="text-[10px] font-black capitalize uppercase tracking-widest"
+                                                [ngClass]="curso.estado === 'publicado' ? 'text-emerald-400' : 'text-amber-400'">
+                                                {{ curso.estado === 'publicado' ? 'Publicado' : 'Borrador' }}
+                                            </span>
+                                        </button>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <span
+                                            class="px-3 py-1 rounded-lg bg-white/5 text-slate-300 text-xs font-bold border border-white/10">
+                                            {{ curso.totalModulos }} {{ curso.totalModulos === 1 ? 'módulo' : 'módulos'
+                                            }}
+                                        </span>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button
+                                                class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all border-none cursor-pointer"
+                                                title="Ver curso">
+                                                <ion-icon name="eye-outline"></ion-icon>
+                                            </button>
+                                            <button [routerLink]="['/constructor-curso', curso.id]"
+                                                class="p-2 rounded-lg bg-white/5 hover:bg-primary-500/20 text-slate-400 hover:text-primary-400 transition-all border-none cursor-pointer"
+                                                title="Editar curso">
+                                                <ion-icon name="create-outline"></ion-icon>
+                                            </button>
+                                            <button (click)="eliminarCurso(curso)"
+                                                class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all border-none cursor-pointer"
+                                                title="Eliminar curso">
+                                                <ion-icon name="trash-outline"></ion-icon>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Usuarios (Simplified) -->
+            <section
+                class="bg-white/5 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 relative overflow-hidden group">
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center text-primary-400 border border-primary-500/20">
+                        <ion-icon name="people-outline" class="text-xl"></ion-icon>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-white font-heading">Control de Usuarios</h3>
+                        <p class="text-sm text-slate-500">Gestiona los accesos y roles de la plataforma.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4">
+                    <button
+                        class="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-6 rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-2">
+                        <ion-icon name="eye-outline" class="text-lg"></ion-icon>
+                        Ver todos los estudiantes
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+</ion-content>

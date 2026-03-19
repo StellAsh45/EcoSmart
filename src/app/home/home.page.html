@@ -108,16 +108,26 @@
             <span class="text-primary-400 underline underline-offset-[6px] decoration-4 decoration-primary-500/30">ambiental.</span></p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <!-- Spinner de carga -->
+        <div *ngIf="cargando" class="flex justify-center py-24">
+          <div class="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+        </div>
+
+        <!-- Sin cursos publicados -->
+        <p *ngIf="!cargando && cursos.length === 0" class="text-center text-slate-500 font-bold italic py-16">
+          No hay cursos disponibles todavía. ¡Vuelve pronto!
+        </p>
+
+        <div *ngIf="!cargando && cursos.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           <app-tarjeta-curso
             *ngFor="let curso of cursos"
             [id]="curso.id"
             [titulo]="curso.titulo"
             [descripcion]="curso.descripcion"
-            [imagen]="curso.imagen"
+            [imagen]="curso.imagen_url || 'assets/icon/logo_ecoaula.png'"
             [nivel]="curso.nivel"
-            [lecciones]="curso.lecciones"
-            [duracion]="curso.duracion"
+            [lecciones]="curso.totalLecciones"
+            [duracion]="curso.duracion || ''"
           >
           </app-tarjeta-curso>
         </div>
