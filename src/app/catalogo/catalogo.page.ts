@@ -17,6 +17,33 @@ import {
   arrowForwardOutline
 } from 'ionicons/icons';
 
+interface LeccionDetalle {
+  id: string;
+  titulo: string;
+  orden: number;
+}
+
+interface ModuloDetalle {
+  id: string;
+  titulo: string;
+  orden: number;
+  expandido: boolean;
+  leccionesDetalle: LeccionDetalle[];
+}
+
+interface CursoCatalogo {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  nivel: string;
+  imagen_url: string | null;
+  estado: string;
+  inscrito: boolean;
+  expandido: boolean;
+  totalLecciones: number;
+  modulosDetalle: ModuloDetalle[];
+}
+
 @Component({
   selector: 'app-catalogo',
   templateUrl: './catalogo.page.html',
@@ -25,11 +52,12 @@ import {
   imports: [CommonModule, IonContent, IonIcon, FondoVisualComponent],
 })
 export class CatalogoPage implements OnInit {
-
   usuario: any = null;
-  nombreUsuario: string = 'Estudiante';
-  cursos: any[] = [];
+  nombreUsuario = 'Estudiante';
+  cursos: CursoCatalogo[] = [];
   cargando = true;
+  mensajeError = '';
+  procesandoCursoId: string | null = null;
 
   constructor(
     private router: Router,
@@ -55,12 +83,9 @@ export class CatalogoPage implements OnInit {
 
   private async cargarUsuario(): Promise<void> {
     try {
-
       const { data, error } = await this.supabaseSvc.obtenerUsuario();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       this.usuario = data?.user ?? null;
 
@@ -69,13 +94,15 @@ export class CatalogoPage implements OnInit {
         return;
       }
 
+      const { data: perfil } = await this.supabaseSvc.obtenerPerfil(this.usuario.id);
+
       this.nombreUsuario =
+        perfil?.nombre ||
         this.usuario.user_metadata?.['full_name'] ||
         this.usuario.user_metadata?.['name'] ||
         this.usuario.user_metadata?.['nombre'] ||
         this.usuario.email?.split('@')[0] ||
         'Estudiante';
-
     } catch (err) {
       console.error('Error cargando usuario en catálogo:', err);
       this.nombreUsuario = 'Estudiante';
@@ -84,76 +111,123 @@ export class CatalogoPage implements OnInit {
 
   async cargarCursos(): Promise<void> {
     this.cargando = true;
+    this.mensajeError = '';
+
     try {
-      const { data } = await this.supabaseSvc.cliente
+      const { data, error } = await this.supabaseSvc.cliente
         .from('cursos')
         .select('*')
         .eq('estado', 'publicado')
         .order('created_at', { ascending: false });
 
-      const cursosRaw = data || [];
+      if (error) throw error;
 
-      const userRes = await this.supabaseSvc.obtenerUsuario();
-      const userId = userRes.data?.user?.id;
+      const cursosRaw = data || [];
+      let cursosInscritos = new Set<string>();
+
+      if (this.usuario?.id) {
+        const { data: inscripciones, error: inscError } =
+          await this.supabaseSvc.obtenerInscripcionesUsuario(this.usuario.id);
+
+        if (!inscError) {
+          cursosInscritos = new Set(
+            (inscripciones || []).map((i: any) => i.curso_id)
+          );
+        }
+      }
 
       for (const curso of cursosRaw) {
-        // Inscripciones no están implementadas aún, se asume por ahora 'false'
-        curso.inscrito = false;
+        curso.inscrito = cursosInscritos.has(curso.id);
         curso.expandido = false;
+        curso.modulosDetalle = [];
+        curso.totalLecciones = 0;
 
-        const { data: modulos } = await this.supabaseSvc.cliente
+        const { data: modulos, error: modulosError } = await this.supabaseSvc.cliente
           .from('modulos')
-          .select('*')
+          .select('id, titulo, orden')
           .eq('curso_id', curso.id)
           .order('orden', { ascending: true });
 
-        curso.modulosDetalle = [];
-        let totalLecciones = 0;
+        if (modulosError) throw modulosError;
 
         for (const mod of modulos || []) {
-          const { data: lecciones } = await this.supabaseSvc.cliente
+          const { data: lecciones, error: leccionesError } = await this.supabaseSvc.cliente
             .from('lecciones')
-            .select('*')
+            .select('id, titulo, orden')
             .eq('modulo_id', mod.id)
             .order('orden', { ascending: true });
-            
-          mod.leccionesDetalle = lecciones || [];
-          mod.expandido = false;
-          curso.modulosDetalle.push(mod);
-          totalLecciones += (lecciones || []).length;
+
+          if (leccionesError) throw leccionesError;
+
+          curso.modulosDetalle.push({
+            id: mod.id,
+            titulo: mod.titulo,
+            orden: mod.orden,
+            expandido: false,
+            leccionesDetalle: lecciones || []
+          });
+
+          curso.totalLecciones += (lecciones || []).length;
         }
-        curso.totalLecciones = totalLecciones;
       }
 
       this.cursos = cursosRaw;
     } catch (error) {
       console.error('Error al cargar cursos en catálogo:', error);
+      this.mensajeError = 'No fue posible cargar el catálogo.';
+      this.cursos = [];
     } finally {
       this.cargando = false;
     }
   }
 
   async inscribirse(cursoId: string): Promise<void> {
-    if (!this.usuario) {
+    if (!this.usuario?.id) {
       this.router.navigate(['/ingreso']);
       return;
     }
-    // Lógica futura de inscripción
-    console.log('Botón de inscripción presionado para el curso:', cursoId);
+
+    this.procesandoCursoId = cursoId;
+
+    try {
+      const { data: existente, error: errorExistente } =
+        await this.supabaseSvc.obtenerInscripcion(this.usuario.id, cursoId);
+
+      if (errorExistente) throw errorExistente;
+
+      if (!existente) {
+        const { error: insertError } =
+          await this.supabaseSvc.inscribirUsuarioEnCurso(this.usuario.id, cursoId);
+
+        if (insertError) throw insertError;
+      }
+
+      this.cursos = this.cursos.map((curso) =>
+        curso.id === cursoId ? { ...curso, inscrito: true } : curso
+      );
+    } catch (error) {
+      console.error('Error al inscribirse en el curso:', error);
+      this.mensajeError = 'No fue posible completar la inscripción.';
+    } finally {
+      this.procesandoCursoId = null;
+    }
   }
 
   continuarCurso(cursoId: string): void {
-    // Redirigir al dashboard estudiante donde debería estar el curso o a una vista específica del curso
-    this.router.navigate(['/dashboard-estudiante'], { queryParams: { curso: cursoId } });
+    this.router.navigate(['/curso', cursoId]);
   }
 
-  toggleExpandirCurso(curso: any): void {
+  toggleExpandirCurso(curso: CursoCatalogo): void {
     curso.expandido = !curso.expandido;
   }
 
-  toggleExpandirModulo(modulo: any, event: Event): void {
+  toggleExpandirModulo(modulo: ModuloDetalle, event: Event): void {
     event.stopPropagation();
     modulo.expandido = !modulo.expandido;
+  }
+
+  async irAPerfil(): Promise<void> {
+    await this.router.navigate(['/perfil']);
   }
 
   volverAlDashboard(): void {

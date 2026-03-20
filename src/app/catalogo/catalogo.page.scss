@@ -19,3 +19,11 @@ ion-button {
 ion-title {
   padding-inline: 0;
 }
+
+::ng-deep ion-modal.perfil-modal-wrapper {
+  --width: min(960px, 96vw);
+  --height: 92vh;
+  --border-radius: 28px;
+  --background: transparent;
+  --box-shadow: none;
+}

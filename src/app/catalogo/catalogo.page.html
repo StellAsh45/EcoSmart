@@ -1,13 +1,10 @@
 <ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
   <div class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
-    
-    <!-- Fondo -->
+
     <app-fondo-visual></app-fondo-visual>
 
-    <!-- Cabecera de Navegación -->
     <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
       <div class="flex items-center gap-4">
-        <!-- Flecha -->
         <button
           type="button"
           (click)="volverAlDashboard()"
@@ -17,7 +14,6 @@
           <ion-icon name="arrow-back-outline" class="text-primary-400 text-2xl"></ion-icon>
         </button>
 
-        <!-- Logo + nombre -->
         <a class="flex items-center gap-3 group no-underline text-white">
           <div class="relative">
             <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity"></div>
@@ -36,7 +32,6 @@
       <div class="flex items-center gap-6">
         <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
 
-        <!-- Perfil y Cierre de Sesión -->
         <div class="flex items-center gap-4 relative">
           <div class="text-right hidden sm:block">
             <p class="text-sm font-black text-primary-400 uppercase">
@@ -44,9 +39,14 @@
             </p>
           </div>
 
-          <a class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all">
-            <ion-icon name="person-outline" class="text-primary-400 text-2xl"></ion-icon>
-          </a>
+    <button
+      type="button"
+      (click)="irAPerfil()"
+      class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all"
+      aria-label="Ir al perfil"
+    >
+      <ion-icon name="person-outline" class="text-primary-400 text-2xl"></ion-icon>
+    </button>
 
           <button
             type="button"
@@ -59,9 +59,7 @@
       </div>
     </header>
 
-    <!-- Contenedor Principal -->
     <main class="flex-1 pt-28 md:pt-32 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
-      <!-- Hero -->
       <section>
         <div>
           <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 blur-[100px] -mr-48 -mt-48 rounded-full"></div>
@@ -69,7 +67,10 @@
 
           <div class="relative z-10 text-center">
             <h2 class="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight leading-tight font-heading">
-              Catálogo de <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">cursos</span>
+              Catálogo de
+              <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">
+                cursos
+              </span>
             </h2>
             <p class="text-lg md:text-xl text-primary-50 font-medium max-w-2xl mx-auto">
               Explora y domina nuevas habilidades que te permitirán impulsar tu educación ambiental.
@@ -78,14 +79,16 @@
         </div>
       </section>
 
-      <!-- Tarjetas de curso -->
       <section id="catalogo" class="bg-transparent relative z-10 w-full">
-        <!-- Spinner de carga -->
         <div *ngIf="cargando" class="flex justify-center py-24">
           <div class="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
         </div>
-        <!-- Sin cursos publicados -->
-        <p *ngIf="!cargando && cursos.length === 0" class="text-center text-primary-50 font-bold italic py-16">
+
+        <div *ngIf="!cargando && mensajeError" class="text-center text-red-300 font-bold py-10">
+          {{ mensajeError }}
+        </div>
+
+        <p *ngIf="!cargando && !mensajeError && cursos.length === 0" class="text-center text-primary-50 font-bold italic py-16">
           No hay cursos disponibles todavía. ¡Vuelve pronto!
         </p>
 
@@ -106,37 +109,40 @@
               </div>
             </div>
 
-            <!-- Cuerpo -->
             <div class="p-8 pt-4 flex-1 flex flex-col">
               <div class="flex items-center gap-3 mb-4">
-                <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border"
-                    [ngClass]="{
-                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
-                        'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
-                        'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
-                        'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
-                    }">
-                    {{ curso.nivel || 'Sin Nivel' }}
+                <span
+                  class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border"
+                  [ngClass]="{
+                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
+                    'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
+                    'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
+                    'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
+                  }"
+                >
+                  {{ curso.nivel || 'Sin Nivel' }}
                 </span>
               </div>
 
               <h3 class="text-2xl font-black text-primary-400 mb-3 drop-shadow-sm leading-tight group-hover:text-primary-300 transition-colors">
-                {{curso.titulo}}
+                {{ curso.titulo }}
               </h3>
+
               <p class="text-primary-50 text-sm font-medium line-clamp-2 mb-8 leading-relaxed flex-1">
-                {{curso.descripcion}}
+                {{ curso.descripcion }}
               </p>
 
-              <!-- Acciones  -->
               <div class="flex flex-col sm:flex-row gap-4 mt-auto">
                 <button
                   *ngIf="!curso.inscrito"
                   (click)="inscribirse(curso.id)"
-                  class="flex-1 bg-primary-500 hover:bg-primary-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-primary-500/20 hover:-translate-y-1 active:scale-95 group/btn flex items-center justify-center gap-2 text-sm uppercase tracking-wider block no-underline"
+                  [disabled]="procesandoCursoId === curso.id"
+                  class="flex-1 bg-primary-500 hover:bg-primary-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-primary-500/20 hover:-translate-y-1 active:scale-95 group/btn flex items-center justify-center gap-2 text-sm uppercase tracking-wider block no-underline disabled:opacity-60"
                 >
-                  Inscribirse
+                  {{ procesandoCursoId === curso.id ? 'Procesando...' : 'Inscribirse' }}
                   <ion-icon name="arrow-forward-outline" class="text-lg group-hover/btn:translate-x-2 transition-transform duration-300"></ion-icon>
                 </button>
+
                 <button
                   *ngIf="curso.inscrito"
                   (click)="continuarCurso(curso.id)"
@@ -145,6 +151,7 @@
                   Continuar
                   <ion-icon name="play-circle-outline" class="text-lg"></ion-icon>
                 </button>
+
                 <button
                   (click)="toggleExpandirCurso(curso)"
                   class="flex-none bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider flex items-center justify-center gap-2 border border-white/10"
@@ -155,7 +162,6 @@
               </div>
             </div>
 
-            <!-- Modulos y lecciones expandibles -->
             <div *ngIf="curso.expandido" class="px-8 pb-8 pt-0 animate-[fadeIn_0.3s_ease-out]">
               <div class="border-t border-white/10 pt-6">
                 <h4 class="text-lg font-black text-primary-500 mb-4 flex items-center gap-2">
@@ -169,7 +175,7 @@
 
                 <div class="space-y-3">
                   <div *ngFor="let mod of curso.modulosDetalle; let i = index" class="border border-white/5 rounded-xl bg-white/5 overflow-hidden">
-                    <button 
+                    <button
                       (click)="toggleExpandirModulo(mod, $event)"
                       class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors focus:outline-none"
                     >
@@ -181,10 +187,10 @@
                       </div>
                       <ion-icon [name]="mod.expandido ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-primary-400 shrink-0"></ion-icon>
                     </button>
-                    
+
                     <div *ngIf="mod.expandido" class="px-4 pb-4 pt-2 bg-black/20">
                       <ul class="space-y-2 mt-2">
-                        <li *ngFor="let lec of mod.leccionesDetalle; let j = index" class="flex items-start gap-3 text-sm text-primary-50">
+                        <li *ngFor="let lec of mod.leccionesDetalle" class="flex items-start gap-3 text-sm text-primary-50">
                           <ion-icon name="play-circle-outline" class="text-primary-500 mt-0.5 shrink-0"></ion-icon>
                           <span>{{ lec.titulo }}</span>
                         </li>
@@ -197,6 +203,7 @@
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>

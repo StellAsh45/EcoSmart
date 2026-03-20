@@ -8,15 +8,20 @@ export class SupabaseService {
   private supabase: SupabaseClient;
 
   constructor() {
-    const supabaseUrl = 'https://qdnivmcnsidcwlbfiuxj.supabase.co'; 
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkbml2bWNuc2lkY3dsYmZpdXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NDg1NzEsImV4cCI6MjA4ODQyNDU3MX0.NdQuBwAfY1O8fXagcvqTk3U-dSdeptOAqlodtB894jI';
-    
+    const supabaseUrl = 'https://qdnivmcnsidcwlbfiuxj.supabase.co';
+    const supabaseAnonKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkbml2bWNuc2lkY3dsYmZpdXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NDg1NzEsImV4cCI6MjA4ODQyNDU3MX0.NdQuBwAfY1O8fXagcvqTk3U-dSdeptOAqlodtB894jI';
+
     this.supabase = createClient(supabaseUrl, supabaseAnonKey);
   }
 
-  get cliente() {
+  get cliente(): SupabaseClient {
     return this.supabase;
   }
+
+  // =========================
+  // AUTH
+  // =========================
 
   async iniciarSesion(email: string, password: string) {
     return this.supabase.auth.signInWithPassword({
@@ -45,6 +50,10 @@ export class SupabaseService {
     return this.supabase.auth.getUser();
   }
 
+  // =========================
+  // PERFILES
+  // =========================
+
   async obtenerPerfil(id: string) {
     return this.supabase
       .from('profiles')
@@ -53,72 +62,154 @@ export class SupabaseService {
       .single();
   }
 
-  // Esta es la parte encargada de gestionar los cursos por el admin
+  async actualizarPerfil(id: string, datos: { nombre?: string; biografia?: string; telefono?: string; direccion?: string }) {
+    return this.supabase
+      .from('profiles')
+      .update({
+        ...datos,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+  }
+
+  async actualizarDatosAuth(datos: { data?: any; password?: string }) {
+    return this.supabase.auth.updateUser(datos);
+  }
+
+  // =========================
+  // CURSOS
+  // =========================
+
   async crearCurso(curso: any) {
-    return this.supabase.from('cursos').insert([curso]).select().single();
+    return this.supabase
+      .from('cursos')
+      .insert([curso])
+      .select()
+      .single();
   }
 
   async obtenerCursosAdmin() {
-    return this.supabase.from('cursos').select('*').order('created_at', { ascending: false });
+    return this.supabase
+      .from('cursos')
+      .select('*')
+      .order('created_at', { ascending: false });
   }
 
   async obtenerCursoPorId(id: string) {
-    return this.supabase.from('cursos').select('*').eq('id', id).single();
+    return this.supabase
+      .from('cursos')
+      .select('*')
+      .eq('id', id)
+      .single();
   }
 
   async eliminarCurso(id: string) {
-    return this.supabase.from('cursos').delete().eq('id', id);
+    return this.supabase
+      .from('cursos')
+      .delete()
+      .eq('id', id);
   }
 
-  // Aqui se gestionan los modulos
+  // =========================
+  // MODULOS
+  // =========================
+
   async obtenerModulosCurso(cursoId: string) {
-    return this.supabase.from('modulos').select('*').eq('curso_id', cursoId).order('orden', { ascending: true });
+    return this.supabase
+      .from('modulos')
+      .select('*')
+      .eq('curso_id', cursoId)
+      .order('orden', { ascending: true });
   }
 
   async crearModulo(modulo: any) {
-    return this.supabase.from('modulos').insert([modulo]).select().single();
+    return this.supabase
+      .from('modulos')
+      .insert([modulo])
+      .select()
+      .single();
   }
 
-  // Aqui se gestionan las lecciones
+  async eliminarModulo(id: string) {
+    return this.supabase
+      .from('modulos')
+      .delete()
+      .eq('id', id);
+  }
+
+  // =========================
+  // LECCIONES
+  // =========================
+
   async obtenerLeccionesModulo(moduloId: string) {
-    return this.supabase.from('lecciones').select('*').eq('modulo_id', moduloId).order('orden', { ascending: true });
+    return this.supabase
+      .from('lecciones')
+      .select('*')
+      .eq('modulo_id', moduloId)
+      .order('orden', { ascending: true });
   }
 
   async crearLeccion(leccion: any) {
-    return this.supabase.from('lecciones').insert([leccion]).select().single();
-  }
-
-  // Aqui se gestionan los examenes de curso
-  async obtenerExamenModulo(moduloId: string) {
-    return this.supabase.from('examenes').select('*').eq('modulo_id', moduloId).single();
-  }
-
-  async crearExamen(examen: any) {
-    return this.supabase.from('examenes').insert([examen]).select().single();
-  }
-
-  async obtenerPreguntasExamen(examenId: string) {
-    return this.supabase.from('preguntas').select('*').eq('examen_id', examenId).order('id', { ascending: true });
-  }
-
-  async guardarPreguntas(preguntas: any[]) {
-    return this.supabase.from('preguntas').insert(preguntas).select();
-  }
-
-  // Metodo para eliminar modulos, lecciones y examen
-  async eliminarModulo(id: string) {
-    return this.supabase.from('modulos').delete().eq('id', id);
+    return this.supabase
+      .from('lecciones')
+      .insert([leccion])
+      .select()
+      .single();
   }
 
   async eliminarLeccion(id: string) {
-    return this.supabase.from('lecciones').delete().eq('id', id);
+    return this.supabase
+      .from('lecciones')
+      .delete()
+      .eq('id', id);
+  }
+
+  // =========================
+  // EXAMENES
+  // =========================
+
+  async obtenerExamenModulo(moduloId: string) {
+    return this.supabase
+      .from('examenes')
+      .select('*')
+      .eq('modulo_id', moduloId)
+      .single();
+  }
+
+  async crearExamen(examen: any) {
+    return this.supabase
+      .from('examenes')
+      .insert([examen])
+      .select()
+      .single();
   }
 
   async eliminarExamen(id: string) {
-    return this.supabase.from('examenes').delete().eq('id', id);
+    return this.supabase
+      .from('examenes')
+      .delete()
+      .eq('id', id);
   }
 
-  // Guardado de imagenes en supabase
+  async obtenerPreguntasExamen(examenId: string) {
+    return this.supabase
+      .from('preguntas')
+      .select('*')
+      .eq('examen_id', examenId)
+      .order('id', { ascending: true });
+  }
+
+  async guardarPreguntas(preguntas: any[]) {
+    return this.supabase
+      .from('preguntas')
+      .insert(preguntas)
+      .select();
+  }
+
+  // =========================
+  // STORAGE IMAGENES
+  // =========================
+
   async subirImagenCurso(file: File, ruta: string) {
     return this.supabase.storage
       .from('cursos')
@@ -126,10 +217,135 @@ export class SupabaseService {
   }
 
   obtenerUrlPublica(ruta: string) {
-    return this.supabase.storage.from('cursos').getPublicUrl(ruta).data.publicUrl;
+    return this.supabase.storage
+      .from('cursos')
+      .getPublicUrl(ruta).data.publicUrl;
   }
 
   async eliminarImagenCurso(ruta: string) {
-    return this.supabase.storage.from('cursos').remove([ruta]);
+    return this.supabase.storage
+      .from('cursos')
+      .remove([ruta]);
+  }
+
+  // =========================
+  // INSCRIPCIONES
+  // =========================
+
+  async obtenerInscripcion(usuarioId: string, cursoId: string) {
+    return this.supabase
+      .from('inscripciones')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .eq('curso_id', cursoId)
+      .maybeSingle();
+  }
+
+  async inscribirUsuarioEnCurso(usuarioId: string, cursoId: string) {
+    return this.supabase
+      .from('inscripciones')
+      .insert([
+        {
+          usuario_id: usuarioId,
+          curso_id: cursoId,
+          progreso: 0
+        }
+      ])
+      .select()
+      .single();
+  }
+
+  async obtenerInscripcionesUsuario(usuarioId: string) {
+    return this.supabase
+      .from('inscripciones')
+      .select('*')
+      .eq('usuario_id', usuarioId);
+  }
+
+  async actualizarProgresoInscripcion(
+    usuarioId: string,
+    cursoId: string,
+    progreso: number
+  ) {
+    return this.supabase
+      .from('inscripciones')
+      .update({ progreso })
+      .eq('usuario_id', usuarioId)
+      .eq('curso_id', cursoId);
+  }
+
+  // =========================
+  // PROGRESO LECCIONES
+  // =========================
+
+  async obtenerProgresoLecciones(usuarioId: string, cursoId: string) {
+    return this.supabase
+      .from('progreso_lecciones')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .eq('curso_id', cursoId);
+  }
+
+  async guardarProgresoLeccion(data: {
+    usuario_id: string;
+    curso_id: string;
+    modulo_id: string;
+    leccion_id: string;
+    completada?: boolean;
+    ultima_vista?: boolean;
+  }) {
+    return this.supabase
+      .from('progreso_lecciones')
+      .upsert([data], { onConflict: 'usuario_id,leccion_id' })
+      .select();
+  }
+
+  async marcarUltimaLeccionVista(
+    usuarioId: string,
+    cursoId: string,
+    leccionId: string
+  ) {
+    await this.supabase
+      .from('progreso_lecciones')
+      .update({ ultima_vista: false })
+      .eq('usuario_id', usuarioId)
+      .eq('curso_id', cursoId);
+
+    return this.supabase
+      .from('progreso_lecciones')
+      .update({ ultima_vista: true })
+      .eq('usuario_id', usuarioId)
+      .eq('curso_id', cursoId)
+      .eq('leccion_id', leccionId);
+  }
+
+  // =========================
+  // RESULTADOS EXAMEN
+  // =========================
+
+  async guardarResultadoExamen(resultado: {
+    usuario_id: string;
+    examen_id: string;
+    curso_id: string;
+    modulo_id: string;
+    correctas: number;
+    incorrectas: number;
+    porcentaje: number;
+    respuestas?: any;
+  }) {
+    return this.supabase
+      .from('resultados_examen')
+      .insert([resultado])
+      .select()
+      .single();
+  }
+
+  async obtenerResultadosExamenUsuario(usuarioId: string, examenId: string) {
+    return this.supabase
+      .from('resultados_examen')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .eq('examen_id', examenId)
+      .order('created_at', { ascending: false });
   }
 }
