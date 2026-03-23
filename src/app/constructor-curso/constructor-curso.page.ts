@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonContent, IonIcon} from '@ionic/angular/standalone';
+import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -9,12 +9,12 @@ import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-lo
 import { EditorLeccionComponent, BloqueContenido } from '../components/editor-leccion/editor-leccion.component';
 import { EditorQuizComponent, Pregunta } from '../components/editor-quiz/editor-quiz.component';
 import { addIcons } from 'ionicons';
-import { 
-  arrowBackOutline, 
-  saveOutline, 
-  addOutline, 
-  trashOutline, 
-  chevronDownOutline, 
+import {
+  arrowBackOutline,
+  saveOutline,
+  addOutline,
+  trashOutline,
+  chevronDownOutline,
   chevronUpOutline,
   documentTextOutline,
   playCircleOutline,
@@ -61,13 +61,13 @@ interface Modulo {
   styleUrls: ['./constructor-curso.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     ReactiveFormsModule,
-    IonContent, 
+    IonContent,
     IonIcon,
-    RouterLink, 
-    FondoVisualComponent, 
+    RouterLink,
+    FondoVisualComponent,
     EcoSmartLogoComponent,
     EditorLeccionComponent,
     EditorQuizComponent
@@ -78,9 +78,9 @@ export class ConstructorCursoPage implements OnInit {
   cursoId: string | null = null;
   cargando = false;
   guardando = false;
-  
+
   modulos: Modulo[] = [];
-  
+
   // Gestión de Lección Activa
   leccionActiva: Leccion | null = null;
   moduloActivoIndex: number | null = null;
@@ -134,7 +134,7 @@ export class ConstructorCursoPage implements OnInit {
     try {
       const { data: curso, error } = await this.supabaseSvc.obtenerCursoPorId(this.cursoId!);
       if (error) throw error;
-      
+
       this.cursoForm.patchValue({
         titulo: curso.titulo,
         descripcion: curso.descripcion,
@@ -149,11 +149,11 @@ export class ConstructorCursoPage implements OnInit {
         for (const mod of modulosData) {
           // Cargar Lecciones
           const { data: leccionesData } = await this.supabaseSvc.obtenerLeccionesModulo(mod.id);
-          
+
           // Cargar Examen
           const { data: examenData } = await this.supabaseSvc.obtenerExamenModulo(mod.id);
           let examenConPreguntas = undefined;
-          
+
           if (examenData) {
             const { data: preguntasData } = await this.supabaseSvc.obtenerPreguntasExamen(examenData.id);
             examenConPreguntas = {
@@ -201,10 +201,10 @@ export class ConstructorCursoPage implements OnInit {
       }
 
       if (result.error) throw result.error;
-      
+
       const nuevoCursoId = result.data.id;
 
-      // --- GUARDAR MÓDULOS Y LECCIONES (Lógica en cascada) ---
+      // GUARDAR MÓDULOS Y LECCIONES
       for (const [mIndex, mod] of this.modulos.entries()) {
         const moduloData = {
           curso_id: nuevoCursoId,
@@ -218,7 +218,7 @@ export class ConstructorCursoPage implements OnInit {
           modResult = await this.supabaseSvc.cliente.from('modulos').update(moduloData).eq('id', mod.id).select().single();
         } else {
           modResult = await this.supabaseSvc.crearModulo(moduloData);
-          if (modResult.data) mod.id = modResult.data.id; // ¡CRÍTICO: Sincronizar ID!
+          if (modResult.data) mod.id = modResult.data.id;
         }
 
         const moduloId = modResult.data.id;
@@ -237,11 +237,11 @@ export class ConstructorCursoPage implements OnInit {
             await this.supabaseSvc.cliente.from('lecciones').update(leccionData).eq('id', lec.id);
           } else {
             const lecResult = await this.supabaseSvc.crearLeccion(leccionData);
-            if (lecResult.data) lec.id = lecResult.data.id; // ¡CRÍTICO: Sincronizar ID!
+            if (lecResult.data) lec.id = lecResult.data.id;
           }
         }
 
-        // --- Gestión del Quiz ---
+        // Gestión del Quiz
         if (mod.examen) {
           if (mod.examen.preguntas && mod.examen.preguntas.length > 0) {
             const examenData = {
@@ -301,18 +301,20 @@ export class ConstructorCursoPage implements OnInit {
       alert('El curso debe tener al menos un módulo.');
       return false;
     }
-
+    // 3. Titulo menor a 3 caracteres no es aceptado
     for (const mod of this.modulos) {
       if (!mod.titulo || mod.titulo.trim().length < 3) {
         alert(`El módulo "${mod.titulo}" necesita un título válido.`);
         return false;
       }
-      
+
+      // 4. El modulo debe tener al menos una leccion
       if (mod.lecciones.length === 0) {
         alert(`El módulo "${mod.titulo}" debe tener al menos una lección.`);
         return false;
       }
 
+      // 5. Titulo menor a 3 caracteres no es aceptado  
       for (const lec of mod.lecciones) {
         if (!lec.titulo || lec.titulo.trim().length < 3) {
           alert(`Una lección del módulo "${mod.titulo}" no tiene título.`);
@@ -354,7 +356,7 @@ export class ConstructorCursoPage implements OnInit {
   abrirEditorLeccion(moduloIndex: number, leccionIndex: number) {
     this.moduloActivoIndex = moduloIndex;
     const leccion = this.modulos[moduloIndex].lecciones[leccionIndex];
-    
+
     if (!leccion.bloques) {
       try {
         leccion.bloques = JSON.parse(leccion.contenido_html || '[]');
@@ -362,7 +364,7 @@ export class ConstructorCursoPage implements OnInit {
         leccion.bloques = [];
       }
     }
-    
+
     this.leccionActiva = { ...leccion };
     this.modoEdicion = 'leccion';
   }
@@ -370,14 +372,14 @@ export class ConstructorCursoPage implements OnInit {
   abrirEditorQuiz(moduloIndex: number) {
     this.moduloActivoIndex = moduloIndex;
     const modulo = this.modulos[moduloIndex];
-    
+
     if (!modulo.examen) {
       modulo.examen = {
         titulo: `Quiz del Módulo: ${modulo.titulo}`,
         preguntas: []
       };
     }
-    
+
     this.examenActivo = { ...modulo.examen };
     this.modoEdicion = 'quiz';
   }
@@ -436,25 +438,33 @@ export class ConstructorCursoPage implements OnInit {
         // 2. Subir la nueva foto
         const nombreArchivo = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
         const ruta = `portadas/${nombreArchivo}`;
-        
+
         const { data, error } = await this.supabaseSvc.subirImagenCurso(file, ruta);
         if (error) throw error;
 
         const urlPublica = this.supabaseSvc.obtenerUrlPublica(ruta);
         this.cursoForm.patchValue({ imagen_url: urlPublica });
+
+        // Autoguardado: Si estamos editando un curso existente, actualizamos el campo en la DB inmediatamente
+        if (this.cursoId && this.cursoId !== 'nuevo') {
+          await this.supabaseSvc.cliente
+            .from('cursos')
+            .update({ imagen_url: urlPublica })
+            .eq('id', this.cursoId);
+        }
       } catch (error: any) {
         console.error('Error en la gestión de imagen:', error);
         alert(`Fallo en la imagen: ${error.message}`);
       } finally {
         this.guardando = false;
-        event.target.value = '';
+        if (event.target) event.target.value = '';
       }
     }
   }
 
   async eliminarModulo(index: number) {
     const modulo = this.modulos[index];
-    
+
     // Si el módulo ya existe en la DB (tiene ID), borrarlo de allí
     if (modulo.id) {
       if (confirm('¿Eliminar este módulo permanentemente? Se borrarán todas sus lecciones y el quiz.')) {
@@ -488,3 +498,4 @@ export class ConstructorCursoPage implements OnInit {
     }
   }
 }
+

@@ -11,22 +11,27 @@ import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
   imports: [CommonModule, ReactiveFormsModule, IonIcon],
   template: `
     <div class="flex flex-col gap-2.5">
-      <label *ngIf="mostrarEtiqueta" class="block text-xs sm:text-sm font-bold text-primary-500 ml-1">{{etiqueta}}</label>
+      <label *ngIf="mostrarEtiqueta" 
+        class="block text-xs sm:text-sm font-bold ml-1"
+        [ngClass]="claseEtiqueta">{{etiqueta}}</label>
       <div class="relative group/input">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-primary-400 transition-colors">
-          <ion-icon [icon]="icono" class="text-xl text-primary-400"></ion-icon>
+          <ion-icon [icon]="icono" 
+            class="text-xl"
+            [ngClass]="control.disabled ? 'text-slate-500' : 'text-primary-400'"></ion-icon>
         </div>
         
         <input 
           [type]="mostrarContrasenaInterna ? 'text' : tipo"
           [formControl]="control"
-          class="w-full pl-12 pr-14 py-4 rounded-2xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all bg-white/5 text-white placeholder:text-primary-50/50 focus:bg-white/10"
+          class="w-full pl-12 pr-14 py-4 rounded-2xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all bg-white/5 text-white placeholder:text-primary-50/50 focus:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50 disabled:grayscale-[0.5]"
           [class.border-red-500]="control.invalid && control.touched"
+          [class]="claseInput"
           [placeholder]="placeholder"
         />
 
         <button 
-          *ngIf="tipo === 'password'"
+          *ngIf="tipo === 'password' && !control.disabled"
           type="button"
           (click)="toggleContrasena()"
           class="absolute inset-y-0 right-0 pr-4 flex items-center text-primary-50 hover:text-primary-400 transition-colors outline-none"
@@ -53,6 +58,8 @@ export class CampoEntradaComponent {
   @Input() control: FormControl = new FormControl();
   @Input() tieneErroresPersonalizados: boolean = false;
   @Input() mostrarEtiqueta: boolean = true;
+  @Input() claseEtiqueta: string = 'text-primary-500';
+  @Input() claseInput: string = '';
 
   mostrarContrasenaInterna: boolean = false;
   iconosToggle = {

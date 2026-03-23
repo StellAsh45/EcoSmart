@@ -16,7 +16,6 @@
 
             <div class="flex items-center gap-6">
                 <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
-                <!-- Perfil Admin y Cierre de Sesión -->
                 <div class="flex items-center gap-4 relative">
                     <div class="text-right">
                         <p class="text-sm font-black text-primary-50 uppercase">{{nombreUsuario}}</p>
@@ -34,9 +33,8 @@
         <main
             class="flex-1 pt-28 pb-20 px-6 max-w-7xl mx-auto w-full space-y-10 relative z-10 animate-[fadeIn_0.8s_ease-out]">
 
-            <!-- Resumen Estadístico -->
+            <!-- Resumen estadístico -->
             <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Total Estudiantes -->
                 <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-primary-500 hover:-translate-y-1">
                     <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-primary-500/20 group-hover:text-primary-400 transition-all">
                         <ion-icon name="people-outline" class="text-3xl"></ion-icon>
@@ -47,7 +45,7 @@
                     </div>
                 </div>
 
-                <!-- Cursos Creados -->
+                <!-- Cursos creados -->
                 <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
                     <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
                         <ion-icon name="book-outline" class="text-3xl"></ion-icon>
@@ -58,7 +56,7 @@
                     </div>
                 </div>
 
-                <!-- Cursos Publicados -->
+                <!-- Cursos publicados -->
                 <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-blue-500 hover:-translate-y-1">
                     <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
                         <ion-icon name="stats-chart-outline" class="text-3xl"></ion-icon>
@@ -70,7 +68,7 @@
                 </div>
             </section>
 
-            <!-- Gestión de Cursos -->
+            <!-- Gestión de cursos -->
             <section class="space-y-6">
                 <div class="flex items-center justify-between px-2">
                     <div>
@@ -84,7 +82,7 @@
                     </button>
                 </div>
 
-                <!-- Tabla/Lista de Cursos -->
+                <!-- Tabla/Lista de cursos -->
                 <div
                     class="bg-white/5 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
@@ -114,78 +112,81 @@
                                         <p class="text-primary-50 font-bold italic">No hay cursos creados aún.</p>
                                     </td>
                                 </tr>
-                                <tr *ngFor="let curso of cursos" class="group hover:bg-white/[0.02] transition-colors">
-                                    <td class="px-8 py-6">
-                                        <div class="flex items-center gap-4">
-                                            <div
-                                                class="w-12 h-12 rounded-xl bg-slate-800 border border-white/10 overflow-hidden">
+ 
+                                <ng-container *ngIf="!cargando">
+                                    <tr *ngFor="let curso of cursos" class="group hover:bg-white/[0.02] transition-colors">
+                                        <td class="px-8 py-6">
+                                            <div class="flex items-center gap-4">
                                                 <div
-                                                    class="w-full h-full bg-gradient-to-br from-primary-500/20 to-emerald-500/20 flex items-center justify-center">
-                                                    <ion-icon name="document-text-outline"
-                                                        class="text-white/70 text-2xl"></ion-icon>
+                                                    class="w-12 h-12 rounded-xl bg-slate-800 border border-white/10 overflow-hidden">
+                                                    <div
+                                                        class="w-full h-full bg-gradient-to-br from-primary-500/20 to-emerald-500/20 flex items-center justify-center">
+                                                        <ion-icon name="document-text-outline"
+                                                            class="text-white/70 text-2xl"></ion-icon>
+                                                    </div>
                                                 </div>
+                                                <span
+                                                    class="font-bold text-white group-hover:text-primary-400 transition-colors">{{curso.titulo}}</span>
                                             </div>
-                                            <span
-                                                class="font-bold text-white group-hover:text-primary-400 transition-colors">{{curso.titulo}}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <span class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border"
-                                            [ngClass]="{
-                                                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
-                                                'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
-                                                'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
-                                                'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
-                                            }">
-                                            {{curso.nivel || 'Sin Nivel'}}
-                                        </span>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <button (click)="toggleEstadoCurso(curso)"
-                                            [title]="curso.estado === 'publicado' ? 'Despublicar curso' : 'Publicar curso'"
-                                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-solid transition-all cursor-pointer"
-                                            [ngClass]="curso.estado === 'publicado' 
-                                                    ? 'bg-emerald-500/10 border-emerald-500 hover:bg-emerald-500/20 hover:border-emerald-400' 
-                                                    : 'bg-amber-500/10 border-amber-500 hover:bg-amber-500/20 hover:border-amber-400'">
-                                            <div class="w-2 h-2 rounded-full flex-shrink-0"
-                                                [ngClass]="curso.estado === 'publicado' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'">
-                                            </div>
-                                            <span class="text-[10px] font-black capitalize uppercase tracking-widest"
-                                                [ngClass]="curso.estado === 'publicado' ? 'text-emerald-400' : 'text-amber-400'">
-                                                {{ curso.estado === 'publicado' ? 'Publicado' : 'Borrador' }}
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <span class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border"
+                                                [ngClass]="{
+                                                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
+                                                    'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
+                                                    'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
+                                                    'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
+                                                }">
+                                                {{curso.nivel || 'Sin Nivel'}}
                                             </span>
-                                        </button>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <span
-                                            class="px-3 py-1.5 rounded-lg bg-white/5 text-primary-50 text-[11px] font-bold border border-white/20 uppercase tracking-wider">
-                                            {{ curso.totalModulos }} {{ curso.totalModulos === 1 ? 'módulo' : 'módulos'
-                                            }}
-                                        </span>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <div class="flex items-center justify-end gap-2">
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <button (click)="toggleEstadoCurso(curso)"
+                                                [title]="curso.estado === 'publicado' ? 'Despublicar curso' : 'Publicar curso'"
+                                                class="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-solid transition-all cursor-pointer"
+                                                [ngClass]="curso.estado === 'publicado' 
+                                                        ? 'bg-emerald-500/10 border-emerald-500 hover:bg-emerald-500/20 hover:border-emerald-400' 
+                                                        : 'bg-amber-500/10 border-amber-500 hover:bg-amber-500/20 hover:border-amber-400'">
+                                                <div class="w-2 h-2 rounded-full flex-shrink-0"
+                                                    [ngClass]="curso.estado === 'publicado' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'">
+                                                </div>
+                                                <span class="text-[10px] font-black capitalize uppercase tracking-widest"
+                                                    [ngClass]="curso.estado === 'publicado' ? 'text-emerald-400' : 'text-amber-400'">
+                                                    {{ curso.estado === 'publicado' ? 'Publicado' : 'Borrador' }}
+                                                </span>
+                                            </button>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <span
+                                                class="px-3 py-1.5 rounded-lg bg-white/5 text-primary-50 text-[11px] font-bold border border-white/20 uppercase tracking-wider">
+                                                {{ curso.totalModulos }} {{ curso.totalModulos === 1 ? 'módulo' : 'módulos'
+                                                }}
+                                            </span>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <div class="flex items-center justify-end gap-2">
 
-                                            <button [routerLink]="['/constructor-curso', curso.id]"
-                                                class="p-2 rounded-lg bg-white/5 hover:bg-primary-500/20 text-primary-50 hover:text-primary-400 transition-all border-none cursor-pointer"
-                                                title="Editar curso">
-                                                <ion-icon name="create-outline"></ion-icon>
-                                            </button>
-                                            <button (click)="eliminarCurso(curso)"
-                                                class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-primary-50 hover:text-red-400 transition-all border-none cursor-pointer"
-                                                title="Eliminar curso">
-                                                <ion-icon name="trash-outline"></ion-icon>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                                <button [routerLink]="['/constructor-curso', curso.id]"
+                                                    class="p-2 rounded-lg bg-white/5 hover:bg-primary-500/20 text-primary-50 hover:text-primary-400 transition-all border-none cursor-pointer"
+                                                    title="Editar curso">
+                                                    <ion-icon name="create-outline"></ion-icon>
+                                                </button>
+                                                <button (click)="eliminarCurso(curso)"
+                                                    class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-primary-50 hover:text-red-400 transition-all border-none cursor-pointer"
+                                                    title="Eliminar curso">
+                                                    <ion-icon name="trash-outline"></ion-icon>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- Sección de Usuarios (Simplified) -->
+            <!-- Sección de usuarios -->
             <section
                 class="bg-white/5 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 relative overflow-hidden group">
                 <div class="flex items-center gap-4 mb-6">

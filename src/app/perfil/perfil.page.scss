@@ -1,0 +1,44 @@
+
+:host {
+    display: block;
+    --background: transparent;
+}
+
+.backdrop-blur-3xl {
+    backdrop-filter: blur(64px);
+    -webkit-backdrop-filter: blur(64px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+ion-content {
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+}
+
+.group\/input {
+    transition: all 0.3s ease;
+}
+
+.group\/input:focus-within {
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    filter: opacity(0.6) grayscale(0.2);
+}
+
+.font-heading {
+    font-family: 'Outfit', 'Inter', sans-serif;
+}

@@ -1,0 +1,199 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+    <div
+        class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
+        <app-fondo-visual variante="deep"></app-fondo-visual>
+
+        <header
+            class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center transition-all">
+            <div class="flex items-center gap-3 group no-underline text-white">
+                <div class="relative">
+                    <div
+                        class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity">
+                    </div>
+                    <app-eco-smart-logo
+                        clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
+                </div>
+                <span class="text-2xl font-black tracking-tight text-white drop-shadow-sm font-heading">
+                    Perfil Estudiante
+                </span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="w-px h-6 bg-white/10 hidden md:block"></div>
+                <div class="flex items-center gap-4 relative">
+                    <div class="text-right">
+                        <p class="text-sm font-black text-primary-400 uppercase hidden sm:block">{{nombre}}</p>
+                    </div>
+                    <button (click)="cerrarSesion()"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border-none cursor-pointer">
+                        <ion-icon name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main
+            class="flex-1 pt-32 pb-20 px-6 max-w-5xl mx-auto w-full space-y-8 relative z-10 animate-[fadeIn_0.8s_ease-out]">
+            <div class="flex justify-start">
+                <button (click)="volver()"
+                    class="group flex items-center gap-2.5 px-6 py-3 bg-white/5 border border-white rounded-2xl text-primary-50 font-bold hover:bg-white/10 hover:border-primary-500/30 hover:text-primary-400 transition-all shadow-xl backdrop-blur-md cursor-pointer border-solid">
+                    <ion-icon name="arrow-back-outline"
+                        class="text-xl group-hover:-translate-x-1 transition-transform"></ion-icon>
+                    Volver al Dashboard
+                </button>
+            </div>
+
+            <div *ngIf="cargando" class="flex flex-col items-center justify-center py-24 gap-6 text-white text-center">
+                <div class="relative w-20 h-20">
+                    <div class="absolute inset-0 bg-primary-500/20 rounded-full animate-ping"></div>
+                    <div
+                        class="relative bg-slate-900 border border-primary-500/20 rounded-full w-20 h-20 flex items-center justify-center">
+                        <ion-spinner name="crescent" class="text-primary-400 w-10 h-10"></ion-spinner>
+                    </div>
+                </div>
+                <p class="text-slate-200 font-black uppercase tracking-[0.2em] text-xs">Cargando...</p>
+            </div>
+
+            <div *ngIf="!cargando" class="space-y-8">
+
+                <!-- AVATAR Y NOMBRE-->
+                <div
+                    class="bg-slate-900/60 backdrop-blur-3xl rounded-[3rem] p-8 md:p-12 border border-white/10 relative overflow-hidden shadow-2xl group border-solid hover:border-primary-500/30 transition-all duration-500">
+                    <div
+                        class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 blur-[100px] -mr-48 -mt-48 rounded-full">
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row items-center gap-10">
+                        <div class="relative group/avatar">
+                            <div
+                                class="absolute -inset-4 bg-primary-500/10 rounded-full blur-2xl opacity-40 group-hover/avatar:opacity-100 transition-opacity duration-700">
+                            </div>
+                            <div class="relative">
+                                <div
+                                    class="w-36 h-36 rounded-[2.5rem] bg-slate-800/80 backdrop-blur-xl border border-accent-neon flex items-center justify-center text-primary-400 text-7xl shadow-2xl group-hover/avatar:scale-105 transition-all duration-500 overflow-hidden">
+                                    <div class="absolute inset-0 bg-gradient-to-tr from-primary-500/10 to-transparent">
+                                    </div>
+                                    <ion-icon name="person-circle-outline"
+                                        class="relative z-10 drop-shadow-[0_0_15px_rgba(16,249,129,0.3)]"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INFO BASICA -->
+                        <div class="text-center md:text-left flex-1 min-w-0">
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10 mb-4">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></span>
+                                <p class="text-slate-300 font-black uppercase tracking-[0.2em] text-[10px]">Tu Perfil
+                                </p>
+                            </div>
+                            <h2
+                                class="text-5xl md:text-7xl font-black text-white mb-3 tracking-tighter truncate font-heading leading-none">
+                                {{nombre}}</h2>
+                            <div class="flex flex-wrap gap-4 items-center justify-center md:justify-start">
+                                <div class="flex items-center gap-2 text-primary-400 font-bold tracking-wider text-sm">
+                                    <ion-icon name="mail-outline"></ion-icon>
+                                    {{correo}}
+                                </div>
+                                <div class="h-4 w-px bg-white/10 hidden md:block"></div>
+                                <span
+                                    class="px-4 py-1.5 bg-primary-500/10 rounded-full text-[10px] font-black text-primary-400 border border-primary-500/20 uppercase tracking-widest">Estudiante</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MENSAJES DE ESTADO -->
+                <div *ngIf="mensaje"
+                    class="p-6 bg-emerald-500/10 text-emerald-300 rounded-[2.5rem] border border-emerald-500/20 backdrop-blur-xl flex items-center gap-4 animate-[scaleIn_0.4s_ease-out]">
+                    <div class="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center shrink-0">
+                        <ion-icon name="shield-checkmark-outline" class="text-3xl"></ion-icon>
+                    </div>
+                    <span class="font-bold text-sm tracking-wide">{{mensaje}}</span>
+                </div>
+                <div *ngIf="error"
+                    class="p-6 bg-red-500/10 text-red-300 rounded-[2.5rem] border border-red-500/20 backdrop-blur-xl flex items-center gap-4 animate-[scaleIn_0.4s_ease-out]">
+                    <div class="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center shrink-0">
+                        <ion-icon name="alert-circle-outline" class="text-3xl"></ion-icon>
+                    </div>
+                    <span class="font-bold text-sm tracking-wide">{{error}}</span>
+                </div>
+
+                <!-- FORMULARIO-->
+                <div class="grid lg:grid-cols-2 gap-8 items-start">
+
+                    <!-- DATOS PERSONALES -->
+                    <section
+                        class="bg-slate-900/40 backdrop-blur-2xl p-8 md:p-10 rounded-[3rem] border border-white/5 relative overflow-hidden group/card border-solid hover:border-primary-500/30 transition-all duration-500">
+                        <div class="flex items-center gap-5 mb-10">
+                            <div
+                                class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-primary-400 border border-primary-400 group-hover/card:scale-110 transition-transform">
+                                <ion-icon name="person-outline" class="text-3xl"></ion-icon>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-black text-primary-400 font-heading leading-none mb-1">Datos
+                                    Básicos</h3>
+                                <p class="text-xs font-bold text-primary-50 uppercase tracking-widest">Configuración de
+                                    cuenta</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8">
+                            <app-campo-entrada etiqueta="Nombre Completo" [icono]="iconos.nombre"
+                                [control]="$any(perfilForm.get('nombre'))" placeholder="Tu nombre"></app-campo-entrada>
+                            <div class="grid gap-6">
+                                <app-campo-entrada etiqueta="Correo Electrónico" [icono]="iconos.correo"
+                                    [control]="$any(perfilForm.get('correo'))" placeholder="tu@correo.com"
+                                    tipo="email"></app-campo-entrada>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SEGURIDAD -->
+                    <section
+                        class="bg-slate-900/40 backdrop-blur-2xl p-8 md:p-10 rounded-[3rem] border border-white/5 relative overflow-hidden group/card border-solid hover:border-red-500/30 transition-all duration-500">
+                        <div class="flex items-center gap-5 mb-10">
+                            <div
+                                class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-red-400 border border-red-400 group-hover/card:scale-110 transition-transform">
+                                <ion-icon name="lock-closed-outline" class="text-3xl"></ion-icon>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-black text-red-400 font-heading leading-none mb-1">Seguridad
+                                </h3>
+                                <p class="text-xs font-bold text-primary-50 uppercase tracking-widest">Resguardar acceso
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8">
+                            <app-campo-entrada etiqueta="Contraseña Actual" [icono]="iconos.clave"
+                                [control]="$any(perfilForm.get('contrasenaActual'))" placeholder="••••••••"
+                                tipo="password" claseEtiqueta="text-red-400"></app-campo-entrada>
+                            <div class="grid gap-6">
+                                <app-campo-entrada etiqueta="Nueva Contraseña" [icono]="iconos.claveNueva"
+                                    [control]="$any(perfilForm.get('nuevaContrasena'))" placeholder="Nueva clave"
+                                    tipo="password" claseEtiqueta="text-red-400"></app-campo-entrada>
+                            </div>
+                            <div class="grid gap-6">
+                                <app-campo-entrada etiqueta="Confirmar Nueva" [icono]="iconos.confirmarClave"
+                                    [control]="$any(perfilForm.get('confirmarNuevaContrasena'))"
+                                    placeholder="Confirmar clave" tipo="password"
+                                    claseEtiqueta="text-red-400"></app-campo-entrada>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- BOTÓN -->
+                <footer class="flex justify-center pt-10">
+                    <button (click)="guardarPerfil()" [disabled]="guardando"
+                        class="w-full md:w-auto md:min-w-[450px] bg-primary-500 text-slate-950 py-5.5 px-12 rounded-3xl font-black hover:bg-primary-400 transition-all flex items-center justify-center gap-4 group/btn shadow-2xl shadow-primary-500/40 active:scale-95 text-xl border-none cursor-pointer">
+                        <ion-icon *ngIf="!guardando" name="save-outline" class="text-3xl"></ion-icon>
+                        <ion-icon *ngIf="guardando" name="sync-outline" class="text-3xl animate-spin"></ion-icon>
+                        <span class="tracking-tight">{{ guardando ? 'Actualizando...' : 'Guardar Configuración'
+                            }}</span>
+                    </button>
+                </footer>
+            </div>
+        </main>
+    </div>
+</ion-content>

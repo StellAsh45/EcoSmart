@@ -25,11 +25,6 @@ export const routes: Routes = [
     loadComponent: () => import('./dashboard-estudiante/dashboard-estudiante.page').then(m => m.DashboardEstudiantePage)
   },
   {
-    path: 'perfil',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./components/perfil-modal/perfil-modal.component').then(m => m.PerfilModalComponent)
-  },
-  {
     path: 'dashboard-admin',
     canActivate: [AdminGuard],
     loadComponent: () => import('./dashboard-admin/dashboard-admin.page').then( m => m.DashboardAdminPage)
@@ -55,6 +50,6 @@ export const routes: Routes = [
   {
     path: 'perfil',
     canActivate: [AuthGuard],
-    loadComponent: () => import('./components/perfil-modal/perfil-modal.component').then((m) => m.PerfilModalComponent),
+    loadComponent: () => import('./perfil/perfil.page').then((m) => m.PerfilPage),
   }
 ];

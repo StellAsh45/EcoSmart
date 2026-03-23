@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +9,8 @@ export class SupabaseService {
   private supabase: SupabaseClient;
 
   constructor() {
-    const supabaseUrl = 'https://qdnivmcnsidcwlbfiuxj.supabase.co';
-    const supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkbml2bWNuc2lkY3dsYmZpdXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NDg1NzEsImV4cCI6MjA4ODQyNDU3MX0.NdQuBwAfY1O8fXagcvqTk3U-dSdeptOAqlodtB894jI';
+    const supabaseUrl = environment.SUPABASE_URL;
+    const supabaseAnonKey = environment.SUPABASE_KEY;
 
     this.supabase = createClient(supabaseUrl, supabaseAnonKey);
   }
@@ -62,14 +62,13 @@ export class SupabaseService {
       .single();
   }
 
-  async actualizarPerfil(id: string, datos: { nombre?: string; biografia?: string; telefono?: string; direccion?: string }) {
+  async actualizarPerfil(id: string, datos: { nombre?: string; rol?: string }) {
     return this.supabase
       .from('profiles')
-      .update({
-        ...datos,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
+      .upsert({
+        id,
+        ...datos
+      });
   }
 
   async actualizarDatosAuth(datos: { data?: any; password?: string }) {
