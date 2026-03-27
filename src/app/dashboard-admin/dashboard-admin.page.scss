@@ -1,17 +1,41 @@
 :host {
-    display: block;
+  display: block;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 table {
-    width: 100%;
-    border-spacing: 0;
+  width: 100%;
+  border-spacing: 0;
 }
 
-th, td {
-    white-space: nowrap;
+th,
+td {
+  white-space: nowrap;
+}
+
+.tabla-usuarios th,
+.tabla-usuarios td {
+  white-space: normal;
+  vertical-align: top;
+}
+
+.columna-cursos {
+  min-width: 260px;
+}
+
+@media (max-width: 768px) {
+  .columna-cursos {
+    min-width: 220px;
+  }
 }
