@@ -3,11 +3,14 @@
     <app-fondo-visual variante="admin"></app-fondo-visual>
 
     <!-- Navbar -->
-    <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
+    <header
+      class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
       <div class="flex items-center gap-3 group">
         <div class="relative">
-          <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity"></div>
-          <app-eco-smart-logo clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
+          <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity">
+          </div>
+          <app-eco-smart-logo
+            clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
         </div>
         <span class="text-2xl font-black tracking-tight text-white drop-shadow-sm font-heading hidden sm:block">
           Panel Administrador
@@ -23,55 +26,72 @@
             <p class="text-[10px] font-black text-primary-400 uppercase tracking-widest">Administrador General</p>
           </div>
 
-          <button
-            (click)="cerrarSesion()"
-            class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden transition-all bg-transparent border-none cursor-pointer"
-          >
+          <button (click)="cerrarSesion()"
+            class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden transition-all bg-transparent border-none cursor-pointer">
             <ion-icon name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
           </button>
         </div>
       </div>
     </header>
 
-    <main class="flex-1 pt-28 pb-20 px-6 max-w-7xl mx-auto w-full space-y-10 relative z-10 animate-[fadeIn_0.8s_ease-out]">
+    <main
+      class="flex-1 pt-28 pb-20 px-6 max-w-7xl mx-auto w-full space-y-10 relative z-10 animate-[fadeIn_0.8s_ease-out]">
 
       <!-- Resumen estadístico -->
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-primary-500 hover:-translate-y-1">
-          <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-primary-500/20 group-hover:text-primary-400 transition-all">
+        <div
+          class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-primary-500 hover:-translate-y-1">
+          <div
+            class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-primary-500/20 group-hover:text-primary-400 transition-all">
             <ion-icon name="people-outline" class="text-3xl"></ion-icon>
           </div>
           <div>
-            <p class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-primary-400 transition-all">
+            <p
+              class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-primary-400 transition-all">
               Total Estudiantes
             </p>
-            <p class="text-3xl font-black text-white">{{estadisticas.totalUsuarios}}</p>
+            <p class="text-3xl font-black text-white">
+              <span *ngIf="cargando" class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
+              <span *ngIf="!cargando">{{estadisticas.totalUsuarios}}</span>
+            </p>
           </div>
         </div>
 
         <!-- Cursos creados -->
-        <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
-          <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
+        <div
+          class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
+          <div
+            class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
             <ion-icon name="book-outline" class="text-3xl"></ion-icon>
           </div>
           <div>
-            <p class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-emerald-400 transition-all">
+            <p
+              class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-emerald-400 transition-all">
               Cursos Creados
             </p>
-            <p class="text-3xl font-black text-white">{{estadisticas.totalCursos}}</p>
+            <p class="text-3xl font-black text-white">
+              <span *ngIf="cargando" class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
+              <span *ngIf="!cargando">{{estadisticas.totalCursos}}</span>
+            </p>
           </div>
         </div>
 
         <!-- Cursos publicados -->
-        <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-blue-500 hover:-translate-y-1">
-          <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
+        <div
+          class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-blue-500 hover:-translate-y-1">
+          <div
+            class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
             <ion-icon name="stats-chart-outline" class="text-3xl"></ion-icon>
           </div>
           <div>
-            <p class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-blue-400 transition-all">
+            <p
+              class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-blue-400 transition-all">
               Cursos Publicados
             </p>
-            <p class="text-3xl font-black text-white">{{estadisticas.cursosPublicados}}</p>
+            <p class="text-3xl font-black text-white">
+              <span *ngIf="cargando" class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
+              <span *ngIf="!cargando">{{estadisticas.cursosPublicados}}</span>
+            </p>
           </div>
         </div>
       </section>
@@ -81,24 +101,15 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-2">
           <div>
             <h2 class="text-3xl font-black text-white tracking-tight font-heading">
-              Gestión de <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">contenido</span>
+              Gestión de <span
+                class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">contenido</span>
             </h2>
             <p class="text-primary-50 font-medium">Crea y administra los cursos de la plataforma.</p>
           </div>
 
           <div class="flex flex-wrap gap-3">
-            <button
-              (click)="toggleVistaUsuarios()"
-              class="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-6 rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-2"
-            >
-              <ion-icon [name]="mostrandoUsuarios ? 'eye-off-outline' : 'eye-outline'" class="text-lg"></ion-icon>
-              {{ mostrandoUsuarios ? 'Ocultar estudiantes' : 'Ver estudiantes' }}
-            </button>
-
-            <button
-              [routerLink]="['/constructor-curso', 'nuevo']"
-              class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-3 px-6 rounded-xl transition-all flex items-center gap-2 group border-none cursor-pointer active:scale-95 shadow-lg shadow-primary-500/20"
-            >
+            <button [routerLink]="['/constructor-curso', 'nuevo']"
+              class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-3 px-6 rounded-xl transition-all flex items-center gap-2 group border-none cursor-pointer active:scale-95 shadow-lg shadow-primary-500/20">
               <ion-icon name="add-outline" class="text-xl"></ion-icon>
               Nuevo Curso
             </button>
@@ -115,7 +126,8 @@
                   <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest">Nivel</th>
                   <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest">Estado</th>
                   <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest">Módulos</th>
-                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-right">Acciones</th>
+                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-right">
+                    Acciones</th>
                 </tr>
               </thead>
 
@@ -123,7 +135,9 @@
                 <tr *ngIf="cargando">
                   <td colspan="5" class="px-8 py-20 text-center">
                     <div class="flex flex-col items-center gap-4">
-                      <div class="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+                      <div
+                        class="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin">
+                      </div>
                       <p class="text-primary-50 font-bold animate-pulse">Cargando cursos...</p>
                     </div>
                   </td>
@@ -136,11 +150,13 @@
                 </tr>
 
                 <ng-container *ngIf="!cargando">
-                  <tr *ngFor="let curso of cursos; trackBy: trackByCursoId" class="group hover:bg-white/[0.02] transition-colors">
+                  <tr *ngFor="let curso of cursos; trackBy: rastrearCursoPorId"
+                    class="group hover:bg-white/[0.02] transition-colors">
                     <td class="px-8 py-6">
                       <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded-xl bg-slate-800 border border-white/10 overflow-hidden">
-                          <div class="w-full h-full bg-gradient-to-br from-primary-500/20 to-emerald-500/20 flex items-center justify-center">
+                          <div
+                            class="w-full h-full bg-gradient-to-br from-primary-500/20 to-emerald-500/20 flex items-center justify-center">
                             <ion-icon name="document-text-outline" class="text-white/70 text-2xl"></ion-icon>
                           </div>
                         </div>
@@ -151,64 +167,52 @@
                     </td>
 
                     <td class="px-8 py-6">
-                      <span
-                        class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border"
+                      <span class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border"
                         [ngClass]="{
                           'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
                           'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
                           'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
                           'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
-                        }"
-                      >
+                        }">
                         {{curso.nivel || 'Sin Nivel'}}
                       </span>
                     </td>
 
                     <td class="px-8 py-6">
-                      <button
-                        (click)="toggleEstadoCurso(curso)"
+                      <button (click)="toggleEstadoCurso(curso)"
                         [title]="curso.estado === 'publicado' ? 'Despublicar curso' : 'Publicar curso'"
                         class="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-solid transition-all cursor-pointer"
                         [ngClass]="curso.estado === 'publicado'
                           ? 'bg-emerald-500/10 border-emerald-500 hover:bg-emerald-500/20 hover:border-emerald-400'
-                          : 'bg-amber-500/10 border-amber-500 hover:bg-amber-500/20 hover:border-amber-400'"
-                      >
-                        <div
-                          class="w-2 h-2 rounded-full flex-shrink-0"
-                          [ngClass]="curso.estado === 'publicado'
+                          : 'bg-amber-500/10 border-amber-500 hover:bg-amber-500/20 hover:border-amber-400'">
+                        <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="curso.estado === 'publicado'
                             ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
-                            : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'"
-                        ></div>
-                        <span
-                          class="text-[10px] font-black capitalize uppercase tracking-widest"
-                          [ngClass]="curso.estado === 'publicado' ? 'text-emerald-400' : 'text-amber-400'"
-                        >
+                            : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'"></div>
+                        <span class="text-[10px] font-black capitalize uppercase tracking-widest"
+                          [ngClass]="curso.estado === 'publicado' ? 'text-emerald-400' : 'text-amber-400'">
                           {{ curso.estado === 'publicado' ? 'Publicado' : 'Borrador' }}
                         </span>
                       </button>
                     </td>
 
                     <td class="px-8 py-6">
-                      <span class="px-3 py-1.5 rounded-lg bg-white/5 text-primary-50 text-[11px] font-bold border border-white/20 uppercase tracking-wider">
+                      <span
+                        class="px-3 py-1.5 rounded-lg bg-white/5 text-primary-50 text-[11px] font-bold border border-white/20 uppercase tracking-wider">
                         {{ curso.totalModulos }} {{ curso.totalModulos === 1 ? 'módulo' : 'módulos' }}
                       </span>
                     </td>
 
                     <td class="px-8 py-6">
                       <div class="flex items-center justify-end gap-2">
-                        <button
-                          [routerLink]="['/constructor-curso', curso.id]"
+                        <button [routerLink]="['/constructor-curso', curso.id]"
                           class="p-2 rounded-lg bg-white/5 hover:bg-primary-500/20 text-primary-50 hover:text-primary-400 transition-all border-none cursor-pointer"
-                          title="Editar curso"
-                        >
+                          title="Editar curso">
                           <ion-icon name="create-outline"></ion-icon>
                         </button>
 
-                        <button
-                          (click)="eliminarCurso(curso)"
+                        <button (click)="eliminarCurso(curso)"
                           class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-primary-50 hover:text-red-400 transition-all border-none cursor-pointer"
-                          title="Eliminar curso"
-                        >
+                          title="Eliminar curso">
                           <ion-icon name="trash-outline"></ion-icon>
                         </button>
                       </div>
@@ -222,23 +226,23 @@
       </section>
 
       <!-- Sección de usuarios -->
-      <section class="bg-white/5 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 relative overflow-hidden group">
+      <section
+        class="bg-white/5 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 relative overflow-hidden group">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-6">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center text-primary-400 border border-primary-500/20">
+            <div
+              class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center text-primary-400 border border-primary-500/20">
               <ion-icon name="people-outline" class="text-xl"></ion-icon>
             </div>
             <div>
               <h3 class="text-2xl font-black text-white font-heading">Control de Usuarios</h3>
-              <p class="text-sm text-slate-500">Gestiona los accesos y roles de la plataforma.</p>
+              <p class="text-m text-primary-50">Gestiona el acceso de los usuarios a la plataforma.</p>
             </div>
           </div>
 
           <div class="flex flex-wrap gap-4">
-            <button
-              (click)="toggleVistaUsuarios()"
-              class="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-6 rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-2"
-            >
+            <button (click)="toggleVistaUsuarios()"
+              class="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-6 rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-2">
               <ion-icon [name]="mostrandoUsuarios ? 'eye-off-outline' : 'eye-outline'" class="text-lg"></ion-icon>
               {{ mostrandoUsuarios ? 'Ocultar estudiantes' : 'Ver todos los estudiantes' }}
             </button>
@@ -246,27 +250,26 @@
         </div>
 
         <div *ngIf="mostrandoUsuarios" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400">
-                <ion-icon name="school-outline" class="text-xl"></ion-icon>
+          <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
+              <div
+                class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
+                <ion-icon name="checkmark-circle-outline" class="text-3xl"></ion-icon>
               </div>
               <div>
-                <p class="text-xs uppercase tracking-widest text-primary-300 font-black">Estudiantes registrados</p>
-                <p class="text-2xl font-black text-white">{{ usuarios.length }}</p>
+                <p
+                  class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-emerald-400 transition-all">
+                  Estudiantes Activos
+                </p>
+                <p class="text-3xl font-black text-white">
+                  <span *ngIf="cargandoUsuarios"
+                    class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
+                  <span *ngIf="!cargandoUsuarios">{{ usuariosActivos }}</span>
+                </p>
               </div>
             </div>
-
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <ion-icon name="toggle-outline" class="text-xl"></ion-icon>
-              </div>
-              <div>
-                <p class="text-xs uppercase tracking-widest text-emerald-300 font-black">Activos</p>
-                <p class="text-2xl font-black text-white">{{ usuariosActivos }}</p>
-              </div>
-            </div>
-          </div>
+          </section>
 
           <div class="bg-slate-950/30 rounded-[2rem] border border-white/10 overflow-hidden">
             <div class="overflow-x-auto">
@@ -277,31 +280,34 @@
                     <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Correo</th>
                     <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Estado</th>
                     <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Cursos inscritos</th>
-                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest text-right">Acción</th>
                   </tr>
                 </thead>
 
                 <tbody class="divide-y divide-white/5">
                   <tr *ngIf="cargandoUsuarios">
-                    <td colspan="5" class="px-6 py-16 text-center">
+                    <td colspan="4" class="px-6 py-16 text-center">
                       <div class="flex flex-col items-center gap-4">
-                        <div class="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+                        <div
+                          class="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin">
+                        </div>
                         <p class="text-primary-50 font-bold animate-pulse">Cargando estudiantes...</p>
                       </div>
                     </td>
                   </tr>
 
                   <tr *ngIf="!cargandoUsuarios && usuarios.length === 0">
-                    <td colspan="5" class="px-6 py-16 text-center">
+                    <td colspan="4" class="px-6 py-16 text-center">
                       <p class="text-primary-50 font-bold italic">No se encontraron estudiantes.</p>
                     </td>
                   </tr>
 
                   <ng-container *ngIf="!cargandoUsuarios">
-                    <tr *ngFor="let usuario of usuarios; trackBy: trackByUsuarioId" class="hover:bg-white/[0.02] transition-colors">
+                    <tr *ngFor="let usuario of usuarios; trackBy: rastrearUsuarioPorId"
+                      class="hover:bg-white/[0.02] transition-colors">
                       <td class="px-6 py-5">
                         <div class="flex items-center gap-3">
-                          <div class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary-300">
+                          <div
+                            class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary-300">
                             <ion-icon name="people-outline"></ion-icon>
                           </div>
                           <div>
@@ -319,23 +325,26 @@
                       </td>
 
                       <td class="px-6 py-5">
-                        <span
-                          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border"
+                        <button (click)="cambiarEstadoUsuario(usuario)"
+                          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-solid transition-all cursor-pointer hover:scale-105 active:scale-95"
                           [ngClass]="usuario.estado === 'Activo'
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                            : 'bg-red-500/10 text-red-400 border-red-500/20'"
-                        >
-                          <span class="w-2 h-2 rounded-full" [ngClass]="usuario.estado === 'Activo' ? 'bg-emerald-400' : 'bg-red-400'"></span>
-                          {{ usuario.estado }}
-                        </span>
+                            ? 'bg-emerald-500/10 border-emerald-500 hover:bg-emerald-500/20 hover:border-emerald-400'
+                            : 'bg-red-500/10 border-red-500 hover:bg-red-500/20 hover:border-red-400'">
+                          <div class="w-2 h-2 rounded-full flex-shrink-0"
+                            [ngClass]="usuario.estado === 'Activo'
+                              ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                              : 'bg-red-400 shadow-[0_0_8px_rgba(244,63,94,0.5)]'"></div>
+                          <span class="text-[10px] font-black uppercase tracking-widest"
+                            [ngClass]="usuario.estado === 'Activo' ? 'text-emerald-400' : 'text-red-400'">
+                            {{ usuario.estado }}
+                          </span>
+                        </button>
                       </td>
 
                       <td class="px-6 py-5 columna-cursos">
                         <div *ngIf="usuario.cursosInscritos.length > 0; else sinCursos" class="flex flex-wrap gap-2">
-                          <span
-                            *ngFor="let curso of usuario.cursosInscritos"
-                            class="px-3 py-1 rounded-lg bg-white/5 text-primary-50 text-xs font-bold border border-white/10"
-                          >
+                          <span *ngFor="let curso of usuario.cursosInscritos"
+                            class="px-3 py-1 rounded-lg bg-white/5 text-primary-50 text-xs font-bold border border-white/10">
                             {{ curso.titulo }}
                           </span>
                         </div>
@@ -345,18 +354,7 @@
                         </ng-template>
                       </td>
 
-                      <td class="px-6 py-5 text-right">
-                        <button
-                          (click)="cambiarEstadoUsuario(usuario)"
-                          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wider border transition-all cursor-pointer"
-                          [ngClass]="usuario.estado === 'Activo'
-                            ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
-                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'"
-                        >
-                          <ion-icon name="toggle-outline"></ion-icon>
-                          {{ usuario.estado === 'Activo' ? 'Desactivar' : 'Activar' }}
-                        </button>
-                      </td>
+
                     </tr>
                   </ng-container>
                 </tbody>

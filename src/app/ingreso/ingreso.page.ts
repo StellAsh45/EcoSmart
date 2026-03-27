@@ -71,8 +71,27 @@ export class IngresoPage implements OnInit {
 
       if (error) throw error;
 
-      // Redirigir al dashboard
-      this.router.navigate(['/dashboard-estudiante']);
+      if (data?.user) {
+        // 1. Obtener el perfil para verificar estado activo y rol
+        const { data: perfil, error: perfilError } = await this.supabaseSvc.obtenerPerfil(data.user.id);
+
+        if (perfilError) throw perfilError;
+
+        // 2. Validar si la cuenta está desactivada
+        if (perfil && perfil.activo === false) {
+          await this.supabaseSvc.cerrarSesion();
+          this.errorMensaje = 'Tu cuenta ha sido desactivada por el administrador. Ponte en contacto con soporte.';
+          this.cargando = false;
+          return;
+        }
+
+        // 3. Redirección según el rol
+        if (perfil?.rol === 'admin') {
+          this.router.navigate(['/dashboard-admin']);
+        } else {
+          this.router.navigate(['/dashboard-estudiante']);
+        }
+      }
     } catch (error: any) {
       console.error('Error en el ingreso:', error);
       this.errorMensaje = error.message === 'Invalid login credentials'
@@ -83,3 +102,4 @@ export class IngresoPage implements OnInit {
     }
   }
 }
+

@@ -62,9 +62,9 @@ interface UsuarioAdmin {
 export class DashboardAdminPage implements OnInit {
   nombreUsuario: string = 'Administrador';
   usuarioActualId: string = '';
-  cargando: boolean = false;
-  cargandoUsuarios: boolean = false;
-  mostrandoUsuarios: boolean = true; // siempre mostrar usuarios para persistencia de visualización
+  cargando: boolean = true;
+  cargandoUsuarios: boolean = true;
+  mostrandoUsuarios: boolean = true;
   accesoVerificado: boolean = false;
   inicializandoDashboard: boolean = false;
 
@@ -139,28 +139,6 @@ export class DashboardAdminPage implements OnInit {
         user.user_metadata?.['name'] ||
         user.email ||
         'Admin';
-
-      const { data: perfil } = await this.supabaseSvc.cliente
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      const rol = String(
-        perfil?.rol ??
-        perfil?.role ??
-        user.user_metadata?.['rol'] ??
-        user.user_metadata?.['role'] ??
-        user.app_metadata?.['role'] ??
-        ''
-      ).trim().toLowerCase();
-
-      // Validación de acceso exclusivo para administrador
-      if (rol && !['admin', 'administrador'].includes(rol)) {
-        alert('No tienes permisos para acceder al panel de administrador.');
-        this.router.navigate(['/ingreso']);
-        return;
-      }
 
       this.accesoVerificado = true;
       await this.cargarDatos(); // Cargar información inmediatamente al entrar o refrescar
@@ -432,9 +410,6 @@ export class DashboardAdminPage implements OnInit {
         ? { ...u, estado: nuevoEstado }
         : u
     );
-
-    alert(`Estado actualizado a ${nuevoEstado} para ${usuario.nombre}`);
-
     // Releer usuarios desde base de datos para que al refrescar todo siga consistente
     await this.cargarUsuarios();
   }
@@ -580,11 +555,11 @@ export class DashboardAdminPage implements OnInit {
     return [];
   }
 
-  trackByCursoId(index: number, curso: CursoAdmin): string {
+  rastrearCursoPorId(index: number, curso: CursoAdmin): string {
     return curso.id;
   }
 
-  trackByUsuarioId(index: number, usuario: UsuarioAdmin): string {
+  rastrearUsuarioPorId(index: number, usuario: UsuarioAdmin): string {
     return usuario.id;
   }
 
