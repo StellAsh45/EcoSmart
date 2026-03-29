@@ -49,8 +49,11 @@ export class PerfilPage implements OnInit {
 
   cargando = true;
   guardando = false;
-  mensaje = '';
-  error = '';
+  
+  // Overlays de Feedback
+  mostrarOverlayExito = false;
+  mostrarOverlayError = false;
+  mensajeErrorOverlay = '';
 
   nombre = '';
   correo = '';
@@ -113,22 +116,21 @@ export class PerfilPage implements OnInit {
       this.usuario = data?.user ?? null;
 
       if (!this.usuario) {
-        this.error = 'No se encontró la sesión del usuario.';
+        this.mostrarMensajeError('No se encontró la sesión del usuario.');
         this.router.navigate(['/ingreso']);
       }
     } catch (err) {
       console.error('Error en carga de usuario de perfil:', err);
-      this.error = 'No se pudo obtener la sesión.';
+      this.mostrarMensajeError('No se pudo obtener la sesión.');
     }
   }
 
   async cargarPerfil(): Promise<void> {
     this.cargando = true;
-    this.error = '';
 
     try {
       if (!this.usuario?.id) {
-        this.error = 'No se encontró la sesión del usuario.';
+        this.mostrarMensajeError('No se encontró la sesión del usuario.');
         return;
       }
 
@@ -152,7 +154,7 @@ export class PerfilPage implements OnInit {
 
     } catch (err) {
       console.error('Error cargando perfil:', err);
-      this.error = 'No se pudo cargar la información del perfil.';
+      this.mostrarMensajeError('No se pudo cargar la información del perfil.');
     } finally {
       this.cargando = false;
     }
@@ -161,10 +163,8 @@ export class PerfilPage implements OnInit {
   get f() { return this.perfilForm.controls; }
 
   private validarCampos(): boolean {
-    this.error = '';
-
     if (this.perfilForm.get('nombre')?.invalid) {
-      this.error = 'El nombre es inválido (mínimo 3 caracteres).';
+      this.mostrarMensajeError('El nombre es inválido (mínimo 3 caracteres).');
       return false;
     }
 
@@ -172,36 +172,42 @@ export class PerfilPage implements OnInit {
 
     // La contraseña actual es obligatoria para confirmar identidad
     if (!val.contrasenaActual) {
-      this.error = 'Debes ingresar tu contraseña actual para guardar cualquier cambio.';
+      this.mostrarMensajeError('Debes ingresar tu contraseña actual para guardar cualquier cambio.');
       return false;
     }
 
     // Validaciones extra si hay cambio de clave
     if (val.nuevaContrasena || val.confirmarNuevaContrasena) {
       if (val.nuevaContrasena === val.contrasenaActual) {
-        this.error = 'La nueva contraseña no puede ser igual a la actual.';
+        this.mostrarMensajeError('La nueva contraseña no puede ser igual a la actual.');
         return false;
       }
 
       const regexPassword = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
       if (!val.nuevaContrasena) {
-        this.error = 'La nueva contraseña es requerida.';
+        this.mostrarMensajeError('La nueva contraseña es requerida.');
         return false;
       }
 
       if (!regexPassword.test(val.nuevaContrasena)) {
-        this.error = 'La nueva contraseña debe tener mínimo 6 caracteres, una mayúscula, un número y un símbolo.';
+        this.mostrarMensajeError('La nueva contraseña debe tener mínimo 6 caracteres, una mayúscula, un número y un símbolo.');
         return false;
       }
 
       if (val.nuevaContrasena !== val.confirmarNuevaContrasena) {
-        this.error = 'La confirmación de la nueva contraseña no coincide.';
+        this.mostrarMensajeError('La confirmación de la nueva contraseña no coincide.');
         return false;
       }
     }
 
     return true;
+  }
+
+  private mostrarMensajeError(msg: string) {
+    this.mensajeErrorOverlay = msg;
+    this.mostrarOverlayError = true;
+    setTimeout(() => { if (this.mostrarOverlayError) this.mostrarOverlayError = false; }, 4000);
   }
 
   async guardarPerfil(): Promise<void> {
@@ -210,14 +216,12 @@ export class PerfilPage implements OnInit {
     }
 
     this.guardando = true;
-    this.error = '';
-    this.mensaje = '';
 
     const { nombre, nuevaContrasena, contrasenaActual } = this.perfilForm.value;
 
     try {
       if (!this.usuario?.id) {
-        this.error = 'No se encontró la sesión del usuario.';
+        this.mostrarMensajeError('No se encontró la sesión del usuario.');
         return;
       }
 
@@ -228,7 +232,7 @@ export class PerfilPage implements OnInit {
       );
 
       if (signInError) {
-        this.error = 'La contraseña actual no es correcta.';
+        this.mostrarMensajeError('La contraseña actual no es correcta.');
         this.guardando = false;
         return;
       }
@@ -252,9 +256,6 @@ export class PerfilPage implements OnInit {
           password: nuevaContrasena
         });
         if (updatePasswordError) throw updatePasswordError;
-        this.mensaje = '¡Perfil y contraseña actualizados correctamente!';
-      } else {
-        this.mensaje = 'Perfil actualizado correctamente.';
       }
 
       this.nombre = nombre.trim();
@@ -265,10 +266,11 @@ export class PerfilPage implements OnInit {
         confirmarNuevaContrasena: ''
       });
 
-      setTimeout(() => this.mensaje = '', 5000);
+      this.mostrarOverlayExito = true;
+      setTimeout(() => this.mostrarOverlayExito = false, 4000);
     } catch (err) {
       console.error('Error actualizando perfil:', err);
-      this.error = 'No fue posible actualizar el perfil. Intenta nuevamente.';
+      this.mostrarMensajeError('No fue posible actualizar el perfil. Intenta nuevamente.');
     } finally {
       this.guardando = false;
     }

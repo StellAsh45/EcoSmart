@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, ToastController } from '@ionic/angular/standalone';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -24,7 +24,9 @@ import {
   checkmarkCircleOutline,
   closeOutline,
   syncOutline,
-  cameraOutline
+  cameraOutline,
+  bookOutline,
+  schoolOutline
 } from 'ionicons/icons';
 
 interface Leccion {
@@ -49,7 +51,6 @@ interface Modulo {
   curso_id?: string;
   titulo: string;
   orden: number;
-  descripcion: string;
   lecciones: Leccion[];
   examen?: Examen;
   abierto?: boolean;
@@ -81,6 +82,11 @@ export class ConstructorCursoPage implements OnInit {
 
   modulos: Modulo[] = [];
 
+  // Gestión de Imágenes
+  imagenOriginal: string | null = null;
+  archivoImagenPendiente: File | null = null;
+  imagenPreviewUrl: string | null = null;
+
   // Gestión de Lección Activa
   leccionActiva: Leccion | null = null;
   moduloActivoIndex: number | null = null;
@@ -88,12 +94,16 @@ export class ConstructorCursoPage implements OnInit {
   // Gestión de Quiz Activo
   examenActivo: Examen | null = null;
   modoEdicion: 'leccion' | 'quiz' | null = null;
+  
+  // Overlay de Éxito
+  mostrarOverlayExito = false;
 
   constructor(
     private fb: FormBuilder,
     private supabaseSvc: SupabaseService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastCtrl: ToastController
   ) {
     this.cursoForm = this.fb.group({
       titulo: ['', [Validators.required, Validators.minLength(5)]],
@@ -118,7 +128,9 @@ export class ConstructorCursoPage implements OnInit {
       checkmarkCircleOutline,
       closeOutline,
       syncOutline,
-      cameraOutline
+      cameraOutline,
+      bookOutline,
+      schoolOutline
     });
   }
 
@@ -142,15 +154,13 @@ export class ConstructorCursoPage implements OnInit {
         estado: curso.estado,
         imagen_url: curso.imagen_url
       });
+      this.imagenOriginal = curso.imagen_url;
+      this.imagenPreviewUrl = curso.imagen_url;
 
-      // Cargar módulos, lecciones y exámenes
       const { data: modulosData } = await this.supabaseSvc.obtenerModulosCurso(this.cursoId!);
       if (modulosData) {
         for (const mod of modulosData) {
-          // Cargar Lecciones
           const { data: leccionesData } = await this.supabaseSvc.obtenerLeccionesModulo(mod.id);
-
-          // Cargar Examen
           const { data: examenData } = await this.supabaseSvc.obtenerExamenModulo(mod.id);
           let examenConPreguntas = undefined;
 
@@ -160,7 +170,7 @@ export class ConstructorCursoPage implements OnInit {
               ...examenData,
               preguntas: preguntasData?.map(p => ({
                 id: p.id,
-                pregunta: p.enunciado || p.pregunta, // Mapeo flexible
+                pregunta: p.enunciado || p.pregunta,
                 opciones: p.opciones,
                 respuesta_correcta: p.respuesta_correcta
               })) || []
@@ -187,11 +197,17 @@ export class ConstructorCursoPage implements OnInit {
 
     this.guardando = true;
     try {
+      if (this.archivoImagenPendiente) {
+        const nombreArchivo = `${Date.now()}_${this.archivoImagenPendiente.name.replace(/\s+/g, '_')}`;
+        const ruta = `portadas/${nombreArchivo}`;
+        const { error } = await this.supabaseSvc.subirImagenCurso(this.archivoImagenPendiente, ruta);
+        if (error) throw error;
+        const urlPublica = this.supabaseSvc.obtenerUrlPublica(ruta);
+        this.cursoForm.patchValue({ imagen_url: urlPublica });
+      }
+
       const { data: { user } } = await this.supabaseSvc.obtenerUsuario();
-      const cursoData = {
-        ...this.cursoForm.value,
-        creado_por: user?.id
-      };
+      const cursoData = { ...this.cursoForm.value, creado_por: user?.id };
 
       let result;
       if (this.cursoId && this.cursoId !== 'nuevo') {
@@ -201,18 +217,10 @@ export class ConstructorCursoPage implements OnInit {
       }
 
       if (result.error) throw result.error;
-
       const nuevoCursoId = result.data.id;
 
-      // GUARDAR MÓDULOS Y LECCIONES
       for (const [mIndex, mod] of this.modulos.entries()) {
-        const moduloData = {
-          curso_id: nuevoCursoId,
-          titulo: mod.titulo,
-          orden: mIndex + 1,
-          descripcion: mod.descripcion || ''
-        };
-
+        const moduloData = { curso_id: nuevoCursoId, titulo: mod.titulo, orden: mIndex + 1 };
         let modResult;
         if (mod.id) {
           modResult = await this.supabaseSvc.cliente.from('modulos').update(moduloData).eq('id', mod.id).select().single();
@@ -223,16 +231,8 @@ export class ConstructorCursoPage implements OnInit {
 
         const moduloId = modResult.data.id;
 
-        // Guardar Lecciones
         for (const [lIndex, lec] of mod.lecciones.entries()) {
-          const leccionData = {
-            modulo_id: moduloId,
-            titulo: lec.titulo,
-            orden: lIndex + 1,
-            contenido_tipo: lec.contenido_tipo,
-            contenido_html: lec.contenido_html
-          };
-
+          const leccionData = { modulo_id: moduloId, titulo: lec.titulo, orden: lIndex + 1, contenido_tipo: lec.contenido_tipo, contenido_html: lec.contenido_html };
           if (lec.id) {
             await this.supabaseSvc.cliente.from('lecciones').update(leccionData).eq('id', lec.id);
           } else {
@@ -241,14 +241,9 @@ export class ConstructorCursoPage implements OnInit {
           }
         }
 
-        // Gestión del Quiz
         if (mod.examen) {
           if (mod.examen.preguntas && mod.examen.preguntas.length > 0) {
-            const examenData = {
-              modulo_id: moduloId,
-              titulo: mod.examen.titulo
-            };
-
+            const examenData = { modulo_id: moduloId, titulo: mod.examen.titulo };
             let exResult;
             if (mod.examen.id) {
               exResult = await this.supabaseSvc.cliente.from('examenes').update(examenData).eq('id', mod.examen.id).select().single();
@@ -256,10 +251,7 @@ export class ConstructorCursoPage implements OnInit {
               exResult = await this.supabaseSvc.crearExamen(examenData);
               if (exResult.data) mod.examen.id = exResult.data.id;
             }
-
             const examenId = exResult.data.id;
-
-            // Borrar preguntas anteriores y sincronizar nuevas
             await this.supabaseSvc.cliente.from('preguntas').delete().eq('examen_id', examenId);
             const preguntasFinales = mod.examen.preguntas.map(p => ({
               examen_id: examenId,
@@ -269,71 +261,118 @@ export class ConstructorCursoPage implements OnInit {
             }));
             await this.supabaseSvc.guardarPreguntas(preguntasFinales);
           } else if (mod.examen.id) {
-            // Si el examen existe en DB pero ya no tiene preguntas, lo borramos
             await this.supabaseSvc.eliminarExamen(mod.examen.id);
             delete mod.examen;
           }
         }
       }
 
+      const imagenFinal = this.cursoForm.get('imagen_url')?.value;
+      if (this.archivoImagenPendiente && this.imagenOriginal && this.imagenOriginal !== imagenFinal) {
+        await this.borrarImagenDeStorage(this.imagenOriginal);
+      }
+      
+      this.archivoImagenPendiente = null;
+      this.imagenOriginal = imagenFinal;
+      this.imagenPreviewUrl = imagenFinal;
+
       if (!this.cursoId || this.cursoId === 'nuevo') {
         this.cursoId = nuevoCursoId;
         this.router.navigate(['/constructor-curso', this.cursoId]);
       }
+
+      this.mostrarOverlayExito = true;
+      setTimeout(() => { this.mostrarOverlayExito = false; }, 4000);
+
     } catch (error) {
       console.error('Error al guardar curso:', error);
-      alert('Hubo un error al guardar el curso. Revisa la consola.');
+      this.mostrarToast('Hubo un error al guardar el curso', 'danger');
     } finally {
       this.guardando = false;
     }
   }
 
+  private async borrarImagenDeStorage(url: string) {
+    if (url && url.includes('/object/public/cursos/')) {
+      const rutaRelativa = url.split('/object/public/cursos/')[1];
+      if (rutaRelativa) await this.supabaseSvc.eliminarImagenCurso(rutaRelativa);
+    }
+  }
+
   validarTodo(): boolean {
-    // 1. Validar Formulario Principal
     if (this.cursoForm.invalid) {
       this.cursoForm.markAllAsTouched();
-      alert('Por favor, completa los datos básicos del curso.');
+      this.mostrarToast('Por favor, completa los datos básicos del curso.', 'danger');
       return false;
     }
-
-    // 2. Validar Módulos
     if (this.modulos.length === 0) {
-      alert('El curso debe tener al menos un módulo.');
+      this.mostrarToast('El curso debe tener al menos un módulo.', 'danger');
       return false;
     }
-    // 3. Titulo menor a 3 caracteres no es aceptado
+    let hayAlMenosUnExamen = false;
     for (const mod of this.modulos) {
       if (!mod.titulo || mod.titulo.trim().length < 3) {
-        alert(`El módulo "${mod.titulo}" necesita un título válido.`);
+        this.mostrarToast(`El módulo "${mod.titulo || 'sin nombre'}" necesita un título válido (mín. 3 chars).`, 'danger');
         return false;
       }
-
-      // 4. El modulo debe tener al menos una leccion
       if (mod.lecciones.length === 0) {
-        alert(`El módulo "${mod.titulo}" debe tener al menos una lección.`);
+        this.mostrarToast(`El módulo "${mod.titulo}" debe tener al menos una lección.`, 'danger');
         return false;
       }
-
-      // 5. Titulo menor a 3 caracteres no es aceptado  
       for (const lec of mod.lecciones) {
         if (!lec.titulo || lec.titulo.trim().length < 3) {
-          alert(`Una lección del módulo "${mod.titulo}" no tiene título.`);
+          this.mostrarToast(`Una lección del módulo "${mod.titulo}" necesita un título válido (mín. 3 chars).`, 'danger');
           return false;
+        }
+        if (!lec.bloques) {
+          try { lec.bloques = JSON.parse(lec.contenido_html || '[]'); } catch { lec.bloques = []; }
+        }
+        if (lec.bloques && lec.bloques.length > 0) {
+          for (const bloque of lec.bloques) {
+            if (['titulo', 'subtitulo', 'texto'].includes(bloque.tipo)) {
+              if (!bloque.valor || bloque.valor.trim().length < 3) {
+                this.mostrarToast(`Un bloque de texto en la lección "${lec.titulo}" debe tener al menos 3 caracteres.`, 'danger');
+                return false;
+              }
+            }
+          }
+        }
+      }
+      if (mod.examen) {
+        if (mod.examen.preguntas && mod.examen.preguntas.length > 0) {
+          hayAlMenosUnExamen = true;
+          if (!mod.examen.titulo || mod.examen.titulo.trim().length < 3) {
+            this.mostrarToast(`El examen del módulo "${mod.titulo}" necesita un título válido (mín. 3 chars).`, 'danger');
+            return false;
+          }
+          for (const [pIdx, p] of mod.examen.preguntas.entries()) {
+            if (!p.pregunta || p.pregunta.trim().length < 3) {
+              this.mostrarToast(`La pregunta #${pIdx + 1} del examen de "${mod.titulo}" necesita un texto válido.`, 'danger');
+              return false;
+            }
+            if (!p.opciones || p.opciones.length < 2) {
+              this.mostrarToast(`La pregunta #${pIdx + 1} del examen de "${mod.titulo}" debe tener al menos 2 opciones.`, 'danger');
+              return false;
+            }
+            for (const [oIdx, opt] of p.opciones.entries()) {
+              if (!opt || opt.trim().length === 0) {
+                this.mostrarToast(`La opción ${oIdx + 1} de la pregunta #${pIdx + 1} no puede estar vacía.`, 'danger');
+                return false;
+              }
+            }
+          }
         }
       }
     }
-
+    if (!hayAlMenosUnExamen) {
+      this.mostrarToast('El curso debe contener al menos un examen con al menos una pregunta.', 'danger');
+      return false;
+    }
     return true;
   }
 
   agregarModulo() {
-    const nuevoModulo: Modulo = {
-      titulo: `Nuevo Módulo ${this.modulos.length + 1}`,
-      orden: this.modulos.length + 1,
-      descripcion: '',
-      lecciones: [],
-      abierto: true
-    };
+    const nuevoModulo: Modulo = { titulo: `Nuevo Módulo ${this.modulos.length + 1}`, orden: this.modulos.length + 1, lecciones: [], abierto: true };
     this.modulos.push(nuevoModulo);
   }
 
@@ -343,28 +382,16 @@ export class ConstructorCursoPage implements OnInit {
 
   agregarLeccion(moduloIndex: number) {
     const modulo = this.modulos[moduloIndex];
-    const nuevaLeccion: Leccion = {
-      titulo: `Nueva Lección ${modulo.lecciones.length + 1}`,
-      orden: modulo.lecciones.length + 1,
-      contenido_tipo: 'texto',
-      contenido_html: '[]',
-      bloques: []
-    };
+    const nuevaLeccion: Leccion = { titulo: `Nueva Lección ${modulo.lecciones.length + 1}`, orden: modulo.lecciones.length + 1, contenido_tipo: 'texto', contenido_html: '[]', bloques: [] };
     modulo.lecciones.push(nuevaLeccion);
   }
 
   abrirEditorLeccion(moduloIndex: number, leccionIndex: number) {
     this.moduloActivoIndex = moduloIndex;
     const leccion = this.modulos[moduloIndex].lecciones[leccionIndex];
-
     if (!leccion.bloques) {
-      try {
-        leccion.bloques = JSON.parse(leccion.contenido_html || '[]');
-      } catch {
-        leccion.bloques = [];
-      }
+      try { leccion.bloques = JSON.parse(leccion.contenido_html || '[]'); } catch { leccion.bloques = []; }
     }
-
     this.leccionActiva = { ...leccion };
     this.modoEdicion = 'leccion';
   }
@@ -372,14 +399,9 @@ export class ConstructorCursoPage implements OnInit {
   abrirEditorQuiz(moduloIndex: number) {
     this.moduloActivoIndex = moduloIndex;
     const modulo = this.modulos[moduloIndex];
-
     if (!modulo.examen) {
-      modulo.examen = {
-        titulo: `Quiz del Módulo: ${modulo.titulo}`,
-        preguntas: []
-      };
+      modulo.examen = { titulo: `Quiz del Módulo: ${modulo.titulo}`, preguntas: [] };
     }
-
     this.examenActivo = { ...modulo.examen };
     this.modoEdicion = 'quiz';
   }
@@ -409,93 +431,63 @@ export class ConstructorCursoPage implements OnInit {
     this.cerrarEditor();
   }
 
-  actualizarBloquesLeccion(bloques: BloqueContenido[]) {
-    if (this.leccionActiva) {
-      this.leccionActiva.bloques = bloques;
-    }
-  }
-
-  actualizarPreguntasQuiz(preguntas: Pregunta[]) {
-    if (this.examenActivo) {
-      this.examenActivo.preguntas = preguntas;
-    }
-  }
+  actualizarBloquesLeccion(bloques: BloqueContenido[]) { if (this.leccionActiva) this.leccionActiva.bloques = bloques; }
+  actualizarPreguntasQuiz(preguntas: Pregunta[]) { if (this.examenActivo) this.examenActivo.preguntas = preguntas; }
 
   async onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.guardando = true;
-      try {
-        // 1. Borrar foto anterior si existe
-        const urlAnterior = this.cursoForm.get('imagen_url')?.value;
-        if (urlAnterior && urlAnterior.includes('/object/public/cursos/')) {
-          const rutaRelativa = urlAnterior.split('/object/public/cursos/')[1];
-          if (rutaRelativa) {
-            await this.supabaseSvc.eliminarImagenCurso(rutaRelativa);
-          }
-        }
-
-        // 2. Subir la nueva foto
-        const nombreArchivo = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-        const ruta = `portadas/${nombreArchivo}`;
-
-        const { data, error } = await this.supabaseSvc.subirImagenCurso(file, ruta);
-        if (error) throw error;
-
-        const urlPublica = this.supabaseSvc.obtenerUrlPublica(ruta);
-        this.cursoForm.patchValue({ imagen_url: urlPublica });
-
-        // Autoguardado: Si estamos editando un curso existente, actualizamos el campo en la DB inmediatamente
-        if (this.cursoId && this.cursoId !== 'nuevo') {
-          await this.supabaseSvc.cliente
-            .from('cursos')
-            .update({ imagen_url: urlPublica })
-            .eq('id', this.cursoId);
-        }
-      } catch (error: any) {
-        console.error('Error en la gestión de imagen:', error);
-        alert(`Fallo en la imagen: ${error.message}`);
-      } finally {
-        this.guardando = false;
-        if (event.target) event.target.value = '';
-      }
+      this.archivoImagenPendiente = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => { this.imagenPreviewUrl = e.target.result; };
+      reader.readAsDataURL(file);
+      if (event.target) event.target.value = '';
     }
   }
 
   async eliminarModulo(index: number) {
     const modulo = this.modulos[index];
-
-    // Si el módulo ya existe en la DB (tiene ID), borrarlo de allí
     if (modulo.id) {
-      if (confirm('¿Eliminar este módulo permanentemente? Se borrarán todas sus lecciones y el quiz.')) {
+      if (confirm('¿Eliminar este módulo permanentemente?')) {
         const { error } = await this.supabaseSvc.eliminarModulo(modulo.id);
-        if (error) {
-          alert('Error al borrar módulo en base de datos');
-          return;
-        }
+        if (error) { this.mostrarToast('Error al borrar módulo', 'danger'); return; }
         this.modulos.splice(index, 1);
+        this.reordenarModulos();
       }
     } else {
       this.modulos.splice(index, 1);
+      this.reordenarModulos();
     }
   }
+
+  private reordenarModulos() { this.modulos.forEach((mod, index) => { mod.orden = index + 1; }); }
 
   async eliminarLeccion(moduloIndex: number, leccionIndex: number) {
     const leccion = this.modulos[moduloIndex].lecciones[leccionIndex];
-
-    // Si la lección ya existe en la DB, borrarla físicamente
     if (leccion.id) {
-      if (confirm('¿Quieres eliminar esta lección para siempre?')) {
+      if (confirm('¿Eliminar esta lección permanentemente?')) {
         const { error } = await this.supabaseSvc.eliminarLeccion(leccion.id);
-        if (error) {
-          alert('Error al borrar lección en la base de datos');
-          return;
-        }
+        if (error) { this.mostrarToast('Error al borrar lección', 'danger'); return; }
         this.modulos[moduloIndex].lecciones.splice(leccionIndex, 1);
+        this.reordenarLecciones(moduloIndex);
       }
     } else {
       this.modulos[moduloIndex].lecciones.splice(leccionIndex, 1);
+      this.reordenarLecciones(moduloIndex);
     }
   }
-}
 
+  private reordenarLecciones(moduloIndex: number) { this.modulos[moduloIndex].lecciones.forEach((lec, index) => { lec.orden = index + 1; }); }
+
+  async mostrarToast(mensaje: string, color: 'success' | 'danger' = 'success') {
+    const toast = await this.toastCtrl.create({
+      message: mensaje,
+      duration: 2000,
+      position: 'middle',
+      color: color,
+      cssClass: 'premium-toast',
+      buttons: [{ icon: color === 'success' ? 'checkmark-circle-outline' : 'close-outline', side: 'start', role: 'cancel' }]
+    });
+    await toast.present();
+  }
+}

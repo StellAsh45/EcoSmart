@@ -26,9 +26,14 @@ export interface Pregunta {
   template: `
     <div class="space-y-8">
       <div class="flex items-center justify-between px-2">
-        <div>
-          <h3 class="text-xl font-black text-white tracking-tight">Preguntas del Quiz</h3>
-          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Añade al menos una pregunta para el examen</p>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+            <ion-icon name="school-outline" class="text-xl"></ion-icon>
+          </div>
+          <div>
+            <h3 class="text-xl font-black text-white tracking-tight">Preguntas del Quiz</h3>
+            <p class="text-xs text-primary-50 font-bold uppercase tracking-widest">Añade al menos una pregunta para el examen</p>
+          </div>
         </div>
         <button (click)="agregarPregunta()" class="flex items-center gap-2 px-4 py-2 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 rounded-xl transition-all border border-primary-500/20 cursor-pointer text-xs font-black uppercase tracking-wider group">
           <ion-icon name="add-outline" class="text-lg group-hover:scale-110 transition-transform"></ion-icon>
@@ -40,10 +45,10 @@ export interface Pregunta {
         <div *ngFor="let p of preguntas; let i = index; trackBy: trackByPregunta" class="bg-white/[0.03] border border-white/10 rounded-3xl p-6 relative animate-[fadeIn_0.3s_ease-out]">
           
           <div class="space-y-4">
-            <!-- Cabecera de Pregunta con Botón Eliminar -->
+            <!-- Cabecera de pregunta -->
             <div class="flex items-center justify-between mb-2">
-              <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                <ion-icon name="help-circle-outline" class="text-primary-400"></ion-icon>
+              <label class="text-[10px] font-black text-primary-50 uppercase tracking-widest flex items-center gap-2">
+                <ion-icon name="help-circle-outline" class="text-primary-400 text-2xl"></ion-icon>
                 Pregunta #{{ i + 1 }}
               </label>
               <button (click)="eliminarPregunta(i)" class="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all border border-red-500/20 cursor-pointer flex items-center gap-1 text-[10px] font-black uppercase tracking-widest">
@@ -58,7 +63,7 @@ export interface Pregunta {
 
             <!-- Opciones -->
             <div class="space-y-3 pl-4">
-              <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Opciones de Respuesta</label>
+              <label class="text-[10px] font-black text-primary-50 uppercase tracking-widest block">Opciones de Respuesta</label>
               
               <div *ngFor="let opt of p.opciones; let optIdx = index; trackBy: trackByOpcion" class="flex items-center gap-3 group/opt">
                 <!-- Selector de Correcta -->
@@ -79,8 +84,8 @@ export interface Pregunta {
                 </button>
               </div>
 
-              <button (click)="agregarOpcion(i)" *ngIf="p.opciones.length < 5" class="ml-10 text-[10px] font-black text-primary-400/60 hover:text-primary-400 uppercase tracking-widest transition-colors cursor-pointer bg-transparent border-none">
-                + Añadir Opción
+              <button (click)="agregarOpcion(i)" *ngIf="p.opciones.length < 5" class="ml-11 text-[10px] font-black text-primary-400/60 hover:text-primary-400 uppercase tracking-widest transition-colors cursor-pointer bg-transparent border-none">
+                    + Añadir Opción
               </button>
             </div>
           </div>
