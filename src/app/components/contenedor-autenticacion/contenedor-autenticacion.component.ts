@@ -18,7 +18,7 @@ import { EcoSmartLogoComponent } from '../eco-smart-logo/eco-smart-logo.componen
         <div class="w-full max-w-xl z-10 animate-[slideUp_0.8s_ease-out]">
             <!-- Botón Volver -->
             <div *ngIf="mostrarVolver" class="mb-6 flex animate-[fadeIn_0.5s_ease-out_0.2s_both]">
-                <a routerLink="/" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all no-underline font-bold group text-sm backdrop-blur-md">
+                <a [routerLink]="rutaVolver" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all no-underline font-bold group text-sm backdrop-blur-md">
                     <ion-icon name="arrow-back-outline" class="group-hover:-translate-x-1 transition-transform"></ion-icon>
                     Volver al Inicio
                 </a>
@@ -56,6 +56,7 @@ export class ContenedorAutenticacionComponent {
     @Input() claseLogo: string = 'w-24 h-24 relative group-hover/logo:scale-110 transition-transform duration-500 ease-out drop-shadow-2xl';
     @Input() varianteFondo: any = 'misty';
     @Input() mostrarVolver: boolean = false;
+    @Input() rutaVolver: string = '/';
 
     constructor() {
         addIcons({ arrowBackOutline });

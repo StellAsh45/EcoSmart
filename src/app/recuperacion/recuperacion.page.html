@@ -1,0 +1,61 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+    <div class="animate-[fadeIn_1s_ease-out]">
+
+        <app-contenedor-autenticacion *ngIf="!enviado" titulo="Recuperar Acceso"
+            subtitulo="Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña."
+            varianteFondo="misty" [mostrarVolver]="true" rutaVolver="/ingreso">
+
+            <!-- Mensajes -->
+            <div *ngIf="errorMensaje"
+                class="mb-8 p-4 bg-red-500/10 text-red-400 rounded-2xl text-sm border border-red-500/20 backdrop-blur-md flex items-center gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                {{errorMensaje}}
+            </div>
+
+            <!-- Formulario -->
+            <form class="space-y-10" [formGroup]="formularioRecuperacion" (ngSubmit)="enviarEnlace()">
+
+                <!-- Correo -->
+                <app-campo-entrada etiqueta="Correo electrónico" [icono]="iconos.correo" placeholder="tu@correo.com"
+                    tipo="email" [control]="$any(formularioRecuperacion.get('correo'))">
+                </app-campo-entrada>
+
+                <!-- Botón -->
+                <button type="submit" [disabled]="cargando"
+                    class="w-full bg-primary-500 text-slate-950 py-4 rounded-2xl font-black hover:bg-primary-400 transition-all flex items-center justify-center gap-2 group/btn shadow-xl shadow-primary-500/20 active:scale-95 text-lg">
+                    <ng-container *ngIf="cargando; else actionText">
+                        <ion-icon name="sync-outline" class="w-6 h-6 animate-spin"></ion-icon>
+                    </ng-container>
+                    <ng-template #actionText>
+                        Enviar Enlace
+                        <ion-icon name="arrow-forward-outline"
+                            class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></ion-icon>
+                    </ng-template>
+                </button>
+            </form>
+        </app-contenedor-autenticacion>
+
+        <!-- Vista de Éxito -->
+        <app-contenedor-autenticacion *ngIf="enviado" titulo="¡Correo Enviado!"
+            subtitulo="Revisa tu bandeja de entrada para continuar con el proceso." varianteFondo="deep">
+
+            <div class="relative py-4 flex flex-col items-center text-center">
+                <div
+                    class="w-24 h-24 bg-primary-400/20 rounded-full flex items-center justify-center mb-8 border border-primary-400/30">
+                    <ion-icon name="mail-outline" class="text-6xl text-primary-400"></ion-icon>
+                </div>
+
+                <p class="text-primary-50 text-sm mb-12 italic">
+                    Si no lo recibes en unos minutos, revisa tu carpeta de correo no deseado (SPAM).
+                </p>
+
+                <a routerLink="/ingreso"
+                    class="w-full bg-primary-500 text-slate-950 py-4 rounded-2xl font-black hover:bg-primary-400 transition-all flex items-center justify-center gap-2 group shadow-xl shadow-primary-500/20 active:scale-95 text-lg no-underline">
+                    Volver al inicio de sesión
+                    <ion-icon name="arrow-forward-outline"
+                        class="w-5 h-5 group-hover:translate-x-1 transition-transform"></ion-icon>
+                </a>
+            </div>
+        </app-contenedor-autenticacion>
+    </div>
+</ion-content>

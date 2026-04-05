@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root'
@@ -31,14 +32,41 @@ export class SupabaseService {
   }
 
   async registrarse(email: string, password: string, nombreCompleto: string) {
+    const isNative = Capacitor.isNativePlatform();
+    // Esto lo añadí para que en PC use localhost y en celular use el esquema de la app
+    const redirectUrl = isNative
+      ? 'com.ecosmart.app://confirmar'
+      : 'http://localhost:8100/ingreso';
+
     return this.supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: nombreCompleto,
         },
       },
+    });
+  }
+
+  async verificarCorreoRegistrado(email: string) {
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    return { existe: !!data && !error };
+  }
+
+  async recuperarContrase(email: string) {
+    const isNative = Capacitor.isNativePlatform();
+    const redirectUrl = isNative
+      ? 'com.ecosmart.app://restablecer-contrasena'
+      : 'http://localhost:8100/restablecer-contrasena';
+
+    return this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
     });
   }
 
