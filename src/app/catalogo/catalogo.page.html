@@ -1,27 +1,23 @@
 <ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
-  <div class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
+  <div
+    class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
 
-    <app-fondo-visual></app-fondo-visual>
+    <app-fondo-visual variante="estudiante"></app-fondo-visual>
 
-    <header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
+    <header
+      class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
       <div class="flex items-center gap-4">
-        <button
-          type="button"
-          (click)="volverAlDashboard()"
-          class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all"
-          aria-label="Volver"
-        >
-          <ion-icon name="arrow-back-outline" class="text-primary-400 text-2xl"></ion-icon>
+        <button (click)="volverAlDashboard()"
+          class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-xl border-none cursor-pointer">
+          <ion-icon name="arrow-back-outline" class="text-xl"></ion-icon>
         </button>
 
         <a class="flex items-center gap-3 group no-underline text-white">
           <div class="relative">
-            <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity"></div>
-            <img
-              src="assets/icon/EcoSmart-icon.png"
-              alt="Logo EcoSmart"
-              class="w-12 h-12 relative object-contain group-hover:scale-110 transition-all duration-500 ease-out"
-            />
+            <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity">
+            </div>
+            <img src="assets/icon/EcoSmart-icon.png" alt="Logo EcoSmart"
+              class="w-12 h-12 relative object-contain group-hover:scale-110 transition-all duration-500 ease-out" />
           </div>
           <span class="text-xl font-black tracking-tight text-white font-heading">
             Catálogo
@@ -33,33 +29,29 @@
         <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
 
         <div class="flex items-center gap-4 relative">
-          <div class="text-right hidden sm:block">
-            <p class="text-sm font-black text-primary-400 uppercase">
+          <div class="text-right hidden sm:block min-w-[100px]">
+            <p *ngIf="nombreUsuario" class="text-sm font-black text-primary-400 uppercase animate-[fadeIn_0.3s_ease-out]">
               {{ nombreUsuario }}
             </p>
+            <div *ngIf="!nombreUsuario" class="w-24 h-4 bg-white/10 rounded-lg animate-pulse ml-auto"></div>
           </div>
 
-    <button
-      type="button"
-      (click)="irAPerfil()"
-      class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all"
-      aria-label="Ir al perfil"
-    >
-      <ion-icon name="person-outline" class="text-primary-400 text-2xl"></ion-icon>
-    </button>
-
-          <button
-            type="button"
-            (click)="cerrarSesion()"
+          <button type="button" (click)="irAPerfil()"
             class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all"
-          >
+            aria-label="Ir al perfil">
+            <ion-icon name="person-outline" class="text-primary-400 text-2xl"></ion-icon>
+          </button>
+
+          <button type="button" (click)="cerrarSesion()"
+            class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all">
             <ion-icon name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
           </button>
         </div>
       </div>
     </header>
 
-    <main class="flex-1 pt-28 md:pt-32 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
+    <main
+      class="flex-1 pt-28 md:pt-32 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
       <section>
         <div>
           <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 blur-[100px] -mr-48 -mt-48 rounded-full"></div>
@@ -68,7 +60,8 @@
           <div class="relative z-10 text-center">
             <h2 class="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight leading-tight font-heading">
               Catálogo de
-              <span class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">
+              <span
+                class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 inline-block mt-2 md:mt-0">
                 cursos
               </span>
             </h2>
@@ -88,22 +81,19 @@
           {{ mensajeError }}
         </div>
 
-        <p *ngIf="!cargando && !mensajeError && cursos.length === 0" class="text-center text-primary-50 font-bold italic py-16">
+        <p *ngIf="!cargando && !mensajeError && cursos.length === 0"
+          class="text-center text-primary-50 font-bold italic py-16">
           No hay cursos disponibles todavía. ¡Vuelve pronto!
         </p>
 
         <div *ngIf="!cargando && cursos.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-8 xl:gap-12 items-start">
-          <div
-            *ngFor="let curso of cursos"
-            class="bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all group shadow-2xl relative flex flex-col"
-          >
+          <div *ngFor="let curso of cursos"
+            class="bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all group shadow-2xl relative flex flex-col">
             <div class="relative h-60 overflow-hidden m-3 rounded-[2rem] shrink-0">
-              <img
-                [src]="curso.imagen_url || 'assets/icon/logo_ecoaula.png'"
-                [alt]="curso.titulo"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.85] group-hover:brightness-100"
-              />
-              <div class="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
+              <img [src]="curso.imagen_url || 'assets/icon/logo_ecoaula.png'" [alt]="curso.titulo"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.85] group-hover:brightness-100" />
+              <div
+                class="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
                 <ion-icon name="book-outline" class="text-primary-400 text-sm"></ion-icon>
                 <span class="text-xs font-bold text-white">{{ curso.totalLecciones }} lecciones</span>
               </div>
@@ -111,20 +101,18 @@
 
             <div class="p-8 pt-4 flex-1 flex flex-col">
               <div class="flex items-center gap-3 mb-4">
-                <span
-                  class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border"
-                  [ngClass]="{
+                <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border" [ngClass]="{
                     'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': curso.nivel === 'Principiante',
                     'bg-blue-500/10 text-blue-400 border-blue-500/20': curso.nivel === 'Intermedio',
                     'bg-purple-500/10 text-purple-400 border-purple-500/20': curso.nivel === 'Avanzado',
                     'bg-white/10 text-slate-300 border-white/20': !curso.nivel || (curso.nivel !== 'Principiante' && curso.nivel !== 'Intermedio' && curso.nivel !== 'Avanzado')
-                  }"
-                >
+                  }">
                   {{ curso.nivel || 'Sin Nivel' }}
                 </span>
               </div>
 
-              <h3 class="text-2xl font-black text-primary-400 mb-3 drop-shadow-sm leading-tight group-hover:text-primary-300 transition-colors">
+              <h3
+                class="text-2xl font-black text-primary-400 mb-3 drop-shadow-sm leading-tight group-hover:text-primary-300 transition-colors">
                 {{ curso.titulo }}
               </h3>
 
@@ -133,31 +121,25 @@
               </p>
 
               <div class="flex flex-col sm:flex-row gap-4 mt-auto">
-                <button
-                  *ngIf="!curso.inscrito"
-                  (click)="inscribirse(curso.id)"
+                <button *ngIf="!curso.inscrito" (click)="inscribirse(curso.id)"
                   [disabled]="procesandoCursoId === curso.id"
-                  class="flex-1 bg-primary-500 hover:bg-primary-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-primary-500/20 hover:-translate-y-1 active:scale-95 group/btn flex items-center justify-center gap-2 text-sm uppercase tracking-wider block no-underline disabled:opacity-60"
-                >
+                  class="flex-1 bg-primary-500 hover:bg-primary-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-primary-500/20 hover:-translate-y-1 active:scale-95 group/btn flex items-center justify-center gap-2 text-sm uppercase tracking-wider block no-underline disabled:opacity-60">
                   {{ procesandoCursoId === curso.id ? 'Procesando...' : 'Inscribirse' }}
-                  <ion-icon name="arrow-forward-outline" class="text-lg group-hover/btn:translate-x-2 transition-transform duration-300"></ion-icon>
+                  <ion-icon name="arrow-forward-outline"
+                    class="text-lg group-hover/btn:translate-x-2 transition-transform duration-300"></ion-icon>
                 </button>
 
-                <button
-                  *ngIf="curso.inscrito"
-                  (click)="continuarCurso(curso.id)"
-                  class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider block no-underline flex items-center justify-center gap-2"
-                >
+                <button *ngIf="curso.inscrito" (click)="continuarCurso(curso.id)"
+                  class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider block no-underline flex items-center justify-center gap-2">
                   Continuar
                   <ion-icon name="play-circle-outline" class="text-lg"></ion-icon>
                 </button>
 
-                <button
-                  (click)="toggleExpandirCurso(curso)"
-                  class="flex-none bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider flex items-center justify-center gap-2 border border-white/10"
-                >
+                <button (click)="toggleExpandirCurso(curso)"
+                  class="flex-none bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wider flex items-center justify-center gap-2 border border-white/10">
                   Detalles
-                  <ion-icon [name]="curso.expandido ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-lg"></ion-icon>
+                  <ion-icon [name]="curso.expandido ? 'chevron-up-outline' : 'chevron-down-outline'"
+                    class="text-lg"></ion-icon>
                 </button>
               </div>
             </div>
@@ -174,24 +156,26 @@
                 </div>
 
                 <div class="space-y-3">
-                  <div *ngFor="let mod of curso.modulosDetalle; let i = index" class="border border-white/5 rounded-xl bg-white/5 overflow-hidden">
-                    <button
-                      (click)="toggleExpandirModulo(mod, $event)"
-                      class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors focus:outline-none"
-                    >
+                  <div *ngFor="let mod of curso.modulosDetalle; let i = index"
+                    class="border border-white/5 rounded-xl bg-white/5 overflow-hidden">
+                    <button (click)="toggleExpandirModulo(mod, $event)"
+                      class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors focus:outline-none">
                       <div class="flex items-center gap-3 text-left">
-                        <div class="w-8 h-8 rounded-full bg-primary-500/20 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div
+                          class="w-8 h-8 rounded-full bg-primary-500/20 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0">
                           {{ mod.orden || (i + 1) }}
                         </div>
                         <span class="text-white font-bold text-sm">{{ mod.titulo }}</span>
                       </div>
-                      <ion-icon [name]="mod.expandido ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-primary-400 shrink-0"></ion-icon>
+                      <ion-icon [name]="mod.expandido ? 'chevron-up-outline' : 'chevron-down-outline'"
+                        class="text-primary-400 shrink-0"></ion-icon>
                     </button>
 
                     <div *ngIf="mod.expandido" class="px-4 pb-4 pt-2 bg-black/20">
                       <ul class="space-y-2 mt-2">
-                        <li *ngFor="let lec of mod.leccionesDetalle" class="flex items-start gap-3 text-sm text-primary-50">
-                          <ion-icon name="play-circle-outline" class="text-primary-500 mt-0.5 shrink-0"></ion-icon>
+                        <li *ngFor="let lec of mod.leccionesDetalle"
+                          class="flex items-start gap-3 text-sm text-primary-50">
+                          <ion-icon name="book-outline" class="text-primary-500 mt-0.5 shrink-0"></ion-icon>
                           <span>{{ lec.titulo }}</span>
                         </li>
                         <li *ngIf="mod.leccionesDetalle?.length === 0" class="text-xs text-slate-500 italic ml-6">

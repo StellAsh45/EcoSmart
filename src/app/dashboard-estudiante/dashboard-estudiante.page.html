@@ -1,7 +1,7 @@
 <ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
     <div
         class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
-        <app-fondo-visual variante="deep"></app-fondo-visual>
+        <app-fondo-visual variante="estudiante"></app-fondo-visual>
 
         <!-- Cabecera de Navegación -->
         <header
@@ -23,8 +23,11 @@
                 <div class="w-px h-6 bg-white/10 hidden md:block"></div>
                 <!-- Perfil y Cierre de Sesión -->
                 <div class="flex items-center gap-4 relative">
-                    <div class="text-right">
-                        <p class="text-sm font-black text-primary-400 uppercase">{{nombreUsuario}}</p>
+                    <div class="text-right min-w-[100px] flex justify-end">
+                        <p *ngIf="nombreUsuario" class="text-sm font-black text-primary-400 uppercase animate-[fadeIn_0.3s_ease-out]">
+                            {{nombreUsuario}}
+                        </p>
+                        <div *ngIf="!nombreUsuario" class="w-24 h-4 bg-white/10 rounded-lg animate-pulse"></div>
                     </div>
                     <a routerLink="/perfil"
                         class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden">
@@ -58,8 +61,11 @@
                             <h2
                                 class="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight font-heading">
                                 ¡Bienvenido, <br />
-                                <span
-                                    class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 block mt-2">{{nombreUsuario}}!</span>
+                                <span *ngIf="nombreUsuario"
+                                    class="text-primary-400 underline decoration-primary-500/30 underline-offset-8 block mt-2 animate-[fadeIn_0.5s_ease-out]">
+                                    {{nombreUsuario}}!
+                                </span>
+                                <div *ngIf="!nombreUsuario" class="w-48 h-12 bg-white/10 rounded-2xl animate-pulse mt-4"></div>
                             </h2>
                             <p class="text-primary-50 text-xl mb-10 leading-relaxed font-medium max-w-md">
                                 Tu compromiso con el planeta es la semilla del cambio. Explora nuestro catálogo de
@@ -86,7 +92,7 @@
             </section>
 
             <!-- Grid de Estadísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Cursos Activos -->
                 <div
                     class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-primary-500 hover:-translate-y-1">
@@ -98,22 +104,24 @@
                         <p
                             class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-primary-400 transition-all">
                             Cursos Activos</p>
-                        <p class="text-3xl font-black text-white">1</p>
+                        <p class="text-3xl font-black text-white" *ngIf="!cargando">{{cursosActivosCount}}</p>
+                        <div *ngIf="cargando" class="w-12 h-8 bg-white/10 animate-pulse rounded-lg"></div>
                     </div>
                 </div>
 
-                <!-- Horas de Estudio -->
+                <!-- Cursos Completados -->
                 <div
                     class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-blue-500 hover:-translate-y-1">
                     <div
                         class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
-                        <ion-icon name="time-outline" class="text-3xl"></ion-icon>
+                        <ion-icon name="checkmark-circle-outline" class="text-3xl"></ion-icon>
                     </div>
                     <div>
                         <p
                             class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-blue-400 transition-all">
-                            Horas de Estudio</p>
-                        <p class="text-3xl font-black text-white">14h</p>
+                            Cursos Completados</p>
+                        <p class="text-3xl font-black text-white" *ngIf="!cargando">{{cursosCompletadosCount}}</p>
+                        <div *ngIf="cargando" class="w-12 h-8 bg-white/10 animate-pulse rounded-lg"></div>
                     </div>
                 </div>
             </div>
@@ -128,53 +136,69 @@
                     </div>
                 </div>
 
-                <div
-                    class="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 flex flex-col md:flex-row items-center gap-8 hover:bg-white/10 transition-all cursor-pointer group shadow-xl relative overflow-hidden">
-                    <!-- Glow de Hover -->
-                    <div
-                        class="absolute inset-0 bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
-                    </div>
-
-                    <div
-                        class="w-full md:w-80 h-52 bg-slate-800 rounded-3xl overflow-hidden relative border border-white/10 z-10">
-                        <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=1000"
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-60 group-hover:opacity-100"
-                            alt="Curso de Economía Circular" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+                <div class="space-y-6">
+                    <div *ngFor="let insc of cursosInscritos" [routerLink]="['/curso', insc.curso_id]"
+                        class="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 flex flex-col md:flex-row items-center gap-8 hover:bg-white/10 transition-all cursor-pointer group shadow-xl relative overflow-hidden">
                         <div
-                            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100">
+                            class="absolute inset-0 bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+                        </div>
+
+                        <div
+                            class="w-full md:w-80 h-52 bg-slate-800 rounded-3xl overflow-hidden relative border border-white/10 z-10">
+                            <img [src]="insc.curso_metadata?.imagen_url || 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=1000'"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-60 group-hover:opacity-100"
+                                [alt]="insc.curso_metadata?.titulo" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
                             <div
-                                class="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center text-slate-950 shadow-2xl">
-                                <ion-icon name="play-circle-outline" class="text-4xl"></ion-icon>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 py-2 w-full z-10">
-                        <div class="flex justify-between items-center mb-4">
-                            <span
-                                class="text-xs font-black text-primary-400 bg-primary-500/10 px-4 py-1.5 rounded-full uppercase tracking-tighter border border-primary-500/20">Sostenibilidad</span>
-                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Módulo 3 de
-                                12</span>
-                        </div>
-                        <h4
-                            class="text-3xl font-black text-white mb-6 group-hover:text-primary-400 transition-colors leading-tight font-heading">
-                            Introducción a la Economía Circular
-                        </h4>
-
-                        <div class="space-y-4">
-                            <div class="flex justify-between text-sm font-black italic">
-                                <span class="text-slate-500 uppercase tracking-wider font-sans">Progreso del
-                                    curso</span>
-                                <span class="text-primary-400">45% COMPLETADO</span>
-                            </div>
-                            <div class="w-full bg-white/5 rounded-full h-4 p-1 border border-white/10">
-                                <div class="bg-gradient-to-r from-primary-600 to-primary-400 h-full rounded-full shadow-[0_0_15px_rgba(34,197,94,0.3)] relative animate-[scaleX_1.5s_ease-out_forwards]"
-                                    style="width: 45%;">
-                                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100">
+                                <div
+                                    class="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center text-slate-950 shadow-2xl">
+                                    <ion-icon name="play-circle-outline" class="text-4xl"></ion-icon>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="flex-1 py-2 w-full z-10">
+                            <div class="flex justify-between items-center mb-4">
+                                <span
+                                    class="text-xs font-black text-primary-400 bg-primary-500/10 px-4 py-1.5 rounded-full uppercase tracking-tighter border border-primary-500/20">{{insc.curso_metadata?.nivel}}</span>
+                                <span
+                                    class="text-xs font-bold text-primary-50 uppercase tracking-widest">{{insc.progreso
+                                    === 100 ? 'Completado' : 'En progreso'}}</span>
+                            </div>
+                            <h4
+                                class="text-3xl font-black text-white mb-6 group-hover:text-primary-400 transition-colors leading-tight font-heading">
+                                {{insc.curso_metadata?.titulo}}
+                            </h4>
+
+                            <div class="space-y-4">
+                                <div class="flex justify-between text-sm font-black italic">
+                                    <span class="text-primary-50 uppercase tracking-wider font-sans">Progreso del
+                                        curso</span>
+                                    <span class="text-primary-400">{{insc.progreso}}% COMPLETADO</span>
+                                </div>
+                                <div class="w-full bg-white/5 rounded-full h-4 p-1 border border-white/10">
+                                    <div class="bg-gradient-to-r from-primary-600 to-primary-400 h-full rounded-full shadow-[0_0_15px_rgba(34,197,94,0.3)] relative transition-all duration-1000"
+                                        [style.width.%]="insc.progreso">
+                                        <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Si no hay cursos -->
+                <div *ngIf="!cargando && cursosInscritos.length === 0"
+                    class="py-20 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
+                    <ion-icon name="book-outline" class="text-6xl text-slate-400 mb-4"></ion-icon>
+                    <p class="text-slate-400 font-bold italic text-xl">Aún no te has inscrito en ningún curso.</p>
+                </div>
+
+                <!-- carga -->
+                <div *ngIf="cargando" class="flex justify-center py-24">
+                    <div
+                        class="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin">
                     </div>
                 </div>
             </section>

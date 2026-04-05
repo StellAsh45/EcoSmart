@@ -183,16 +183,19 @@
     </div>
 
     <!-- Overlay de Éxito -->
-    <div *ngIf="mostrarOverlayExito" 
+    <div *ngIf="mostrarOverlayExito"
         class="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
         <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-2xl"></div>
         <div class="relative flex flex-col items-center text-center space-y-6 max-w-md">
-            <div class="w-28 h-28 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(16,249,129,0.3)] animate-[scaleIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+            <div
+                class="w-28 h-28 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(16,249,129,0.3)] animate-[scaleIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
                 <ion-icon name="checkmark-circle-outline" class="text-6xl text-slate-950"></ion-icon>
             </div>
             <div class="space-y-2 animate-[fadeIn_0.5s_ease-out_0.2s_both]">
-                <h2 class="text-3xl font-black text-white tracking-tight font-heading uppercase">¡Perfil Actualizado!</h2>
-                <p class="text-emerald-400 font-bold uppercase tracking-widest text-xs">Tus cambios se guardaron con éxito</p>
+                <h2 class="text-3xl font-black text-white tracking-tight font-heading uppercase">¡Perfil Actualizado!
+                </h2>
+                <p class="text-emerald-400 font-bold uppercase tracking-widest text-xs">Tus cambios se guardaron con
+                    éxito</p>
             </div>
             <button (click)="mostrarOverlayExito = false"
                 class="mt-8 bg-white text-slate-950 font-black py-4 px-10 rounded-2xl transition-all shadow-xl animate-[fadeIn_0.5s_ease-out_0.4s_both] border-none cursor-pointer active:scale-95">
@@ -202,15 +205,17 @@
     </div>
 
     <!-- Overlay de Error -->
-    <div *ngIf="mostrarOverlayError" 
+    <div *ngIf="mostrarOverlayError"
         class="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
         <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-2xl"></div>
         <div class="relative flex flex-col items-center text-center space-y-6 max-w-md">
-            <div class="w-28 h-28 bg-red-500 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(239,68,68,0.3)] animate-[scaleIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+            <div
+                class="w-28 h-28 bg-red-500 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(239,68,68,0.3)] animate-[scaleIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
                 <ion-icon name="alert-circle-outline" class="text-6xl text-slate-950"></ion-icon>
             </div>
             <div class="space-y-2 animate-[fadeIn_0.5s_ease-out_0.2s_both]">
-                <h2 class="text-3xl font-black text-white tracking-tight font-heading uppercase">Ups, algo salió mal</h2>
+                <h2 class="text-3xl font-black text-white tracking-tight font-heading uppercase">Ups, algo salió mal
+                </h2>
                 <p class="text-red-400 font-bold uppercase tracking-widest text-xs">{{mensajeErrorOverlay}}</p>
             </div>
             <button (click)="mostrarOverlayError = false"

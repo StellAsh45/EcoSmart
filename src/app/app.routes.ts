@@ -64,5 +64,10 @@ export const routes: Routes = [
     path: 'restablecer-contrasena',
     canActivate: [RecoveryGuard],
     loadComponent: () => import('./restablecer-contrasena/restablecer-contrasena.page').then(m => m.RestablecerContrasenaPage)
+  },
+  {
+    path: 'curso/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./curso/curso.page').then(m => m.CursoPage)
   }
 ];

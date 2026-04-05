@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-type VarianteFondo = 'primary' | 'misty' | 'deep' | 'admin';
+type VarianteFondo = 'primary' | 'misty' | 'deep' | 'admin' | 'estudiante';
 
 const VARIANTS = {
   primary: {
@@ -27,6 +27,12 @@ const VARIANTS = {
     gradient1: 'bg-emerald-600/30',
     gradient2: 'bg-slate-700/40',
     overlay: 'from-slate-950/50 via-slate-950/30 to-slate-950/60'
+  },
+  estudiante: {
+    image: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    gradient1: 'bg-emerald-900/40',
+    gradient2: 'bg-primary-900/40',
+    overlay: 'from-slate-950/80 via-slate-950/40 to-slate-950/80'
   }
 };
 
@@ -96,7 +102,7 @@ const VARIANTS = {
 })
 export class FondoVisualComponent implements OnInit {
   @Input() variante: VarianteFondo = 'primary';
-  
+
   configuracion = VARIANTS['primary'];
 
   ngOnInit() {

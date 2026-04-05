@@ -32,6 +32,7 @@ interface CursoAdmin {
   nivel?: string | null;
   estado: string;
   totalModulos: number;
+  totalEstudiantes: number;
   imagen_url?: string | null;
 }
 
@@ -60,7 +61,7 @@ interface UsuarioAdmin {
   ]
 })
 export class DashboardAdminPage implements OnInit {
-  nombreUsuario: string = 'Administrador';
+  nombreUsuario: string = '';
   usuarioActualId: string = '';
   cargando: boolean = true;
   cargandoUsuarios: boolean = true;
@@ -163,22 +164,25 @@ export class DashboardAdminPage implements OnInit {
 
       this.cursos = (cursosData || []).map((curso: any) => ({
         ...curso,
-        totalModulos: 0
+        totalModulos: 0,
+        totalEstudiantes: 0
       }));
 
-      // Contar módulos reales por cada curso
+      // Obtener todas las inscripciones para contar estudiantes por curso
+      const inscripcionesTotales = await this.obtenerInscripciones();
+
+      // Contar módulos e inscritos por cada curso
       for (const curso of this.cursos) {
-        const { count, error } = await this.supabaseSvc.cliente
+        // 1. Contar módulos
+        const { count: modulosCount } = await this.supabaseSvc.cliente
           .from('modulos')
           .select('*', { count: 'exact', head: true })
           .eq('curso_id', curso.id);
+        
+        curso.totalModulos = modulosCount || 0;
 
-        if (error) {
-          console.error(`Error contando módulos del curso ${curso.id}:`, error);
-          curso.totalModulos = 0;
-        } else {
-          curso.totalModulos = count || 0;
-        }
+        // 2. Contar inscritos desde la lista que ya obtuvimos
+        curso.totalEstudiantes = inscripcionesTotales.filter(ins => ins.cursoId === String(curso.id)).length;
       }
 
       this.estadisticas.totalCursos = this.cursos.length;

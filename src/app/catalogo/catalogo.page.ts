@@ -53,7 +53,7 @@ interface CursoCatalogo {
 })
 export class CatalogoPage implements OnInit {
   usuario: any = null;
-  nombreUsuario = 'Estudiante';
+  nombreUsuario = '';
   cursos: CursoCatalogo[] = [];
   cargando = true;
   mensajeError = '';
@@ -114,15 +114,11 @@ export class CatalogoPage implements OnInit {
     this.mensajeError = '';
 
     try {
-      const { data, error } = await this.supabaseSvc.cliente
-        .from('cursos')
-        .select('*')
-        .eq('estado', 'publicado')
-        .order('created_at', { ascending: false });
+      const { data, error } = await this.supabaseSvc.obtenerCursosPublicos();
 
       if (error) throw error;
 
-      const cursosRaw = data || [];
+      const cursosRaw = (data || []).filter((c: any) => c.estado === 'publicado');
       let cursosInscritos = new Set<string>();
 
       if (this.usuario?.id) {
@@ -202,9 +198,8 @@ export class CatalogoPage implements OnInit {
         if (insertError) throw insertError;
       }
 
-      this.cursos = this.cursos.map((curso) =>
-        curso.id === cursoId ? { ...curso, inscrito: true } : curso
-      );
+      // Recargar todo el catálogo para sincronizar estados
+      await this.cargarCursos();
     } catch (error) {
       console.error('Error al inscribirse en el curso:', error);
       this.mensajeError = 'No fue posible completar la inscripción.';

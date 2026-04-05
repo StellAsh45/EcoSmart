@@ -122,6 +122,14 @@ export class SupabaseService {
       .order('created_at', { ascending: false });
   }
 
+  async obtenerCursosPublicos() {
+    return this.supabase
+      .from('cursos')
+      .select('*')
+      .eq('estado', 'publicado')
+      .order('created_at', { ascending: false });
+  }
+
   async obtenerCursoPorId(id: string) {
     return this.supabase
       .from('cursos')
@@ -312,6 +320,24 @@ export class SupabaseService {
       .eq('usuario_id', usuarioId)
       .eq('curso_id', cursoId);
   }
+
+  // --- MÉTODOS PARA LECCIONES COMPLETADAS ---
+  async obtenerLeccionesCompletadas(inscripcionId: string) {
+    return this.supabase
+      .from('lecciones_completadas')
+      .select('leccion_id')
+      .eq('inscripcion_id', inscripcionId);
+  }
+
+  async guardarLeccionCompletada(inscripcionId: string, leccionId: string) {
+    return this.supabase
+      .from('lecciones_completadas')
+      .upsert({
+        inscripcion_id: inscripcionId,
+        leccion_id: leccionId
+      }, { onConflict: 'inscripcion_id,leccion_id' });
+  }
+  // -------------------------------------------
 
   async guardarProgresoLeccion(data: {
     usuario_id: string;
