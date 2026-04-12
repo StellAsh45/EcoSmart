@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -60,7 +60,9 @@ interface UsuarioAdmin {
     EcoSmartLogoComponent
   ]
 })
-export class DashboardAdminPage implements OnInit {
+export class DashboardAdminPage implements OnInit, ViewWillEnter {
+  @ViewChild(IonContent) content!: IonContent;
+
   nombreUsuario: string = '';
   usuarioActualId: string = '';
   cargando: boolean = true;
@@ -106,6 +108,7 @@ export class DashboardAdminPage implements OnInit {
   }
 
   async ionViewWillEnter() {
+    this.content?.scrollToTop(0);
     // Esto se ejecuta cada vez que se ingrese a la pagina, lo añadí para que siempre que cargue traiga los datos actualizados
     if (this.inicializandoDashboard) {
       return;

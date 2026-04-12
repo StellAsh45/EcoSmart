@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -26,6 +25,8 @@ import {
   imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent]
 })
 export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
+  @ViewChild(IonContent) content!: IonContent;
+
   usuario: any = null;
   nombreUsuario: string = '';
   cursosInscritos: any[] = [];
@@ -52,6 +53,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   }
 
   async ionViewWillEnter() {
+    this.content?.scrollToTop(0);
     this.cargando = true;
     try {
       const { data, error } = await this.supabaseSvc.obtenerUsuario();

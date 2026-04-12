@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { bookOutline, leafOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tarjeta-curso',
@@ -14,7 +16,7 @@ import { IonIcon } from '@ionic/angular/standalone';
 
       <div class="relative h-60 overflow-hidden m-3 rounded-[2rem]">
         <img
-          [src]="imagen"
+          [src]="imagen || 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=1000'"
           [alt]="titulo"
           class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.85] group-hover:brightness-100"
         />
@@ -62,6 +64,9 @@ import { IonIcon } from '@ionic/angular/standalone';
   `]
 })
 export class TarjetaCursoComponent {
+  constructor() {
+    addIcons({ bookOutline, leafOutline });
+  }
   @Input() id: string = '';
   @Input() titulo: string = '';
   @Input() descripcion: string = '';

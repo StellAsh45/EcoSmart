@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -8,10 +9,13 @@ import {
   imageOutline,
   videocamOutline,
   trashOutline,
-  reorderTwoOutline,
-  listOutline
+  trash,
+  listOutline,
+  chevronUpOutline,
+  chevronDownOutline,
+  playCircle,
+  cloudUploadOutline
 } from 'ionicons/icons';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 export interface BloqueContenido {
   id: string;
@@ -22,16 +26,16 @@ export interface BloqueContenido {
 @Component({
   selector: 'app-editor-leccion',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonIcon, DragDropModule],
+  imports: [CommonModule, FormsModule, IonIcon],
   template: `
     <div class="space-y-4 -mt-8">
       <div class="px-2 space-y-0.5 animate-[fadeIn_0.5s_ease-out] opacity-80 hover:opacity-100 transition-opacity">
         <div class="flex items-center gap-2">
           <div class="w-1 h-3 bg-primary-500 rounded-full"></div>
-          <h6 class="text-[12px] font-black text-primary-400 uppercase tracking-[0.2em]">Configuración de Lección</h6>
+          <h6 class="text-[14px] font-black text-primary-400 uppercase tracking-[0.2em]">Configuración de Lección</h6>
         </div>
-        <p class="text-[10px] text-primary-50 font-medium leading-tight pl-2 italic">
-          Añade bloques, edita su contenido y <span class="text-primary-400 font-bold">arrástralos</span> para ordenar la secuencia.
+        <p class="text-[12px] text-primary-50 font-medium leading-tight pl-2 italic">
+          Añade bloques, edita su contenido y usa las <span class="text-primary-400 font-bold">flechas</span> para ordenar la secuencia.
         </p>
       </div>
 
@@ -54,11 +58,9 @@ export interface BloqueContenido {
         </button>
       </div>
 
-      <!-- Área de Contenido -->
       <div class="space-y-4 min-h-[300px]">
-        <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="cdk-list">
+        <div>
           <div *ngFor="let bloque of bloques; let i = index; trackBy: trackByBloque" 
-               cdkDrag 
                [ngClass]="{
                  'hover:border-primary-500/30 hover:shadow-primary-500/5': bloque.tipo === 'titulo',
                  'hover:border-emerald-500/30 hover:shadow-emerald-500/5': bloque.tipo === 'subtitulo',
@@ -66,20 +68,38 @@ export interface BloqueContenido {
                  'hover:border-amber-500/30 hover:shadow-amber-500/5': bloque.tipo === 'imagen',
                  'hover:border-red-500/30 hover:shadow-red-500/5': bloque.tipo === 'video'
                }"
-               class="group relative bg-white/[0.02] hover:bg-white/[0.04] p-6 rounded-[2.5rem] border border-white/5 transition-all cursor-grab active:cursor-grabbing shadow-sm mb-4">
+               class="group relative bg-white/[0.02] hover:bg-white/[0.04] p-6 rounded-[2.5rem] border border-white/5 transition-all shadow-sm mb-4">
             
-            <!-- Indicador de arrastre lateral - Color Dinámico -->
+            <!-- Indicador lateral -->
             <div class="absolute left-0 top-8 bottom-8 w-1 rounded-r-full transition-all duration-300"
                  [ngClass]="{
-                   'group-hover:bg-primary-500/50 group-active:bg-primary-500': bloque.tipo === 'titulo',
-                   'group-hover:bg-emerald-500/50 group-active:bg-emerald-500': bloque.tipo === 'subtitulo',
-                   'group-hover:bg-blue-500/50 group-active:bg-blue-500': bloque.tipo === 'texto',
-                   'group-hover:bg-amber-500/50 group-active:bg-amber-500': bloque.tipo === 'imagen',
-                   'group-hover:bg-red-500/50 group-active:bg-red-500': bloque.tipo === 'video'
+                   'group-hover:bg-primary-500 group-active:bg-primary-500': bloque.tipo === 'titulo',
+                   'group-hover:bg-emerald-500 group-active:bg-emerald-500': bloque.tipo === 'subtitulo',
+                   'group-hover:bg-blue-500 group-active:bg-blue-500': bloque.tipo === 'texto',
+                   'group-hover:bg-amber-500 group-active:bg-amber-500': bloque.tipo === 'imagen',
+                   'group-hover:bg-red-500 group-active:bg-red-500': bloque.tipo === 'video'
                  }"></div>
             
-            <!-- Controles de Bloque - Solo Basura -->
+            <!-- Controles de Bloque -->
             <div class="absolute -right-2 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all z-10">
+              <!-- Botón Subir -->
+              <button 
+                *ngIf="i > 0"
+                (click)="moverArriba(i)" 
+                class="p-2.5 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all border border-white/10 cursor-pointer backdrop-blur-md shadow-xl" 
+                title="Mover arriba">
+                <ion-icon name="chevron-up-outline" class="text-lg"></ion-icon>
+              </button>
+              <!-- Botón Bajar -->
+              <button 
+                *ngIf="i < bloques.length - 1"
+                (click)="moverAbajo(i)" 
+                class="p-2.5 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all border border-white/10 cursor-pointer backdrop-blur-md shadow-xl" 
+                title="Mover abajo">
+                <ion-icon name="chevron-down-outline" class="text-lg"></ion-icon>
+              </button>
+
+              <!-- Botón Borrar -->
               <button (click)="solicitarConfirmacionBorrado(i)" class="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/30 transition-all border border-red-500/20 cursor-pointer backdrop-blur-md shadow-xl" title="Eliminar bloque">
                 <ion-icon name="trash-outline" class="text-lg"></ion-icon>
               </button>
@@ -89,7 +109,9 @@ export interface BloqueContenido {
             <div class="pr-8">
               <ng-container [ngSwitch]="bloque.tipo">
                 <div *ngSwitchCase="'titulo'" class="space-y-1">
-                  <span class="text-[9px] font-black text-primary-400 uppercase tracking-widest pl-2">Título de Sección</span>
+                   <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[9px] font-black text-primary-400 uppercase tracking-widest pl-2">Título de Sección</span>
+                   </div>
                   <input [(ngModel)]="bloque.valor" (ngModelChange)="notificarCambio()" placeholder="Escribe un título llamativo..." 
                          [class.border-red-500/50]="!bloque.valor"
                          class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none placeholder:text-slate-700 p-2">
@@ -104,31 +126,68 @@ export interface BloqueContenido {
                   <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest pl-2">Cuerpo del Contenido</span>
                   <textarea [(ngModel)]="bloque.valor" (ngModelChange)="notificarCambio()" placeholder="Explica el concepto aquí..." 
                             [class.border-red-500/50]="!bloque.valor"
-                            rows="4" class="w-full bg-white/5 rounded-2xl border border-white/10 focus:border-blue-500/30 p-4 text-slate-300 leading-relaxed focus:outline-none resize-none placeholder:text-slate-700 font-medium transition-all"></textarea>
+                            rows="4" class="w-full bg-transparent border-none rounded-2xl p-4 text-slate-300 leading-relaxed focus:outline-none resize-none placeholder:text-slate-700 font-medium"></textarea>
                 </div>
                 <div *ngSwitchCase="'imagen'" class="space-y-3">
-                  <span class="text-[9px] font-black text-amber-400 uppercase tracking-widest pl-2">URL de la Imagen</span>
-                  <div class="flex gap-3">
-                    <input [(ngModel)]="bloque.valor" (ngModelChange)="notificarCambio()" placeholder="https://ejemplo.com/imagen.jpg" 
-                           class="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-amber-500/30">
+                  <div class="flex items-center justify-between px-2">
+                    <span class="text-[9px] font-black text-amber-400 uppercase tracking-widest">Archivo de Imagen</span>
+                    <label class="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-all border border-amber-500/20 cursor-pointer text-[10px] font-black uppercase tracking-wider">
+                      <ion-icon name="cloud-upload-outline"></ion-icon>
+                      Subir Imagen
+                      <input type="file" class="hidden" accept="image/*" (change)="onArchivoSeleccionado($event, bloque)">
+                    </label>
                   </div>
-                  <div *ngIf="bloque.valor" class="mt-4 rounded-2xl overflow-hidden border border-white/10 aspect-video group-hover:scale-[1.02] transition-all duration-500">
-                    <img [src]="bloque.valor" class="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity">
+                  <div *ngIf="bloque.valor" class="mt-4 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.02] transition-all duration-500 relative bg-slate-900/50 min-h-[100px]">
+                    <img [src]="bloque.valor" class="w-full h-auto block opacity-80 hover:opacity-100 transition-opacity" style="max-height: 500px; object-fit: contain;">
+                    <button *ngIf="bloque.valor.startsWith('data:')" (click)="bloque.valor = ''; notificarCambio()" class="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/40 backdrop-blur-md transition-all border-none cursor-pointer">
+                      <ion-icon name="trash"></ion-icon>
+                    </button>
+                  </div>
+                  <div *ngIf="!bloque.valor" class="mt-2 py-8 text-center border-2 border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+                    <p class="text-[10px] font-bold text-slate-600 uppercase italic">Ninguna imagen seleccionada</p>
                   </div>
                 </div>
-                <div *ngSwitchCase="'video'" class="space-y-2">
-                  <span class="text-[9px] font-black text-red-400 uppercase tracking-widest pl-2">ID de Video (YouTube/Vimeo)</span>
+                <div *ngSwitchCase="'video'" class="space-y-3">
+                  <div class="flex items-center justify-between px-2">
+                    <span class="text-[9px] font-black text-red-400 uppercase tracking-widest pl-2">YouTube ID o Archivo de Video</span>
+                    <label class="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all border border-red-500/20 cursor-pointer text-[10px] font-black uppercase tracking-wider">
+                      <ion-icon name="cloud-upload-outline"></ion-icon>
+                      Subir Video
+                      <input type="file" class="hidden" accept="video/*" (change)="onArchivoSeleccionado($event, bloque)">
+                    </label>
+                  </div>
                   <div class="relative">
-                    <input [(ngModel)]="bloque.valor" (ngModelChange)="notificarCambio()" placeholder="Ej. dQw4w9WgXcQ" 
+                    <input [(ngModel)]="bloque.valor" (ngModelChange)="notificarCambio()" placeholder="Ej. dQw4w9WgXcQ o carga un archivo" 
                            class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-red-500/30">
                     <ion-icon name="play-circle" class="absolute right-4 top-1/2 -translate-y-1/2 text-red-500/40 text-xl"></ion-icon>
+                  </div>
+                  <!-- Preview del Video -->
+                  <div *ngIf="bloque.valor" class="mt-4 aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black relative">
+                    <!-- YouTube -->
+                    <iframe *ngIf="!bloque.valor.startsWith('data:')"
+                            [src]="obtenerUrlVideo(bloque.valor)" 
+                            class="w-full h-full border-none"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                    </iframe>
+                    <!-- Local Video -->
+                    <video *ngIf="bloque.valor.startsWith('data:')"
+                           [src]="bloque.valor"
+                           controls
+                           class="w-full h-full object-contain">
+                    </video>
+                    
+                    <button *ngIf="bloque.valor.startsWith('data:')" (click)="bloque.valor = ''; notificarCambio()" class="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/40 backdrop-blur-md transition-all border-none cursor-pointer">
+                      <ion-icon name="trash"></ion-icon>
+                    </button>
                   </div>
                 </div>
               </ng-container>
             </div>
           </div>
         </div>
-        <!-- Empty State -->
+
+        <!-- Si no hay bloques -->
         <div *ngIf="bloques.length === 0" class="py-20 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
           <div class="w-20 h-20 bg-white/5 rounded-[2rem] mx-auto flex items-center justify-center text-slate-700 mb-6">
             <ion-icon name="text-outline" class="text-4xl"></ion-icon>
@@ -138,26 +197,26 @@ export interface BloqueContenido {
       </div>
     </div>
 
-    <!-- Modal de Confirmación Premium -->
-    <div *ngIf="mostrarConfirmacion" class="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
-      <div (click)="cancelarBorrado()" class="absolute inset-0 bg-slate-950/60 backdrop-blur-md"></div>
+    <!-- Modal de confirmación -->
+    <div *ngIf="mostrarConfirmacion" class="fixed inset-0 z-[200] flex items-center justify-center p-6">
+      <div (click)="cancelarBorrado()" class="absolute inset-0 bg-slate-950/60 backdrop-blur-md modal-fade-in"></div>
       
-      <div class="relative bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-[320px] text-center space-y-6 transform animate-[scaleIn_0.3s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+      <div class="relative bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-[320px] text-center space-y-6 modal-slide-down">
         <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-3xl mx-auto flex items-center justify-center border border-red-500/30">
-          <ion-icon name="trash" class="text-3xl"></ion-icon>
+          <ion-icon name="trash" class="text-2xl"></ion-icon>
         </div>
         
         <div class="space-y-2">
           <h3 class="text-white font-black text-xl italic uppercase tracking-tighter">¿Eliminar bloque?</h3>
-          <p class="text-slate-400 text-xs font-bold leading-relaxed">Esta acción no se puede deshacer y el contenido se perderá.</p>
+          <p class="text-primary-50 text-xs font-bold leading-relaxed">Esta acción no se puede deshacer y el contenido se perderá.</p>
         </div>
         
         <div class="flex flex-col gap-2">
           <button (click)="confirmarBorrado()" class="w-full py-3 bg-red-500 hover:bg-red-400 text-slate-950 font-black rounded-2xl transition-all active:scale-95 shadow-lg shadow-red-500/20">
-            SÍ, BORRAR
+            Sí
           </button>
           <button (click)="cancelarBorrado()" class="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border-none">
-            Mantener bloque
+            No
           </button>
         </div>
       </div>
@@ -169,35 +228,35 @@ export interface BloqueContenido {
       font-style: italic;
     }
 
-    .cdk-drag-preview {
-      box-sizing: border-box;
-      border-radius: 40px;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 40px rgba(16, 249, 129, 0.2);
-      background: rgba(15, 23, 42, 0.98);
-      backdrop-filter: blur(20px);
-      border: 2px solid rgba(16, 249, 129, 0.4);
-      transform: scale(1.03);
+    .modal-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
     }
 
-    .cdk-drag-placeholder {
-      opacity: 0.1;
-      border: 3px dashed rgba(16, 249, 129, 0.5);
-      background: rgba(16, 249, 129, 0.08);
-      border-radius: 40px;
-      margin-bottom: 30px;
-      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    .modal-slide-down {
+      animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
 
-    .cdk-drag-animating {
-      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
-    .cdk-list.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
-      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   `]
 })
 export class EditorLeccionComponent {
+  private sanitizer = inject(DomSanitizer);
+  private videoUrlCache = new Map<string, SafeResourceUrl>();
+
   @Input() bloques: BloqueContenido[] = [];
   @Output() cambios = new EventEmitter<BloqueContenido[]>();
 
@@ -210,8 +269,12 @@ export class EditorLeccionComponent {
       imageOutline,
       videocamOutline,
       trashOutline,
-      reorderTwoOutline,
-      listOutline
+      trash,
+      listOutline,
+      chevronUpOutline,
+      chevronDownOutline,
+      playCircle,
+      cloudUploadOutline
     });
   }
 
@@ -223,6 +286,28 @@ export class EditorLeccionComponent {
     };
     this.bloques.push(nuevoBloque);
     this.notificarCambio();
+  }
+
+  onArchivoSeleccionado(event: any, bloque: BloqueContenido) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        bloque.valor = e.target.result;
+        this.notificarCambio();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  obtenerUrlVideo(id: string): SafeResourceUrl {
+    if (this.videoUrlCache.has(id)) {
+      return this.videoUrlCache.get(id)!;
+    }
+    const url = `https://www.youtube.com/embed/${id}`;
+    const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.videoUrlCache.set(id, safeUrl);
+    return safeUrl;
   }
 
   solicitarConfirmacionBorrado(index: number) {
@@ -247,16 +332,30 @@ export class EditorLeccionComponent {
     this.notificarCambio();
   }
 
-  notificarCambio() {
-    this.cambios.emit(this.bloques);
+  moverArriba(index: number) {
+    if (index > 0) {
+      const temp = this.bloques[index];
+      this.bloques[index] = this.bloques[index - 1];
+      this.bloques[index - 1] = temp;
+      this.notificarCambio();
+    }
   }
 
-  onDrop(event: CdkDragDrop<BloqueContenido[]>) {
-    moveItemInArray(this.bloques, event.previousIndex, event.currentIndex);
-    this.notificarCambio();
+  moverAbajo(index: number) {
+    if (index < this.bloques.length - 1) {
+      const temp = this.bloques[index];
+      this.bloques[index] = this.bloques[index + 1];
+      this.bloques[index + 1] = temp;
+      this.notificarCambio();
+    }
+  }
+
+  notificarCambio() {
+    this.cambios.emit(this.bloques);
   }
 
   trackByBloque(index: number, bloque: BloqueContenido) {
     return bloque.id;
   }
 }
+

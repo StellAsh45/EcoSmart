@@ -33,10 +33,10 @@ import {
   styleUrls: ['./perfil.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    IonContent, 
-    IonIcon, 
+    CommonModule,
+    ReactiveFormsModule,
+    IonContent,
+    IonIcon,
     IonSpinner,
     FondoVisualComponent,
     EcoSmartLogoComponent,
@@ -49,7 +49,7 @@ export class PerfilPage implements OnInit {
 
   cargando = true;
   guardando = false;
-  
+
   // Overlays de Feedback
   mostrarOverlayExito = false;
   mostrarOverlayError = false;
@@ -207,7 +207,7 @@ export class PerfilPage implements OnInit {
   private mostrarMensajeError(msg: string) {
     this.mensajeErrorOverlay = msg;
     this.mostrarOverlayError = true;
-    setTimeout(() => { if (this.mostrarOverlayError) this.mostrarOverlayError = false; }, 4000);
+    setTimeout(() => { if (this.mostrarOverlayError) this.mostrarOverlayError = false; }, 2000);
   }
 
   async guardarPerfil(): Promise<void> {

@@ -29,12 +29,12 @@ import { EcoSmartLogoComponent } from '../eco-smart-logo/eco-smart-logo.componen
 
                 <div class="relative">
                     <div class="flex flex-col items-center mb-10">
-                        <a routerLink="/" class="flex flex-col items-center gap-4 group/logo cursor-pointer mb-6 no-underline">
+                        <div class="flex flex-col items-center gap-4 group/logo mb-6 no-underline">
                             <div class="relative">
                                 <div class="absolute inset-0 bg-primary-400 blur-2xl opacity-30 group-hover/logo:opacity-60 transition-opacity"></div>
                                 <app-eco-smart-logo [clasePersonalizada]="claseLogo"></app-eco-smart-logo>
                             </div>
-                        </a>
+                        </div>
                         <h2 class="text-3xl font-black text-white mb-2 text-center font-heading">{{titulo}}</h2>
                         <p class="text-primary-50 font-medium text-center">{{subtitulo}}</p>
                     </div>

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
@@ -27,7 +28,6 @@ interface Leccion {
   id: string;
   titulo: string;
   orden: number;
-  contenido_tipo: string;
   contenido_html: string;
   completada?: boolean;
 }
@@ -55,7 +55,7 @@ export interface BloqueContenido {
   imports: [CommonModule, IonContent, IonIcon, FondoVisualComponent, EcoSmartLogoComponent]
 
 })
-export class CursoPage implements OnInit {
+export class CursoPage implements OnInit, ViewWillEnter {
   cursoId: string | null = null;
   curso: any = null;
   modulos: Modulo[] = [];
@@ -67,6 +67,7 @@ export class CursoPage implements OnInit {
   progresoGeneral = 0;
   bloquesActivos: BloqueContenido[] = [];
   inscripcionId: string | null = null;
+  private videoUrlCache = new Map<string, SafeResourceUrl>();
 
   constructor(
     private route: ActivatedRoute,
@@ -84,10 +85,14 @@ export class CursoPage implements OnInit {
 
   async ngOnInit() {
     this.cursoId = this.route.snapshot.paramMap.get('id');
+    if (!this.cursoId) {
+      this.router.navigate(['/dashboard-estudiante']);
+    }
+  }
+
+  async ionViewWillEnter() {
     if (this.cursoId) {
       await this.cargarTodo();
-    } else {
-      this.router.navigate(['/dashboard-estudiante']);
     }
   }
 
@@ -210,6 +215,20 @@ export class CursoPage implements OnInit {
     console.log(`Progreso recalculado localmente: ${this.progresoGeneral}% (${totalCompletadas}/${totalLecs})`);
   }
 
+  get esPrimerLeccion(): boolean {
+    if (!this.leccionActiva || this.modulos.length === 0) return true;
+    const primeraLec = this.modulos[0].lecciones[0];
+    return primeraLec?.id === this.leccionActiva.id;
+  }
+
+  get esUltimaLeccion(): boolean {
+    if (!this.leccionActiva || this.modulos.length === 0) return true;
+    const ultimoMod = this.modulos[this.modulos.length - 1];
+    if (!ultimoMod.lecciones.length) return true;
+    const ultimaLec = ultimoMod.lecciones[ultimoMod.lecciones.length - 1];
+    return ultimaLec?.id === this.leccionActiva.id;
+  }
+
   seleccionarLeccion(leccion: Leccion) {
     this.leccionActiva = leccion;
     this.sidebarAbierto = false; // Cerrar sidebar en móvil al seleccionar
@@ -297,6 +316,34 @@ export class CursoPage implements OnInit {
     }
   }
 
+  async irALeccionAnterior() {
+    let anteriorLec: Leccion | null = null;
+    let anteriorModulo: Modulo | null = null;
+    let ultimaLecVisualizada: Leccion | null = null;
+    let moduloDeUltimaLec: Modulo | null = null;
+
+    for (const mod of this.modulos) {
+      for (const lec of mod.lecciones) {
+        if (lec.id === this.leccionActiva?.id) {
+          anteriorLec = ultimaLecVisualizada;
+          anteriorModulo = moduloDeUltimaLec;
+          break;
+        }
+        ultimaLecVisualizada = lec;
+        moduloDeUltimaLec = mod;
+      }
+      if (anteriorLec) break;
+    }
+
+    if (anteriorLec) {
+      if (anteriorModulo) anteriorModulo.expandido = true;
+      this.seleccionarLeccion(anteriorLec);
+      // Scroll to top
+      const mainElement = document.querySelector('main');
+      if (mainElement) mainElement.scrollTop = 0;
+    }
+  }
+
   volverAlDashboard() {
     this.router.navigate(['/dashboard-estudiante']);
   }
@@ -304,5 +351,21 @@ export class CursoPage implements OnInit {
   async cerrarSesion() {
     await this.supabaseSvc.cerrarSesion();
     this.router.navigate(['/ingreso']);
+  }
+
+  trackByBloque(index: number, bloque: BloqueContenido): string {
+    return bloque.id;
+  }
+
+  private sanitizer = inject(DomSanitizer);
+
+  obtenerUrlVideo(id: string): SafeResourceUrl {
+    if (this.videoUrlCache.has(id)) {
+      return this.videoUrlCache.get(id)!;
+    }
+    const url = `https://www.youtube.com/embed/${id}`;
+    const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.videoUrlCache.set(id, safeUrl);
+    return safeUrl;
   }
 }

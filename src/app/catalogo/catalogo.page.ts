@@ -14,7 +14,8 @@ import {
   chevronUpOutline,
   playCircleOutline,
   listOutline,
-  arrowForwardOutline
+  arrowForwardOutline,
+  leafOutline
 } from 'ionicons/icons';
 
 interface LeccionDetalle {
@@ -72,7 +73,8 @@ export class CatalogoPage implements OnInit {
       chevronUpOutline,
       playCircleOutline,
       listOutline,
-      arrowForwardOutline
+      arrowForwardOutline,
+      leafOutline
     });
   }
 

@@ -32,14 +32,15 @@
             <div class="flex items-center gap-6">
                 <!-- Progreso-->
                 <div *ngIf="!cargando"
-                    class="hidden md:flex items-center gap-4 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+                    class="flex items-center gap-2 md:gap-4 bg-white/5 px-3 py-1.5 md:px-4 md:py-2 rounded-2xl border border-white/10 scale-90 sm:scale-100 origin-right transition-all">
                     <div class="text-right">
-                        <p class="text-[10px] font-black text-primary-50/60 uppercase tracking-widest">Progreso del
-                            Curso
-                        </p>
-                        <p class="text-sm font-black text-primary-400">{{progresoGeneral}}%</p>
+                        <p
+                            class="text-[8px] md:text-[9px] font-black text-primary-50 uppercase tracking-tighter md:tracking-widest leading-none">
+                            Progreso</p>
+                        <p class="text-xs md:text-sm font-black text-primary-400 leading-none mt-0.5">
+                            {{progresoGeneral}}%</p>
                     </div>
-                    <div class="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div class="w-10 md:w-14 h-1 md:h-2 bg-white/10 rounded-full overflow-hidden shrink-0">
                         <div class="h-full bg-primary-500 transition-all duration-1000"
                             [style.width.%]="progresoGeneral"></div>
                     </div>
@@ -58,7 +59,7 @@
         <div class="flex-1 flex pt-20 h-screen relative overflow-hidden">
             <!-- Menu desplegable -->
             <aside
-                class="fixed top-20 bottom-0 left-0 z-[90] w-80 bg-slate-950/80 backdrop-blur-3xl border-r border-white/10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                class="fixed top-20 bottom-0 left-0 z-[90] w-80 bg-slate-950/95 border-r border-white/10 flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform"
                 [class.translate-x-0]="sidebarAbierto" [class.-translate-x-full]="!sidebarAbierto && !cargando">
 
                 <div class="p-8 border-b border-white/5 flex items-center gap-3">
@@ -104,104 +105,159 @@
                 </div>
             </aside>
 
-            <!-- Overlay en movil-->
-            <div *ngIf="sidebarAbierto" (click)="toggleSidebar()"
-                class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[85] lg:hidden animate-[fadeIn_0.3s_all]"></div>
+            <!-- Overlay en movil (CSS toggle, no *ngIf para no recrear el DOM) -->
+            <div (click)="toggleSidebar()"
+                class="fixed inset-0 bg-black/60 z-[85] lg:hidden transition-all duration-300"
+                [class.opacity-0]="!sidebarAbierto" [class.pointer-events-none]="!sidebarAbierto"
+                [class.opacity-100]="sidebarAbierto"></div>
 
             <!-- Contenido Principal -->
             <main
                 class="flex-1 flex flex-col relative z-10 overflow-y-auto custom-scrollbar p-6 lg:p-12 space-y-10 scroll-smooth">
-                    <div *ngIf="leccionActiva"
-                        class="max-w-4xl mx-auto w-full space-y-8 animate-[fadeIn_0.5s_ease-out]">
-                        <!-- Encabezado de lección -->
-                        <div
-                            class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
-                            <div class="space-y-2">
-                                <span *ngIf="!leccionActiva.completada"
-                                    class="text-xs font-black text-red-400 uppercase tracking-[0.2em] bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
-                                    Lección en Progreso
-                                </span>
-                                <span *ngIf="leccionActiva.completada"
-                                    class="text-xs font-black text-emerald-400 uppercase tracking-[0.2em] bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20">
-                                    Lección Terminada
-                                </span>
-                                <h1
-                                    class="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight font-heading">
-                                    {{leccionActiva.titulo}}</h1>
+                <div *ngIf="leccionActiva" class="max-w-4xl mx-auto w-full space-y-8 animate-[fadeIn_0.5s_ease-out]">
+                    <!-- Encabezado de lección -->
+                    <div
+                        class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
+                        <div class="space-y-2">
+                            <span *ngIf="!leccionActiva.completada"
+                                class="text-xs font-black text-red-400 uppercase tracking-[0.2em] bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
+                                Lección en Progreso
+                            </span>
+                            <span *ngIf="leccionActiva.completada"
+                                class="text-xs font-black text-emerald-400 uppercase tracking-[0.2em] bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20">
+                                Lección Terminada
+                            </span>
+                            <h1
+                                class="text-4xl md:text-5xl font-black text-primary-500 tracking-tight leading-tight font-heading">
+                                {{leccionActiva.titulo}}</h1>
+                        </div>
+                        <button *ngIf="!leccionActiva.completada" (click)="marcarCompletada()"
+                            class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 px-8 rounded-[1.5rem] transition-all shadow-xl shadow-emerald-500/20 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 border-none cursor-pointer">
+                            <ion-icon name="checkmark-circle-outline" class="text-2xl"></ion-icon>
+                            Marcar Completada
+                        </button>
+                    </div>
+                    <!-- Renderización dinámica de bloques de contenido -->
+                    <div class="prose prose-invert max-w-none space-y-8 pb-32">
+
+                        <div *ngFor="let bloque of bloquesActivos; trackBy: trackByBloque" [ngSwitch]="bloque.tipo"
+                            class="animate-[fadeIn_0.5s_ease-out]">
+
+                            <!-- Títulos -->
+                            <h2 *ngSwitchCase="'titulo'"
+                                class="text-3xl md:text-4xl font-black text-primary-50 tracking-tight leading-tight mt-12 mb-6">
+                                {{bloque.valor}}
+                            </h2>
+
+                            <!-- Subtítulos -->
+                            <h3 *ngSwitchCase="'subtitulo'"
+                                class="text-xl md:text-2xl font-bold text-primary-50 mt-8 mb-4">
+                                {{bloque.valor}}
+                            </h3>
+
+                            <!-- Párrafo / Texto -->
+                            <div *ngSwitchCase="'texto'"
+                                class="text-lg text-slate-50 font-medium whitespace-pre-wrap py-4">
+                                {{bloque.valor}}
                             </div>
-                            <button *ngIf="!leccionActiva.completada" (click)="marcarCompletada()"
-                                class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 px-8 rounded-[1.5rem] transition-all shadow-xl shadow-emerald-500/20 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 border-none cursor-pointer">
-                                <ion-icon name="checkmark-circle-outline" class="text-2xl"></ion-icon>
-                                Marcar Completada
+
+                            <!-- Imagen -->
+                            <div *ngSwitchCase="'imagen'"
+                                class="my-10 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group relative bg-slate-900/50 min-h-[100px]">
+                                <img [src]="bloque.valor"
+                                    class="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-[2s]"
+                                    style="max-height: 800px; object-fit: contain;" alt="Imagen de la lección">
+                            </div>
+
+                            <!-- Video -->
+                            <div *ngSwitchCase="'video'"
+                                class="my-10 aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl bg-black flex flex-col items-center justify-center relative">
+
+                                <!-- YouTube -->
+                                <iframe *ngIf="bloque.valor && !bloque.valor.startsWith('data:')"
+                                    [src]="obtenerUrlVideo(bloque.valor)" class="w-full h-full border-none"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+
+                                <!-- Local Video -->
+                                <video *ngIf="bloque.valor && bloque.valor.startsWith('data:')" [src]="bloque.valor"
+                                    controls class="w-full h-full object-contain">
+                                </video>
+
+                                <div *ngIf="!bloque.valor" class="text-slate-500 text-center p-8">
+                                    <ion-icon name="play-circle-outline" class="text-5xl mb-2"></ion-icon>
+                                    <p>Video no disponible</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Botones de Navegación -->
+                        <div *ngIf="bloquesActivos.length > 0" class="pt-20 pb-10 flex flex-col sm:flex-row items-center justify-center gap-6">
+                            
+                            <!-- Lección Anterior -->
+                            <button *ngIf="!esPrimerLeccion" (click)="irALeccionAnterior()"
+                                class="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white font-black py-5 px-10 rounded-[2rem] transition-all border border-white/10 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 text-lg border-solid cursor-pointer group/prev">
+                                <ion-icon name="arrow-back-outline"
+                                    class="text-2xl group-hover/prev:-translate-x-2 transition-transform duration-300 text-primary-400"></ion-icon>
+                                Lección Anterior
+                            </button>
+
+                            <!-- Siguiente Lección -->
+                            <button *ngIf="!esUltimaLeccion" (click)="irASiguienteLeccion()"
+                                class="w-full sm:w-auto bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all shadow-2xl shadow-primary-500/20 hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 text-xl border-none cursor-pointer group/next">
+                                <span class="tracking-tight">Siguiente Lección</span>
+                                <ion-icon name="arrow-forward-outline"
+                                    class="text-3xl group-hover/next:translate-x-2 transition-transform duration-300"></ion-icon>
+                            </button>
+
+                            <!-- Botón Finalizar (Solo en la última lección si quieres que vuelva al dashboard) -->
+                            <button *ngIf="esUltimaLeccion && leccionActiva?.completada" (click)="volverAlDashboard()"
+                                class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all shadow-2xl shadow-emerald-500/20 hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 text-xl border-none cursor-pointer group/finish">
+                                <span class="tracking-tight">Finalizar Curso</span>
+                                <ion-icon name="checkmark-circle-outline" class="text-3xl"></ion-icon>
+                            </button>
+
+                            <!-- Botón Marcar como completada (Solo en la última lección si no está completada) -->
+                            <button *ngIf="esUltimaLeccion && !leccionActiva?.completada" (click)="marcarCompletada()"
+                                class="w-full sm:w-auto bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all shadow-2xl shadow-primary-500/20 hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 text-xl border-none cursor-pointer group/next">
+                                <span class="tracking-tight">Completar Curso</span>
+                                <ion-icon name="checkmark-circle-outline" class="text-3xl"></ion-icon>
                             </button>
                         </div>
-                        <!-- Renderización dinámica de bloques de contenido -->
-                        <div class="prose prose-invert max-w-none space-y-8 pb-32">
-
-                            <div *ngFor="let bloque of bloquesActivos" [ngSwitch]="bloque.tipo"
-                                class="animate-[fadeIn_0.5s_ease-out]">
-
-                                <!-- Títulos -->
-                                <h2 *ngSwitchCase="'titulo'"
-                                    class="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mt-12 mb-6">
-                                    {{bloque.valor}}
-                                </h2>
-
-                                <!-- Subtítulos -->
-                                <h3 *ngSwitchCase="'subtitulo'"
-                                    class="text-xl md:text-2xl font-bold text-primary-400 mt-8 mb-4">
-                                    {{bloque.valor}}
-                                </h3>
-
-                                <!-- Párrafo / Texto -->
-                                <div *ngSwitchCase="'texto'"
-                                    class="bg-white/5 rounded-[2.5rem] p-8 md:p-10 border border-white/10 border-l-4 border-l-primary-500 leading-relaxed text-lg text-slate-300 font-medium whitespace-pre-wrap shadow-xl">
-                                    {{bloque.valor}}
-                                </div>
-
-                                <!-- Imagen -->
-                                <div *ngSwitchCase="'imagen'"
-                                    class="my-10 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group">
-                                    <img [src]="bloque.valor"
-                                        class="w-full object-cover group-hover:scale-105 transition-transform duration-[2s]"
-                                        alt="Imagen de la lección">
-                                </div>
-
-                                <!-- Video (pendiente corregir) -->
-                                <div *ngSwitchCase="'video'"
-                                    class="my-10 aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl bg-black flex flex-col items-center justify-center">
-                                    <iframe *ngIf="bloque.valor" [src]="'https://www.youtube.com/embed/' + bloque.valor"
-                                        class="w-full h-full border-none"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowfullscreen>
-                                    </iframe>
-                                    <div *ngIf="!bloque.valor" class="text-slate-500 text-center p-8">
-                                        <ion-icon name="play-circle-outline" class="text-5xl mb-2"></ion-icon>
-                                        <p>Video no disponible</p>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- Botón Final para Siguiente Lección -->
-                            <div *ngIf="bloquesActivos.length > 0" class="pt-20 flex justify-center">
-                                <button (click)="irASiguienteLeccion()"
-                                    class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all shadow-2xl shadow-primary-500/20 hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 text-xl border-none cursor-pointer group/btn">
-                                    <ion-icon name="arrow-forward-outline"
-                                        class="text-3xl group-hover/btn:translate-x-2 transition-transform duration-300"></ion-icon>
-                                    Siguiente Lección
-                                </button>
-                            </div>
-                        </div>
                     </div>
+                </div>
 
-                    <!-- Cargando -->
-                    <div *ngIf="!leccionActiva && !cargando"
-                        class="flex flex-col items-center justify-center flex-1 space-y-6 opacity-40">
-                        <ion-icon name="book-outline" class="text-8xl text-primary-500/30"></ion-icon>
-                        <p class="text-slate-500 font-bold italic text-xl">Selecciona una lección para comenzar</p>
-                    </div>
-                </main>
+                <!-- Cargando -->
+                <div *ngIf="!leccionActiva && !cargando"
+                    class="flex flex-col items-center justify-center flex-1 space-y-6 opacity-40">
+                    <ion-icon name="book-outline" class="text-8xl text-primary-500/30"></ion-icon>
+                    <p class="text-slate-500 font-bold italic text-xl">Selecciona una lección para comenzar</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Pantalla de Carga Premium -->
+    <div *ngIf="cargando"
+        class="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-2xl animate-[fadeIn_0.5s_ease-out]">
+        <div class="relative mb-8">
+            <div class="absolute inset-0 bg-primary-500 blur-3xl opacity-20 animate-pulse"></div>
+            <app-eco-smart-logo clasePersonalizada="w-24 h-24 relative animate-[pulse_2s_infinite_ease-in-out]">
+            </app-eco-smart-logo>
+        </div>
+
+        <div class="flex flex-col items-center gap-2">
+            <h2
+                class="text-2xl font-black text-white italic uppercase tracking-tighter animate-[fadeIn_0.5s_ease-out_0.3s_both]">
+                Cargando Contenido
+            </h2>
+            <div class="flex gap-1.5 justify-center">
+                <div class="w-2 h-2 bg-primary-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div class="w-2 h-2 bg-primary-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div class="w-2 h-2 bg-primary-500 rounded-full animate-bounce"></div>
+            </div>
         </div>
     </div>
 </ion-content>
