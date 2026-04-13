@@ -60,17 +60,31 @@ export class RecuperacionPage implements OnInit {
 
       const correo = this.formularioRecuperacion.get('correo')?.value;
 
-      // 1. Verificar si el correo está registrado antes de enviar nada
-      const { existe } = await this.supabase.verificarCorreoRegistrado(correo);
+      // 1. Verificar Rate Limit (Max 2 por hora)
+      const { permitido, minutosRestantes } = this.supabase.verificarLimiteReseteo(correo);
+      if (!permitido) {
+        this.errorMensaje = `Has excedido el máximo de 2 reseteos por hora. Debes esperar ${minutosRestantes} minutos para volver a solicitar un enlace.`;
+        return;
+      }
+
+      // 2. Verificar si el correo está registrado y si la cuenta está activa
+      const { existe, activo } = await this.supabase.verificarCorreoRegistrado(correo);
       if (!existe) {
         this.errorMensaje = 'No encontramos una cuenta asociada a ese correo electrónico.';
         return;
       }
 
-      // 2. Si existe, enviar el correo de recuperación
+      if (!activo) {
+        this.errorMensaje = 'Tu cuenta ha sido desactivada. Por favor, contacta con el administrador.';
+        return;
+      }
+
+      // 3. Si existe, enviar el correo de recuperación
       const { error } = await this.supabase.recuperarContrase(correo);
       if (error) throw error;
 
+      // 4. Registrar el intento exitoso
+      this.supabase.registrarIntentoReseteo(correo);
       this.enviado = true;
     } catch (err: any) {
       console.error('Error al enviar enlace:', err);

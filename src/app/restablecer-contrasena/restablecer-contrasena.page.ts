@@ -75,6 +75,17 @@ export class RestablecerContrasenaPage implements OnInit {
       this.errorMensaje = '';
 
       const { contrasena } = this.formularioReset.value;
+
+      // Verificar si el usuario está activo
+      const { data: { user } } = await this.supabase.obtenerUsuario();
+      if (user) {
+        const { data: profile } = await this.supabase.obtenerPerfil(user.id);
+        if (profile && !profile.activo) {
+          this.errorMensaje = 'Tu cuenta está inactiva. No puedes restablecer la contraseña.';
+          return;
+        }
+      }
+
       const { data, error } = await this.supabase.actualizarDatosAuth({ password: contrasena });
 
       if (error) throw error;

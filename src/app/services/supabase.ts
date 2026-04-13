@@ -20,9 +20,7 @@ export class SupabaseService {
     return this.supabase;
   }
 
-  // =========================
   // AUTH
-  // =========================
 
   async iniciarSesion(email: string, password: string) {
     return this.supabase.auth.signInWithPassword({
@@ -53,10 +51,14 @@ export class SupabaseService {
   async verificarCorreoRegistrado(email: string) {
     const { data, error } = await this.supabase
       .from('profiles')
-      .select('id')
+      .select('id, activo')
       .eq('email', email)
       .maybeSingle();
-    return { existe: !!data && !error };
+    
+    return { 
+      existe: !!data && !error,
+      activo: data?.activo ?? false
+    };
   }
 
   async recuperarContrase(email: string) {
@@ -309,9 +311,7 @@ export class SupabaseService {
       .eq('curso_id', cursoId);
   }
 
-  // =========================
   // PROGRESO LECCIONES
-  // =========================
 
   async obtenerProgresoLecciones(usuarioId: string, cursoId: string) {
     return this.supabase
@@ -337,7 +337,6 @@ export class SupabaseService {
         leccion_id: leccionId
       }, { onConflict: 'inscripcion_id,leccion_id' });
   }
-  // -------------------------------------------
 
   async guardarProgresoLeccion(data: {
     usuario_id: string;
@@ -372,9 +371,7 @@ export class SupabaseService {
       .eq('leccion_id', leccionId);
   }
 
-  // =========================
   // RESULTADOS EXAMEN
-  // =========================
 
   async guardarResultadoExamen(resultado: {
     usuario_id: string;
@@ -400,5 +397,44 @@ export class SupabaseService {
       .eq('usuario_id', usuarioId)
       .eq('examen_id', examenId)
       .order('created_at', { ascending: false });
+  }
+
+  // RATE LIMITING (Reseteo Contraseña)
+
+  verificarLimiteReseteo(email: string): { permitido: boolean; minutosRestantes: number } {
+    if (!email) return { permitido: true, minutosRestantes: 0 };
+
+    const key = `password_resets_${email.toLowerCase().trim()}`;
+    const resetsRaw = localStorage.getItem(key);
+    let resets: number[] = resetsRaw ? JSON.parse(resetsRaw) : [];
+
+    const ahora = Date.now();
+    const unaHoraEnMs = 60 * 60 * 1000;
+
+    resets = resets.filter(timestamp => ahora - timestamp < unaHoraEnMs);
+
+    localStorage.setItem(key, JSON.stringify(resets));
+
+    if (resets.length >= 2) {
+      const elMasAntiguo = resets[0];
+      const tiempoTranscurrido = ahora - elMasAntiguo;
+      const msRestantes = unaHoraEnMs - tiempoTranscurrido;
+      const minutosRestantes = Math.ceil(msRestantes / (60 * 1000));
+
+      return { permitido: false, minutosRestantes };
+    }
+
+    return { permitido: true, minutosRestantes: 0 };
+  }
+
+  registrarIntentoReseteo(email: string) {
+    if (!email) return;
+
+    const key = `password_resets_${email.toLowerCase().trim()}`;
+    const resetsRaw = localStorage.getItem(key);
+    let resets: number[] = resetsRaw ? JSON.parse(resetsRaw) : [];
+
+    resets.push(Date.now());
+    localStorage.setItem(key, JSON.stringify(resets));
   }
 }

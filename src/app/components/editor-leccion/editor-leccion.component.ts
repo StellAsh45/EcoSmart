@@ -157,29 +157,36 @@ export interface BloqueContenido {
                     </label>
                   </div>
                   <div class="relative">
-                    <input [(ngModel)]="bloque.valor" (ngModelChange)="notificarCambio()" placeholder="Ej. dQw4w9WgXcQ o carga un archivo" 
-                           class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-red-500/30">
+                    <input [ngModel]="esVideoLocal(bloque.valor) ? '[Archivo de Video Cargado]' : bloque.valor" 
+                           (ngModelChange)="actualizarValorVideo($event, bloque)"
+                           [disabled]="esVideoLocal(bloque.valor)"
+                           placeholder="Ej. dQw4w9WgXcQ o carga un archivo" 
+                           class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                    
+                    <button *ngIf="esVideoLocal(bloque.valor)" 
+                            (click)="bloque.valor = ''; notificarCambio()"
+                            class="absolute right-12 top-1/2 -translate-y-1/2 p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/40 transition-all border-none cursor-pointer"
+                            title="Quitar video cargado">
+                      <ion-icon name="trash"></ion-icon>
+                    </button>
+
                     <ion-icon name="play-circle" class="absolute right-4 top-1/2 -translate-y-1/2 text-red-500/40 text-xl"></ion-icon>
                   </div>
                   <!-- Preview del Video -->
                   <div *ngIf="bloque.valor" class="mt-4 aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black relative">
                     <!-- YouTube -->
-                    <iframe *ngIf="!bloque.valor.startsWith('data:')"
+                    <iframe *ngIf="!esVideoLocal(bloque.valor)"
                             [src]="obtenerUrlVideo(bloque.valor)" 
                             class="w-full h-full border-none"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen>
                     </iframe>
                     <!-- Local Video -->
-                    <video *ngIf="bloque.valor.startsWith('data:')"
+                    <video *ngIf="esVideoLocal(bloque.valor)"
                            [src]="bloque.valor"
                            controls
                            class="w-full h-full object-contain">
                     </video>
-                    
-                    <button *ngIf="bloque.valor.startsWith('data:')" (click)="bloque.valor = ''; notificarCambio()" class="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/40 backdrop-blur-md transition-all border-none cursor-pointer">
-                      <ion-icon name="trash"></ion-icon>
-                    </button>
                   </div>
                 </div>
               </ng-container>
@@ -298,6 +305,18 @@ export class EditorLeccionComponent {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  esVideoLocal(valor: string): boolean {
+    return !!valor && valor.startsWith('data:video');
+  }
+
+  actualizarValorVideo(nuevoValor: string, bloque: BloqueContenido) {
+    // Si ya es un video local, no permitimos editar el texto directamente
+    if (this.esVideoLocal(bloque.valor)) return;
+    
+    bloque.valor = nuevoValor;
+    this.notificarCambio();
   }
 
   obtenerUrlVideo(id: string): SafeResourceUrl {

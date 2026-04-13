@@ -237,6 +237,15 @@ export class PerfilPage implements OnInit {
         return;
       }
 
+      // 1b. Verificar si la cuenta sigue activa
+      const { data: perfilActual, error: errorPerfil } = await this.supabaseSvc.obtenerPerfil(this.usuario.id);
+      if (perfilActual && perfilActual.activo === false) {
+        this.mostrarMensajeError('Tu cuenta ha sido desactivada. No puedes realizar cambios.');
+        await this.supabaseSvc.cerrarSesion();
+        this.router.navigate(['/ingreso']);
+        return;
+      }
+
       // 2. Actualizar perfil en la base de datos (Nombre)
       const { error: updateProfileError } = await this.supabaseSvc.actualizarPerfil(
         this.usuario.id,
@@ -252,10 +261,21 @@ export class PerfilPage implements OnInit {
 
       // 4. Actualizar contraseña solo si se solicita
       if (nuevaContrasena) {
+        // Verificar Rate Limit (Max 2 por hora)
+        const { permitido, minutosRestantes } = this.supabaseSvc.verificarLimiteReseteo(this.correo);
+        if (!permitido) {
+          this.mostrarMensajeError(`Has excedido el máximo de 2 cambios por hora. Debes esperar ${minutosRestantes} minutos para volver a cambiar tu contraseña.`);
+          this.guardando = false;
+          return;
+        }
+
         const { error: updatePasswordError } = await this.supabaseSvc.actualizarDatosAuth({
           password: nuevaContrasena
         });
         if (updatePasswordError) throw updatePasswordError;
+
+        // Registrar el intento exitoso
+        this.supabaseSvc.registrarIntentoReseteo(this.correo);
       }
 
       this.nombre = nombre.trim();
