@@ -22,7 +22,8 @@
 
         <div class="flex items-center gap-4 relative">
           <div class="text-right min-w-[100px] flex flex-col items-end">
-            <p *ngIf="nombreUsuario" class="text-sm font-black text-primary-50 uppercase animate-[fadeIn_0.3s_ease-out]">
+            <p *ngIf="nombreUsuario"
+              class="text-sm font-black text-primary-50 uppercase animate-[fadeIn_0.3s_ease-out]">
               {{nombreUsuario}}
             </p>
             <div *ngIf="!nombreUsuario" class="w-24 h-4 bg-white/10 rounded-lg animate-pulse mb-1"></div>
@@ -127,9 +128,12 @@
                 <tr class="border-b border-white/10 bg-white/[0.08]">
                   <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest">Curso</th>
                   <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest">Nivel</th>
-                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-center">Estado</th>
-                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-center">Contenido</th>
-                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-center">Inscritos</th>
+                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-center">Estado
+                  </th>
+                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-center">
+                    Contenido</th>
+                  <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-center">
+                    Inscritos</th>
                   <th class="px-8 py-5 text-xs font-black text-primary-400 uppercase tracking-widest text-right">
                     Acciones</th>
                 </tr>
@@ -290,7 +294,8 @@
                     <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Nombre</th>
                     <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Correo</th>
                     <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Estado</th>
-                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Cursos inscritos</th>
+                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Cursos inscritos
+                    </th>
                   </tr>
                 </thead>
 
@@ -341,8 +346,7 @@
                           [ngClass]="usuario.estado === 'Activo'
                             ? 'bg-emerald-500/10 border-emerald-500 hover:bg-emerald-500/20 hover:border-emerald-400'
                             : 'bg-red-500/10 border-red-500 hover:bg-red-500/20 hover:border-red-400'">
-                          <div class="w-2 h-2 rounded-full flex-shrink-0"
-                            [ngClass]="usuario.estado === 'Activo'
+                          <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="usuario.estado === 'Activo'
                               ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
                               : 'bg-red-400 shadow-[0_0_8px_rgba(244,63,94,0.5)]'"></div>
                           <span class="text-[10px] font-black uppercase tracking-widest"
@@ -375,5 +379,11 @@
         </div>
       </section>
     </main>
+
+    <!-- Overlay de Confirmación-->
+    <app-overlay-confirmacion [mostrar]="mostrarOverlayConfirmacion" [titulo]="tituloConfirmacion"
+      [mensaje]="mensajeConfirmacion" [icono]="iconoConfirmacion" [textoConfirmar]="textoBotonConfirmar"
+      [claseConfirmar]="claseBotonConfirmar" (confirmar)="confirmarAccion()" (cancelar)="cerrarConfirmacion()">
+    </app-overlay-confirmacion>
   </div>
 </ion-content>

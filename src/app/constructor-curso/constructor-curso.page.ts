@@ -7,7 +7,7 @@ import {
   FormGroup,
   Validators
 } from '@angular/forms';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -17,6 +17,7 @@ import {
   BloqueContenido
 } from '../components/editor-leccion/editor-leccion.component';
 import { EditorQuizComponent, Pregunta } from '../components/editor-quiz/editor-quiz.component';
+import { OverlayConfirmacionComponent } from '../components/overlay-confirmacion/overlay-confirmacion.component';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
@@ -80,13 +81,14 @@ interface Modulo {
     FondoVisualComponent,
     EcoSmartLogoComponent,
     EditorLeccionComponent,
-    EditorQuizComponent
+    EditorQuizComponent,
+    OverlayConfirmacionComponent
   ]
 })
-export class ConstructorCursoPage implements OnInit {
+export class ConstructorCursoPage implements OnInit, ViewWillEnter {
   cursoForm: FormGroup;
   cursoId: string | null = null;
-  cargando = false;
+  cargando = true; // Iniciar en true para evitar parpadeos visuales
   guardando = false;
 
   modulos: Modulo[] = [];
@@ -102,9 +104,15 @@ export class ConstructorCursoPage implements OnInit {
   examenActivo: Examen | null = null;
   modoEdicion: 'leccion' | 'quiz' | null = null;
 
-  mostrarOverlayExito = false;
-  mostrarOverlayError = false;
-  mensajeErrorOverlay = '';
+  // Estado del Overlay Único (Reutilizable para Éxito, Error y Confirmación)
+  mostrarOverlay = false;
+  tituloOverlay = '';
+  mensajeOverlay = '';
+  iconoOverlay = 'help-circle-outline';
+  textoConfirmarOverlay = 'Confirmar';
+  textoCancelarOverlay = 'Volver atrás';
+  claseConfirmarOverlay = 'bg-primary-500';
+  accionConfirmacionOverlay: () => void = () => { };
 
   constructor(
     private fb: FormBuilder,
@@ -144,13 +152,22 @@ export class ConstructorCursoPage implements OnInit {
 
   async ngOnInit() {
     this.cursoId = this.route.snapshot.paramMap.get('id');
+  }
+
+  async ionViewWillEnter() {
+    this.cargando = true;
     if (this.cursoId && this.cursoId !== 'nuevo') {
       await this.cargarDatosCurso();
+    } else {
+      // Pequeño retraso incluso para cursos nuevos si quieres que se vea el logo
+      await new Promise(resolve => setTimeout(resolve, 800));
+      this.cargando = false;
     }
   }
 
   async cargarDatosCurso() {
     this.cargando = true;
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
       const { data: curso, error } = await this.supabaseSvc.obtenerCursoPorId(this.cursoId!);
@@ -187,7 +204,8 @@ export class ConstructorCursoPage implements OnInit {
                   id: p.id,
                   pregunta: p.enunciado || p.pregunta,
                   opciones: p.opciones,
-                  respuesta_correcta: p.respuesta_correcta
+                  respuesta_correcta: p.respuesta_correcta,
+                  retroalimentacion: p.retroalimentacion
                 })) || []
             };
           }
@@ -337,7 +355,8 @@ export class ConstructorCursoPage implements OnInit {
               examen_id: examenId,
               enunciado: p.pregunta,
               opciones: p.opciones,
-              respuesta_correcta: p.respuesta_correcta
+              respuesta_correcta: p.respuesta_correcta,
+              retroalimentacion: p.retroalimentacion
             }));
 
             await this.supabaseSvc.guardarPreguntas(preguntasFinales);
@@ -363,9 +382,16 @@ export class ConstructorCursoPage implements OnInit {
         this.router.navigate(['/constructor-curso', this.cursoId]);
       }
 
-      this.mostrarOverlayExito = true;
+      this.tituloOverlay = '¡Guardado con éxito!';
+      this.mensajeOverlay = 'Tu curso ya está en la nube';
+      this.iconoOverlay = 'checkmark-circle-outline';
+      this.textoConfirmarOverlay = '';
+      this.textoCancelarOverlay = '';
+      this.accionConfirmacionOverlay = () => { this.mostrarOverlay = false; };
+
+      this.mostrarOverlay = true;
       setTimeout(() => {
-        this.mostrarOverlayExito = false;
+        this.mostrarOverlay = false;
       }, 2000);
 
     } catch (error) {
@@ -534,6 +560,16 @@ export class ConstructorCursoPage implements OnInit {
       };
     }
 
+    // Asegurar que haya al menos una pregunta si está vacío
+    if (!modulo.examen.preguntas || modulo.examen.preguntas.length === 0) {
+      modulo.examen.preguntas = [{
+        pregunta: '',
+        opciones: ['', ''],
+        respuesta_correcta: 0,
+        retroalimentacion: ''
+      }];
+    }
+
     this.examenActivo = { ...modulo.examen };
     this.modoEdicion = 'quiz';
   }
@@ -604,23 +640,28 @@ export class ConstructorCursoPage implements OnInit {
   }
 
   async eliminarModulo(index: number) {
-    const modulo = this.modulos[index];
+    this.tituloOverlay = '¿Eliminar Módulo?';
+    this.mensajeOverlay = 'Esta acción borrará todas las lecciones y el examen asociado permanentemente.';
+    this.iconoOverlay = 'trash-outline';
+    this.textoConfirmarOverlay = 'Eliminar Módulo';
+    this.textoCancelarOverlay = 'Cancelar';
+    this.claseConfirmarOverlay = 'bg-red-500 hover:bg-red-400 text-slate-950';
 
-    if (modulo.id) {
-      if (confirm('¿Eliminar este módulo permanentemente?')) {
+    this.accionConfirmacionOverlay = async () => {
+      const modulo = this.modulos[index];
+      if (modulo.id) {
         const { error } = await this.supabaseSvc.eliminarModulo(modulo.id);
         if (error) {
           this.mostrarNotificacionError('Error al borrar módulo');
           return;
         }
-
-        this.modulos.splice(index, 1);
-        this.reordenarModulos();
       }
-    } else {
       this.modulos.splice(index, 1);
       this.reordenarModulos();
-    }
+      this.mostrarOverlay = false;
+    };
+
+    this.mostrarOverlay = true;
   }
 
   private reordenarModulos() {
@@ -630,23 +671,28 @@ export class ConstructorCursoPage implements OnInit {
   }
 
   async eliminarLeccion(moduloIndex: number, leccionIndex: number) {
-    const leccion = this.modulos[moduloIndex].lecciones[leccionIndex];
+    this.tituloOverlay = '¿Borrar Lección?';
+    this.mensajeOverlay = 'El contenido de esta lección se perderá definitivamente.';
+    this.iconoOverlay = 'document-text-outline';
+    this.textoConfirmarOverlay = 'Eliminar Lección';
+    this.textoCancelarOverlay = 'Cancelar';
+    this.claseConfirmarOverlay = 'bg-red-500 hover:bg-red-400 text-slate-950';
 
-    if (leccion.id) {
-      if (confirm('¿Eliminar esta lección permanentemente?')) {
+    this.accionConfirmacionOverlay = async () => {
+      const leccion = this.modulos[moduloIndex].lecciones[leccionIndex];
+      if (leccion.id) {
         const { error } = await this.supabaseSvc.eliminarLeccion(leccion.id);
         if (error) {
           this.mostrarNotificacionError('Error al borrar lección');
           return;
         }
-
-        this.modulos[moduloIndex].lecciones.splice(leccionIndex, 1);
-        this.reordenarLecciones(moduloIndex);
       }
-    } else {
       this.modulos[moduloIndex].lecciones.splice(leccionIndex, 1);
       this.reordenarLecciones(moduloIndex);
-    }
+      this.mostrarOverlay = false;
+    };
+
+    this.mostrarOverlay = true;
   }
 
   private reordenarLecciones(moduloIndex: number) {
@@ -656,11 +702,18 @@ export class ConstructorCursoPage implements OnInit {
   }
 
   private mostrarNotificacionError(mensaje: string) {
-    this.mensajeErrorOverlay = mensaje;
-    this.mostrarOverlayError = true;
+    this.tituloOverlay = 'Ups, algo salió mal';
+    this.mensajeOverlay = mensaje;
+    this.iconoOverlay = 'alert-circle-outline';
+    this.textoConfirmarOverlay = 'Entendido';
+    this.textoCancelarOverlay = ''; // Sin cancelar
+    this.claseConfirmarOverlay = 'bg-red-500 hover:bg-red-400 text-slate-950';
+    this.accionConfirmacionOverlay = () => { this.mostrarOverlay = false; };
+
+    this.mostrarOverlay = true;
     setTimeout(() => {
-      if (this.mostrarOverlayError) this.mostrarOverlayError = false;
-    }, 4000);
+      if (this.mostrarOverlay) this.mostrarOverlay = false;
+    }, 2000);
   }
 
   private crearBloquesIniciales(): BloqueContenido[] {

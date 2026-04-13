@@ -399,6 +399,14 @@ export class SupabaseService {
       .order('created_at', { ascending: false });
   }
 
+  async eliminarResultadoExamen(usuarioId: string, examenId: string) {
+    return this.supabase
+      .from('resultados_examen')
+      .delete()
+      .eq('usuario_id', usuarioId)
+      .eq('examen_id', examenId);
+  }
+
   // RATE LIMITING (Reseteo Contraseña)
 
   verificarLimiteReseteo(email: string): { permitido: boolean; minutosRestantes: number } {

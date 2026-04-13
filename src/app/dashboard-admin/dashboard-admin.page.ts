@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
+import { OverlayConfirmacionComponent } from '../components/overlay-confirmacion/overlay-confirmacion.component';
 import { addIcons } from 'ionicons';
 import {
   peopleOutline,
@@ -21,7 +22,15 @@ import {
   documentTextOutline,
   toggleOutline,
   mailOutline,
-  schoolOutline
+  schoolOutline,
+  alertCircleOutline,
+  helpCircleOutline,
+  radioButtonOnOutline,
+  radioButtonOffOutline,
+  syncOutline,
+  closeCircleOutline,
+  personRemoveOutline,
+  rocketOutline
 } from 'ionicons/icons';
 
 type EstadoColumna = 'estado' | 'status' | 'activo';
@@ -57,7 +66,8 @@ interface UsuarioAdmin {
     IonIcon,
     RouterLink,
     FondoVisualComponent,
-    EcoSmartLogoComponent
+    EcoSmartLogoComponent,
+    OverlayConfirmacionComponent
   ]
 })
 export class DashboardAdminPage implements OnInit, ViewWillEnter {
@@ -70,6 +80,15 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
   mostrandoUsuarios: boolean = true;
   accesoVerificado: boolean = false;
   inicializandoDashboard: boolean = false;
+
+  // Estado Overlay Confirmación Premium
+  mostrarOverlayConfirmacion = false;
+  tituloConfirmacion = '';
+  mensajeConfirmacion = '';
+  textoBotonConfirmar = '';
+  claseBotonConfirmar = '';
+  iconoConfirmacion = '';
+  accionConfirmacion: () => void = () => { };
 
   estadisticas = {
     totalUsuarios: 0,
@@ -85,21 +104,29 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
     private router: Router
   ) {
     addIcons({
-      peopleOutline,
-      bookOutline,
-      addOutline,
-      logOutOutline,
-      statsChartOutline,
-      settingsOutline,
-      eyeOutline,
-      eyeOffOutline,
-      createOutline,
-      trashOutline,
-      checkmarkCircleOutline,
-      documentTextOutline,
-      toggleOutline,
-      mailOutline,
-      schoolOutline
+      'people-outline': peopleOutline,
+      'book-outline': bookOutline,
+      'add-outline': addOutline,
+      'log-out-outline': logOutOutline,
+      'stats-chart-outline': statsChartOutline,
+      'settings-outline': settingsOutline,
+      'eye-outline': eyeOutline,
+      'eye-off-outline': eyeOffOutline,
+      'create-outline': createOutline,
+      'trash-outline': trashOutline,
+      'checkmark-circle-outline': checkmarkCircleOutline,
+      'radio-button-on-outline': radioButtonOnOutline,
+      'radio-button-off-outline': radioButtonOffOutline,
+      'sync-outline': syncOutline,
+      'document-text-outline': documentTextOutline,
+      'toggle-outline': toggleOutline,
+      'mail-outline': mailOutline,
+      'school-outline': schoolOutline,
+      'alert-circle-outline': alertCircleOutline,
+      'help-circle-outline': helpCircleOutline,
+      'close-circle-outline': closeCircleOutline,
+      'person-remove-outline': personRemoveOutline,
+      'rocket-outline': rocketOutline
     });
   }
 
@@ -109,46 +136,31 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
 
   async ionViewWillEnter() {
     this.content?.scrollToTop(0);
-    // Esto se ejecuta cada vez que se ingrese a la pagina, lo añadí para que siempre que cargue traiga los datos actualizados
-    if (this.inicializandoDashboard) {
-      return;
-    }
-
+    if (this.inicializandoDashboard) return;
     if (!this.accesoVerificado) {
       await this.inicializarDashboard();
       return;
     }
-
     await this.cargarDatos();
   }
 
   private async inicializarDashboard() {
-    if (this.inicializandoDashboard) {
-      return;
-    }
-
+    if (this.inicializandoDashboard) return;
     this.inicializandoDashboard = true;
 
     try {
       const { data: { user } } = await this.supabaseSvc.obtenerUsuario();
-
       if (!user) {
         this.router.navigate(['/ingreso']);
         return;
       }
 
       this.usuarioActualId = user.id;
-      this.nombreUsuario =
-        user.user_metadata?.['full_name'] ||
-        user.user_metadata?.['name'] ||
-        user.email ||
-        'Admin';
-
+      this.nombreUsuario = user.user_metadata?.['full_name'] || user.user_metadata?.['name'] || user.email || 'Admin';
       this.accesoVerificado = true;
-      await this.cargarDatos(); // Cargar información inmediatamente al entrar o refrescar
+      await this.cargarDatos();
     } catch (error) {
       console.error('Error al inicializar dashboard admin:', error);
-      alert('No se pudo inicializar el panel de administrador.');
       this.router.navigate(['/ingreso']);
     } finally {
       this.inicializandoDashboard = false;
@@ -157,13 +169,9 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
 
   async cargarDatos() {
     this.cargando = true;
-
     try {
       const { data: cursosData, error: cursosError } = await this.supabaseSvc.obtenerCursosAdmin();
-
-      if (cursosError) {
-        throw cursosError;
-      }
+      if (cursosError) throw cursosError;
 
       this.cursos = (cursosData || []).map((curso: any) => ({
         ...curso,
@@ -171,159 +179,50 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
         totalEstudiantes: 0
       }));
 
-      // Obtener todas las inscripciones para contar estudiantes por curso
       const inscripcionesTotales = await this.obtenerInscripciones();
 
-      // Contar módulos e inscritos por cada curso
       for (const curso of this.cursos) {
-        // 1. Contar módulos
         const { count: modulosCount } = await this.supabaseSvc.cliente
           .from('modulos')
           .select('*', { count: 'exact', head: true })
           .eq('curso_id', curso.id);
-        
-        curso.totalModulos = modulosCount || 0;
 
-        // 2. Contar inscritos desde la lista que ya obtuvimos
+        curso.totalModulos = modulosCount || 0;
         curso.totalEstudiantes = inscripcionesTotales.filter(ins => ins.cursoId === String(curso.id)).length;
       }
 
       this.estadisticas.totalCursos = this.cursos.length;
       this.estadisticas.cursosPublicados = this.cursos.filter(c => c.estado === 'publicado').length;
 
-      const { data: perfiles, error: perfilesError } = await this.supabaseSvc.cliente
-        .from('profiles')
-        .select('*');
-
-      if (perfilesError) {
-        throw perfilesError;
-      }
-
-      const estudiantes = (perfiles || []).filter((perfil: any) => {
-        const rol = String(perfil?.rol ?? perfil?.role ?? '').trim().toLowerCase();
-
-        if (!rol) {
-          return perfil.id !== this.usuarioActualId;
-        }
-
-        return ['estudiante', 'student', 'usuario', 'user'].includes(rol);
-      });
-
-      this.estadisticas.totalUsuarios = estudiantes.length;
-
       await this.cargarUsuarios();
     } catch (error) {
       console.error('Error al cargar datos admin:', error);
-      alert('No se pudieron cargar los datos del panel administrador.');
     } finally {
       this.cargando = false;
     }
   }
 
-  async cerrarSesion() {
-    await this.supabaseSvc.cerrarSesion();
-    this.router.navigate(['/ingreso']);
-  }
-
-  crearNuevoCurso() {
-    this.router.navigate(['/constructor-curso', 'nuevo']);
-  }
-
-  async toggleEstadoCurso(curso: CursoAdmin) {
-    const nuevoEstado = curso.estado === 'publicado' ? 'borrador' : 'publicado';
-    const accion = nuevoEstado === 'publicado' ? 'publicar' : 'despublicar';
-
-    if (confirm(`¿Quieres ${accion} el curso "${curso.titulo}"?`)) {
-      const { error } = await this.supabaseSvc.cliente
-        .from('cursos')
-        .update({ estado: nuevoEstado })
-        .eq('id', curso.id);
-
-      if (error) {
-        console.error('Error al cambiar estado:', error);
-        alert('No se pudo cambiar el estado del curso.');
-      } else {
-        // Actualizar el estado local inmediatamente sin recargar todo
-        curso.estado = nuevoEstado;
-        this.estadisticas.cursosPublicados = this.cursos.filter(c => c.estado === 'publicado').length;
-      }
-    }
-  }
-
-  async eliminarCurso(curso: CursoAdmin) {
-    if (confirm(`¿Estás seguro de que deseas eliminar el curso "${curso.titulo}"? Esta acción no se puede deshacer y borrará TODO el contenido asociado (módulos, lecciones, quizzes).`)) {
-      this.cargando = true;
-
-      try {
-        // 1. Borrar imagen de Storage si existe
-        if (curso.imagen_url && curso.imagen_url.includes('/object/public/cursos/')) {
-          const rutaRelativa = curso.imagen_url.split('/object/public/cursos/')[1];
-          if (rutaRelativa) {
-            await this.supabaseSvc.eliminarImagenCurso(rutaRelativa);
-          }
-        }
-
-        // 2. Borrar de la DB (cascada se encarga del resto)
-        const { error } = await this.supabaseSvc.eliminarCurso(curso.id);
-
-        if (error) throw error;
-
-        alert('Curso eliminado exitosamente');
-        await this.cargarDatos(); // Recargar la lista
-      } catch (error) {
-        console.error('Error al eliminar curso:', error);
-        alert('No se pudo eliminar el curso. Revisa la consola.');
-      } finally {
-        this.cargando = false;
-      }
-    }
-  }
-
-  async toggleVistaUsuarios() {
-    this.mostrandoUsuarios = !this.mostrandoUsuarios;
-
-    if (this.mostrandoUsuarios) {
-      await this.cargarUsuarios();
-    }
-  }
-
   async cargarUsuarios() {
     this.cargandoUsuarios = true;
-
     try {
-      const { data: perfiles, error } = await this.supabaseSvc.cliente
-        .from('profiles')
-        .select('*');
-
+      const { data: perfiles, error } = await this.supabaseSvc.cliente.from('profiles').select('*');
       if (error) throw error;
 
       const estudiantes = (perfiles || []).filter((perfil: any) => {
         const rol = String(perfil?.rol ?? perfil?.role ?? '').trim().toLowerCase();
-
-        if (!rol) {
-          return perfil.id !== this.usuarioActualId;
-        }
-
-        return ['estudiante', 'student', 'usuario', 'user'].includes(rol);
+        return ['estudiante', 'student', 'usuario', 'user'].includes(rol) || (!rol && perfil.id !== this.usuarioActualId);
       });
 
-      const inscripciones = await this.obtenerInscripciones();
-      const mapaCursos = new Map<string, string>(
-        this.cursos.map(curso => [String(curso.id), curso.titulo])
-      );
+      this.estadisticas.totalUsuarios = estudiantes.length;
 
+      const inscripciones = await this.obtenerInscripciones();
+      const mapaCursos = new Map<string, string>(this.cursos.map(curso => [String(curso.id), curso.titulo]));
       const cursosPorUsuario = new Map<string, { id: string; titulo: string }[]>();
 
       for (const item of inscripciones) {
         const listaActual = cursosPorUsuario.get(item.usuarioId) || [];
-        const yaExiste = listaActual.some(curso => curso.id === item.cursoId);
-
-        if (!yaExiste) {
-          listaActual.push({
-            id: item.cursoId,
-            titulo: mapaCursos.get(item.cursoId) || 'Curso'
-          });
-
+        if (!listaActual.some(curso => curso.id === item.cursoId)) {
+          listaActual.push({ id: item.cursoId, titulo: mapaCursos.get(item.cursoId) || 'Curso' });
           cursosPorUsuario.set(item.usuarioId, listaActual);
         }
       }
@@ -331,22 +230,10 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       this.usuarios = estudiantes.map((perfil: any) => {
         const { estado, columnasEstadoDisponibles } = this.resolverEstadoUsuario(perfil);
         const cursosInscritos = cursosPorUsuario.get(String(perfil.id)) || [];
-
         return {
           id: String(perfil.id),
-          nombre:
-            perfil.full_name ||
-            perfil.nombre_completo ||
-            perfil.nombre ||
-            perfil.nombres ||
-            perfil.email ||
-            'Sin nombre',
-          correo:
-            perfil.email ||
-            perfil.correo ||
-            perfil.user_metadata?.email ||
-            perfil.user_metadata?.correo ||
-            'Sin correo',
+          nombre: perfil.full_name || perfil.nombre_completo || perfil.nombre || perfil.email || 'Sin nombre',
+          correo: perfil.email || perfil.correo || 'Sin correo',
           estado,
           cursosInscritos,
           totalCursos: cursosInscritos.length,
@@ -355,222 +242,182 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       });
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
-      alert('No se pudieron cargar los estudiantes.');
     } finally {
       this.cargandoUsuarios = false;
     }
   }
 
+  // --- ACCIONES CON OVERLAY DE CONFIRMACIÓN ---
+
+  abrirConfirmacion(titulo: string, mensaje: string, textoBoton: string, claseBoton: string, icono: string, accion: () => void) {
+    this.tituloConfirmacion = titulo;
+    this.mensajeConfirmacion = mensaje;
+    this.textoBotonConfirmar = textoBoton;
+    this.claseBotonConfirmar = claseBoton;
+    this.iconoConfirmacion = icono;
+    this.accionConfirmacion = accion;
+    this.mostrarOverlayConfirmacion = true;
+  }
+
+  confirmarAccion() {
+    this.accionConfirmacion();
+    this.cerrarConfirmacion();
+  }
+
+  cerrarConfirmacion() {
+    this.mostrarOverlayConfirmacion = false;
+  }
+
+  async toggleEstadoCurso(curso: CursoAdmin) {
+    const nuevoEstado = curso.estado === 'publicado' ? 'borrador' : 'publicado';
+    const accionStr = nuevoEstado === 'publicado' ? 'publicar' : 'despublicar';
+
+    this.abrirConfirmacion(
+      '¿Cambiar estado?',
+      `¿Quieres ${accionStr} el curso "${curso.titulo}"?`,
+      nuevoEstado === 'publicado' ? 'Publicar Curso' : 'Mover a Borrador',
+      nuevoEstado === 'publicado' ? 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/40' : 'bg-primary-500 hover:bg-primary-400 shadow-primary-500/40',
+      nuevoEstado === 'publicado' ? 'rocket-outline' : 'document-text-outline',
+      async () => {
+        const { error } = await this.supabaseSvc.cliente.from('cursos').update({ estado: nuevoEstado }).eq('id', curso.id);
+        if (error) {
+          console.error('Error al cambiar estado:', error);
+        } else {
+          curso.estado = nuevoEstado;
+          this.estadisticas.cursosPublicados = this.cursos.filter(c => c.estado === 'publicado').length;
+        }
+      }
+    );
+  }
+
+  async eliminarCurso(curso: CursoAdmin) {
+    this.abrirConfirmacion(
+      'Eliminar Curso',
+      `¿Deseas eliminar "${curso.titulo}"? Esta acción borrará TODO el contenido asociado y no se puede deshacer.`,
+      'Eliminar Definitivamente',
+      'bg-red-500 hover:bg-red-400 shadow-red-500/40',
+      'trash-outline',
+      async () => {
+        this.cargando = true;
+        try {
+          if (curso.imagen_url?.includes('/object/public/cursos/')) {
+            const rutaRelativa = curso.imagen_url.split('/object/public/cursos/')[1];
+            if (rutaRelativa) await this.supabaseSvc.eliminarImagenCurso(rutaRelativa);
+          }
+          const { error } = await this.supabaseSvc.eliminarCurso(curso.id);
+          if (error) throw error;
+          await this.cargarDatos();
+        } catch (error) {
+          console.error('Error al eliminar curso:', error);
+        } finally {
+          this.cargando = false;
+        }
+      }
+    );
+  }
+
   async cambiarEstadoUsuario(usuario: UsuarioAdmin) {
     const nuevoEstado: 'Activo' | 'Inactivo' = usuario.estado === 'Activo' ? 'Inactivo' : 'Activo';
-
     const mensaje = nuevoEstado === 'Inactivo'
-      ? `¿Deseas dejar inactivo a "${usuario.nombre}"? No podrá iniciar sesión.`
-      : `¿Deseas activar a "${usuario.nombre}"? Podrá iniciar sesión nuevamente.`;
+      ? `¿Deseas dejar inactivo a "${usuario.nombre}"? No podrá acceder a la plataforma.`
+      : `¿Deseas activar a "${usuario.nombre}"? Podrá acceder nuevamente a sus cursos.`;
 
-    if (!confirm(mensaje)) return;
+    this.abrirConfirmacion(
+      'Estado del Estudiante',
+      mensaje,
+      nuevoEstado === 'Inactivo' ? 'Desactivar Estudiante' : 'Activar Estudiante',
+      nuevoEstado === 'Inactivo' ? 'bg-red-500 hover:bg-red-400 shadow-red-500/40' : 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/40',
+      nuevoEstado === 'Inactivo' ? 'close-circle-outline' : 'checkmark-circle-outline',
+      async () => {
+        const payloads = this.construirPayloadsCambioEstado(usuario, nuevoEstado);
+        let actualizado = false;
 
-    // Intentar primero con las columnas que realmente existen en el perfil del usuario
-    const payloads = this.construirPayloadsCambioEstado(usuario, nuevoEstado);
-
-    let actualizado = false;
-    let ultimaError: any = null;
-
-    for (const payload of payloads) {
-      try {
-        const { data, error } = await this.supabaseSvc.cliente
-          .from('profiles')
-          .update(payload)
-          .eq('id', usuario.id)
-          .select('id')
-          .maybeSingle();
-
-        if (error) {
-          ultimaError = error;
-          continue;
+        for (const payload of payloads) {
+          try {
+            const { data, error } = await this.supabaseSvc.cliente.from('profiles').update(payload).eq('id', usuario.id).select('id').maybeSingle();
+            if (!error && data?.id) {
+              actualizado = true;
+              break;
+            }
+          } catch (err) { console.error(err); }
         }
 
-        if (data?.id) {
-          actualizado = true;
-          break;
+        if (actualizado) {
+          usuario.estado = nuevoEstado;
+          this.usuarios = this.usuarios.map(u => u.id === usuario.id ? { ...u, estado: nuevoEstado } : u);
+          await this.cargarUsuarios();
         }
-
-        ultimaError = new Error('No se actualizó ninguna fila del usuario en profiles.');
-      } catch (err) {
-        ultimaError = err;
       }
-    }
-
-    if (!actualizado) {
-      const mensajeError =
-        ultimaError?.message ||
-        'No se pudo actualizar el estado del estudiante en la tabla profiles. Revisa permisos o RLS.';
-      console.error('Error al cambiar estado del usuario:', ultimaError);
-      alert(`No se pudo actualizar el estado del estudiante: ${mensajeError}`);
-      return;
-    }
-
-    // Reflejar el cambio inmediatamente en la tabla sin recargar la página
-    usuario.estado = nuevoEstado;
-    this.usuarios = this.usuarios.map(u =>
-      u.id === usuario.id
-        ? { ...u, estado: nuevoEstado }
-        : u
     );
-    // Releer usuarios desde base de datos para que al refrescar todo siga consistente
-    await this.cargarUsuarios();
   }
 
-  private resolverEstadoUsuario(perfil: any): {
-    estado: 'Activo' | 'Inactivo';
-    columnasEstadoDisponibles: EstadoColumna[];
-  } {
-    const columnasEstadoDisponibles: EstadoColumna[] = [];
+  // --- MÉTODOS AUXILIARES ---
 
-    if (Object.prototype.hasOwnProperty.call(perfil, 'estado')) {
-      columnasEstadoDisponibles.push('estado');
-    }
-
-    if (Object.prototype.hasOwnProperty.call(perfil, 'status')) {
-      columnasEstadoDisponibles.push('status');
-    }
-
-    if (Object.prototype.hasOwnProperty.call(perfil, 'activo')) {
-      columnasEstadoDisponibles.push('activo');
-    }
-
-    // Si existe la columna booleana "activo", se toma primero porque suele ser la más confiable para login
-    if (columnasEstadoDisponibles.includes('activo') && perfil?.activo !== null && perfil?.activo !== undefined) {
-      const valorActivo = typeof perfil.activo === 'boolean'
-        ? perfil.activo
-        : ['true', '1', 'activo', 'active', 'si', 'sí'].includes(String(perfil.activo).trim().toLowerCase());
-
-      return {
-        estado: valorActivo ? 'Activo' : 'Inactivo',
-        columnasEstadoDisponibles
-      };
-    }
-
-    if (columnasEstadoDisponibles.includes('estado') && perfil?.estado !== null && perfil?.estado !== undefined) {
-      const valorEstado = String(perfil.estado).trim().toLowerCase();
-
-      return {
-        estado: ['inactivo', 'inactive', 'false', '0', 'bloqueado', 'disabled'].includes(valorEstado)
-          ? 'Inactivo'
-          : 'Activo',
-        columnasEstadoDisponibles
-      };
-    }
-
-    if (columnasEstadoDisponibles.includes('status') && perfil?.status !== null && perfil?.status !== undefined) {
-      const valorStatus = String(perfil.status).trim().toLowerCase();
-
-      return {
-        estado: ['inactivo', 'inactive', 'false', '0', 'bloqueado', 'disabled'].includes(valorStatus)
-          ? 'Inactivo'
-          : 'Activo',
-        columnasEstadoDisponibles
-      };
-    }
-
-    return {
-      estado: 'Activo',
-      columnasEstadoDisponibles: columnasEstadoDisponibles.length ? columnasEstadoDisponibles : ['estado']
-    };
+  // Cierra la sesión del usuario
+  async cerrarSesion() {
+    await this.supabaseSvc.cerrarSesion();
+    this.router.navigate(['/ingreso']);
   }
 
-  private construirPayloadsCambioEstado(
-    usuario: UsuarioAdmin,
-    nuevoEstado: 'Activo' | 'Inactivo'
-  ): any[] {
-    const nuevoActivoBooleano = nuevoEstado === 'Activo';
-    const columnas = usuario.columnasEstadoDisponibles?.length
-      ? usuario.columnasEstadoDisponibles
-      : ['estado'];
+  // Crea un nuevo curso
+  crearNuevoCurso() {
+    this.router.navigate(['/constructor-curso', 'nuevo']);
+  }
 
-    const payloadPrincipal: any = {};
+  // Alterna la vista de usuarios
+  async toggleVistaUsuarios() {
+    this.mostrandoUsuarios = !this.mostrandoUsuarios;
+    if (this.mostrandoUsuarios) await this.cargarUsuarios();
+  }
 
-    if (columnas.includes('estado')) {
-      payloadPrincipal.estado = nuevoEstado;
-    }
-
-    if (columnas.includes('status')) {
-      payloadPrincipal.status = nuevoEstado;
-    }
+  // Resuelve el estado del usuario
+  private resolverEstadoUsuario(perfil: any): { estado: 'Activo' | 'Inactivo', columnasEstadoDisponibles: EstadoColumna[] } {
+    const columnas: EstadoColumna[] = [];
+    if (perfil.hasOwnProperty('estado')) columnas.push('estado');
+    if (perfil.hasOwnProperty('status')) columnas.push('status');
+    if (perfil.hasOwnProperty('activo')) columnas.push('activo');
 
     if (columnas.includes('activo')) {
-      payloadPrincipal.activo = nuevoActivoBooleano;
+      const valor = typeof perfil.activo === 'boolean' ? perfil.activo : ['true', '1', 'activo'].includes(String(perfil.activo).toLowerCase());
+      return { estado: valor ? 'Activo' : 'Inactivo', columnasEstadoDisponibles: columnas };
     }
 
-    const payloadsBase = [
-      payloadPrincipal,
-      { estado: nuevoEstado },
-      { status: nuevoEstado },
-      { activo: nuevoActivoBooleano },
-      { estado: nuevoEstado, status: nuevoEstado },
-      { estado: nuevoEstado, activo: nuevoActivoBooleano },
-      { status: nuevoEstado, activo: nuevoActivoBooleano },
-      { estado: nuevoEstado, status: nuevoEstado, activo: nuevoActivoBooleano }
-    ];
-
-    const payloadsUnicos: any[] = [];
-    const vistos = new Set<string>();
-
-    for (const payload of payloadsBase) {
-      if (!payload || Object.keys(payload).length === 0) {
-        continue;
-      }
-
-      const llave = JSON.stringify(payload);
-
-      if (!vistos.has(llave)) {
-        vistos.add(llave);
-        payloadsUnicos.push(payload);
-      }
-    }
-
-    return payloadsUnicos;
+    const valorPrincipal = String(perfil.estado || perfil.status || '').toLowerCase();
+    const esInactivo = ['inactivo', 'inactive', 'false', '0', 'bloqueado'].includes(valorPrincipal);
+    return { estado: esInactivo ? 'Inactivo' : 'Activo', columnasEstadoDisponibles: columnas };
   }
 
+  // Construye los payloads para cambiar el estado de un usuario
+  private construirPayloadsCambioEstado(usuario: UsuarioAdmin, nuevoEstado: 'Activo' | 'Inactivo'): any[] {
+    const esActivo = nuevoEstado === 'Activo';
+    const cols = usuario.columnasEstadoDisponibles.length ? usuario.columnasEstadoDisponibles : ['estado'];
+    const p: any = {};
+    if (cols.includes('estado')) p.estado = nuevoEstado;
+    if (cols.includes('status')) p.status = nuevoEstado;
+    if (cols.includes('activo')) p.activo = esActivo;
+
+    return [p, { estado: nuevoEstado }, { status: nuevoEstado }, { activo: esActivo }];
+  }
+
+  // Obtiene las inscripciones de los usuarios
   private async obtenerInscripciones(): Promise<Array<{ usuarioId: string; cursoId: string }>> {
     const intentos = [
       { tabla: 'inscripciones', colUsuario: 'usuario_id', colCurso: 'curso_id' },
-      { tabla: 'inscripciones', colUsuario: 'user_id', colCurso: 'course_id' },
-      { tabla: 'matriculas', colUsuario: 'usuario_id', colCurso: 'curso_id' },
-      { tabla: 'matriculas', colUsuario: 'user_id', colCurso: 'course_id' }
+      { tabla: 'matriculas', colUsuario: 'usuario_id', colCurso: 'curso_id' }
     ];
-
-    for (const intento of intentos) {
+    for (const i of intentos) {
       try {
-        const { data, error } = await this.supabaseSvc.cliente
-          .from(intento.tabla)
-          .select(`${intento.colUsuario}, ${intento.colCurso}`);
-
-        if (!error && data) {
-          return data
-            .map((item: any) => ({
-              usuarioId: String(item[intento.colUsuario] ?? ''),
-              cursoId: String(item[intento.colCurso] ?? '')
-            }))
-            .filter((item: any) => item.usuarioId && item.cursoId);
-        }
-      } catch {
-        // Si esta estructura no existe, probar con la siguiente
-      }
+        const { data, error } = await this.supabaseSvc.cliente.from(i.tabla).select(`${i.colUsuario}, ${i.colCurso}`);
+        if (!error && data) return data.map((item: any) => ({ usuarioId: String(item[i.colUsuario] || ''), cursoId: String(item[i.colCurso] || '') })).filter((x: any) => x.usuarioId && x.cursoId);
+      } catch { }
     }
-
     return [];
   }
 
-  rastrearCursoPorId(index: number, curso: CursoAdmin): string {
-    return curso.id;
-  }
-
-  rastrearUsuarioPorId(index: number, usuario: UsuarioAdmin): string {
-    return usuario.id;
-  }
-
-  get usuariosActivos(): number {
-    return this.usuarios.filter(u => u.estado === 'Activo').length;
-  }
+  // Rastrea el curso por ID
+  rastrearCursoPorId(index: number, curso: CursoAdmin): string { return curso.id; }
+  // Rastrea el usuario por ID
+  rastrearUsuarioPorId(index: number, usuario: UsuarioAdmin): string { return usuario.id; }
+  // Obtiene el número de usuarios activos
+  get usuariosActivos(): number { return this.usuarios.filter(u => u.estado === 'Activo').length; }
 }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IonIcon } from '@ionic/angular/standalone';
+import { OverlayConfirmacionComponent } from '../overlay-confirmacion/overlay-confirmacion.component';
 import { addIcons } from 'ionicons';
 import {
   textOutline,
@@ -26,7 +27,7 @@ export interface BloqueContenido {
 @Component({
   selector: 'app-editor-leccion',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonIcon],
+  imports: [CommonModule, FormsModule, IonIcon, OverlayConfirmacionComponent],
   template: `
     <div class="space-y-4 -mt-8">
       <div class="px-2 space-y-0.5 animate-[fadeIn_0.5s_ease-out] opacity-80 hover:opacity-100 transition-opacity">
@@ -204,59 +205,22 @@ export interface BloqueContenido {
       </div>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div *ngIf="mostrarConfirmacion" class="fixed inset-0 z-[200] flex items-center justify-center p-6">
-      <div (click)="cancelarBorrado()" class="absolute inset-0 bg-slate-950/60 backdrop-blur-md modal-fade-in"></div>
-      
-      <div class="relative bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-[320px] text-center space-y-6 modal-slide-down">
-        <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-3xl mx-auto flex items-center justify-center border border-red-500/30">
-          <ion-icon name="trash" class="text-2xl"></ion-icon>
-        </div>
-        
-        <div class="space-y-2">
-          <h3 class="text-white font-black text-xl italic uppercase tracking-tighter">¿Eliminar bloque?</h3>
-          <p class="text-primary-50 text-xs font-bold leading-relaxed">Esta acción no se puede deshacer y el contenido se perderá.</p>
-        </div>
-        
-        <div class="flex flex-col gap-2">
-          <button (click)="confirmarBorrado()" class="w-full py-3 bg-red-500 hover:bg-red-400 text-slate-950 font-black rounded-2xl transition-all active:scale-95 shadow-lg shadow-red-500/20">
-            Sí
-          </button>
-          <button (click)="cancelarBorrado()" class="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border-none">
-            No
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Reemplazo del modal manual por el componente reutilizable -->
+    <app-overlay-confirmacion
+      [mostrar]="mostrarConfirmacion"
+      titulo="¿Eliminar bloque?"
+      mensaje="Esta acción no se puede deshacer y el contenido de este bloque se perderá definitivamente."
+      icono="trash-outline"
+      textoConfirmar="Eliminar"
+      claseConfirmar="bg-red-500 hover:bg-red-400 text-slate-950"
+      (confirmar)="confirmarBorrado()"
+      (cancelar)="cancelarBorrado()">
+    </app-overlay-confirmacion>
   `,
   styles: [`
     :host { display: block; }
     textarea::placeholder, input::placeholder {
       font-style: italic;
-    }
-
-    .modal-fade-in {
-      animation: fadeIn 0.3s ease-out forwards;
-    }
-
-    .modal-slide-down {
-      animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    @keyframes slideDown {
-      from {
-        transform: translateY(-50px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
   `]
 })

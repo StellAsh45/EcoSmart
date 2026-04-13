@@ -21,7 +21,15 @@ import {
   documentTextOutline,
   chevronDownOutline,
   chevronUpOutline,
-  arrowForwardOutline
+  arrowForwardOutline,
+  schoolOutline,
+  chatbubbleEllipsesOutline,
+  checkmarkOutline,
+  syncOutline,
+  radioButtonOnOutline,
+  radioButtonOffOutline,
+  warningOutline,
+  alertCircleOutline
 } from 'ionicons/icons';
 
 interface Leccion {
@@ -38,6 +46,14 @@ interface Modulo {
   orden: number;
   lecciones: Leccion[];
   expandido?: boolean;
+  examen?: any;
+}
+
+interface ExamenActivo {
+  id: string;
+  titulo: string;
+  preguntas: any[];
+  modulo_id: string;
 }
 
 export interface BloqueContenido {
@@ -67,6 +83,21 @@ export class CursoPage implements OnInit, ViewWillEnter {
   progresoGeneral = 0;
   bloquesActivos: BloqueContenido[] = [];
   inscripcionId: string | null = null;
+
+  examenActivo: ExamenActivo | null = null;
+  respuestasUsuario: number[] = [];
+  examenFinalizado = false;
+  resultadoExamen: any = null;
+  guardandoResultado = false;
+  mostrarOverlayError = false;
+  mensajeErrorOverlay = '';
+
+  get preguntasRespondidas(): number {
+    return this.respuestasUsuario.filter(r => r !== -1).length;
+  }
+
+  examenesPasados = new Set<string>(); // IDs de exámenes con >= 70%
+  intentosExamenMap = new Map<string, any>(); // Mapa para guardar el resultado completo de cada examen
   private videoUrlCache = new Map<string, SafeResourceUrl>();
 
   constructor(
@@ -79,7 +110,9 @@ export class CursoPage implements OnInit, ViewWillEnter {
       menuOutline, closeOutline, personOutline, logOutOutline,
       arrowBackOutline, checkmarkCircleOutline, helpCircleOutline,
       documentTextOutline, chevronDownOutline, chevronUpOutline,
-      arrowForwardOutline
+      arrowForwardOutline, schoolOutline, chatbubbleEllipsesOutline,
+      checkmarkOutline, radioButtonOnOutline, radioButtonOffOutline, syncOutline,
+      warningOutline, alertCircleOutline
     });
   }
 
@@ -154,9 +187,18 @@ export class CursoPage implements OnInit, ViewWillEnter {
     this.modulos = [];
     for (const m of mods || []) {
       const { data: lecs } = await this.supabaseSvc.obtenerLeccionesModulo(m.id);
+      const { data: examen } = await this.supabaseSvc.obtenerExamenModulo(m.id);
+
+      let examenCompleto = null;
+      if (examen) {
+        const { data: preguntas } = await this.supabaseSvc.obtenerPreguntasExamen(examen.id);
+        examenCompleto = { ...examen, preguntas: preguntas || [] };
+      }
+
       this.modulos.push({
         ...m,
         lecciones: lecs || [],
+        examen: examenCompleto,
         expandido: false
       });
     }
@@ -166,53 +208,78 @@ export class CursoPage implements OnInit, ViewWillEnter {
     if (!this.inscripcionId) return;
 
     try {
-      const { data: completadas, error } = await this.supabaseSvc.obtenerLeccionesCompletadas(this.inscripcionId);
-      if (error) throw error;
-
-      // Convertir a un set de IDs de lecciones completadas para búsqueda rápida
-      const completadasSet = new Set(
-        completadas?.map((p: any) => p.leccion_id)
-      );
-
-      let totalLecs = 0;
+      let totalActividades = 0;
       let totalCompletadas = 0;
 
+      // 1. Cargar lecciones completadas
+      const { data: completadas, error } = await this.supabaseSvc.obtenerLeccionesCompletadas(this.inscripcionId);
+      if (error) throw error;
+      const completadasSet = new Set(completadas?.map((p: any) => p.leccion_id));
+
+      // 2. Cargar exámenes aprobados (Obtenemos todos los intentos del usuario para este curso)
+      const { data: resultados, error: errRes } = await this.supabaseSvc.cliente
+        .from('resultados_examen')
+        .select('examen_id, porcentaje, respuestas, correctas, incorrectas')
+        .eq('usuario_id', this.usuario.id)
+        .eq('curso_id', this.cursoId);
+
+      if (errRes) console.error('Error cargando resultados:', errRes);
+
+      //console.log('Resultados de exámenes encontrados en DB:');
+      //console.table(resultados); esto lo estaba usando para ver que estaba pasando que no me salian
+
+      this.intentosExamenMap = new Map();
+      (resultados || []).forEach((r: any) => {
+        this.intentosExamenMap.set(r.examen_id, r);
+      });
+
+      const examenesAprobadosIds = (resultados || [])
+        .filter((r: any) => Number(r.porcentaje) >= 70)
+        .map((r: any) => r.examen_id);
+
+      this.examenesPasados = new Set(examenesAprobadosIds);
+
       for (const mod of this.modulos) {
+        // Contar lecciones
         for (const lec of mod.lecciones) {
-          totalLecs++;
-          // Sincronizar el estado local con la base de datos
+          totalActividades++;
           if (completadasSet.has(lec.id)) {
             lec.completada = true;
+            totalCompletadas++;
           }
-
-          if (lec.completada) {
+        }
+        // Contar examen si existe
+        if (mod.examen) {
+          totalActividades++;
+          if (this.examenesPasados.has(mod.examen.id)) {
             totalCompletadas++;
           }
         }
       }
 
-      this.progresoGeneral = totalLecs > 0 ? Math.round((totalCompletadas / totalLecs) * 100) : 0;
-      console.log(`Progreso cargado desde DB: ${this.progresoGeneral}% (${totalCompletadas}/${totalLecs})`);
+      this.progresoGeneral = totalActividades > 0 ? Math.round((totalCompletadas / totalActividades) * 100) : 0;
+      console.log(`Progreso integral: ${this.progresoGeneral}% (${totalCompletadas}/${totalActividades})`);
     } catch (error) {
       console.error('Error al cargar progreso:', error);
     }
   }
 
   private recalcularProgresoLocal() {
-    let totalLecs = 0;
+    let totalActividades = 0;
     let totalCompletadas = 0;
 
     for (const mod of this.modulos) {
       for (const lec of mod.lecciones) {
-        totalLecs++;
-        if (lec.completada) {
-          totalCompletadas++;
-        }
+        totalActividades++;
+        if (lec.completada) totalCompletadas++;
+      }
+      if (mod.examen) {
+        totalActividades++;
+        if (this.examenesPasados.has(mod.examen.id)) totalCompletadas++;
       }
     }
 
-    this.progresoGeneral = totalLecs > 0 ? Math.round((totalCompletadas / totalLecs) * 100) : 0;
-    console.log(`Progreso recalculado localmente: ${this.progresoGeneral}% (${totalCompletadas}/${totalLecs})`);
+    this.progresoGeneral = totalActividades > 0 ? Math.round((totalCompletadas / totalActividades) * 100) : 0;
   }
 
   get esPrimerLeccion(): boolean {
@@ -221,17 +288,63 @@ export class CursoPage implements OnInit, ViewWillEnter {
     return primeraLec?.id === this.leccionActiva.id;
   }
 
+  get esPrimeraLeccionModulo(): boolean {
+    if (!this.leccionActiva) return false;
+    const modulo = this.modulos.find(m => m.lecciones.some(l => l.id === this.leccionActiva?.id));
+    if (!modulo) return false;
+    return modulo.lecciones[0].id === this.leccionActiva.id;
+  }
+
+  get esUltimaLeccionModulo(): boolean {
+    if (!this.leccionActiva) return false;
+    const modulo = this.modulos.find(m => m.lecciones.some(l => l.id === this.leccionActiva?.id));
+    if (!modulo) return false;
+    const ultimaLec = modulo.lecciones[modulo.lecciones.length - 1];
+    return ultimaLec.id === this.leccionActiva.id;
+  }
+
+  get tieneExamenModuloActual(): boolean {
+    const modulo = this.modulos.find(m => m.lecciones.some(l => l.id === this.leccionActiva?.id));
+    return !!modulo?.examen;
+  }
+
+  get esUltimaActividadCurso(): boolean {
+    if (this.modulos.length === 0) return false;
+
+    const ultimoMod = this.modulos[this.modulos.length - 1];
+    if (!ultimoMod) return false;
+
+    if (this.examenActivo) {
+      return this.examenActivo.id === ultimoMod.examen?.id;
+    }
+    if (this.leccionActiva) {
+      const esUltimaLec = ultimoMod.lecciones && ultimoMod.lecciones.length > 0
+        ? ultimoMod.lecciones[ultimoMod.lecciones.length - 1]?.id === this.leccionActiva.id
+        : false;
+      return esUltimaLec && !ultimoMod.examen;
+    }
+    return false;
+  }
+
+  get moduloActualExamen(): Modulo | null {
+    if (!this.leccionActiva) return null;
+    return this.modulos.find(m => m.lecciones.some(l => l.id === this.leccionActiva?.id)) || null;
+  }
+
   get esUltimaLeccion(): boolean {
     if (!this.leccionActiva || this.modulos.length === 0) return true;
     const ultimoMod = this.modulos[this.modulos.length - 1];
     if (!ultimoMod.lecciones.length) return true;
     const ultimaLec = ultimoMod.lecciones[ultimoMod.lecciones.length - 1];
-    return ultimaLec?.id === this.leccionActiva.id;
+    return ultimaLec?.id === this.leccionActiva.id && !ultimoMod.examen;
   }
 
   seleccionarLeccion(leccion: Leccion) {
     this.leccionActiva = leccion;
-    this.sidebarAbierto = false; // Cerrar sidebar en móvil al seleccionar
+    this.examenActivo = null;
+    this.examenFinalizado = false;
+    this.resultadoExamen = null;
+    this.sidebarAbierto = false;
 
     // Parsear bloques
     try {
@@ -239,6 +352,140 @@ export class CursoPage implements OnInit, ViewWillEnter {
     } catch {
       this.bloquesActivos = [];
     }
+  }
+
+  seleccionarExamen(modulo: Modulo) {
+    if (!modulo.examen) return;
+
+    const idExamen = modulo.examen.id;
+    this.leccionActiva = null;
+    this.examenActivo = {
+      id: idExamen,
+      titulo: modulo.examen.titulo,
+      preguntas: modulo.examen.preguntas,
+      modulo_id: modulo.id
+    };
+
+    // Restaurar estado previo si existe
+    if (this.intentosExamenMap.has(idExamen)) {
+      const previo = this.intentosExamenMap.get(idExamen);
+      this.resultadoExamen = previo;
+      this.respuestasUsuario = [...previo.respuestas]; // Clonar array de respuestas
+      this.examenFinalizado = true;
+    } else {
+      this.respuestasUsuario = new Array(this.examenActivo.preguntas.length).fill(-1);
+      this.examenFinalizado = false;
+      this.resultadoExamen = null;
+    }
+
+    this.sidebarAbierto = false;
+  }
+
+  seleccionarOpcion(preguntaIndex: number, opcionIndex: number) {
+    if (this.examenFinalizado) return;
+    this.respuestasUsuario[preguntaIndex] = opcionIndex;
+  }
+
+  async finalizarExamen() {
+    if (this.respuestasUsuario.includes(-1)) {
+      this.mensajeErrorOverlay = 'Por favor responde todas las preguntas antes de finalizar el examen.';
+      this.mostrarOverlayError = true;
+      return;
+    }
+
+    this.guardandoResultado = true;
+
+    let correctas = 0;
+    this.examenActivo?.preguntas.forEach((p, index) => {
+      if (this.respuestasUsuario[index] === p.respuesta_correcta) {
+        correctas++;
+      }
+    });
+
+    const incorrectas = this.examenActivo!.preguntas.length - correctas;
+    const porcentaje = Math.round((correctas / this.examenActivo!.preguntas.length) * 100);
+
+    const resultado = {
+      usuario_id: this.usuario.id,
+      examen_id: this.examenActivo!.id,
+      curso_id: this.cursoId!,
+      modulo_id: this.examenActivo!.modulo_id,
+      correctas,
+      incorrectas,
+      porcentaje,
+      respuestas: this.respuestasUsuario
+    };
+
+    try {
+      const { data, error } = await this.supabaseSvc.guardarResultadoExamen(resultado);
+      if (error) {
+        console.error('Error de Supabase al guardar:', error);
+        throw error;
+      }
+
+      this.resultadoExamen = data;
+      this.examenFinalizado = true;
+
+      if (porcentaje >= 70) {
+        this.examenesPasados.add(this.examenActivo!.id);
+        this.intentosExamenMap.set(this.examenActivo!.id, data);
+        this.recalcularProgresoLocal();
+        // Actualizar progreso en la tabla de inscripciones
+        await this.supabaseSvc.actualizarProgresoInscripcion(
+          this.usuario.id,
+          this.cursoId!,
+          this.progresoGeneral
+        );
+      } else {
+        // Aunque no apruebe, guardamos el intento para persistencia
+        this.intentosExamenMap.set(this.examenActivo!.id, data);
+      }
+
+    } catch (error) {
+      console.error('Error al guardar resultado:', error);
+      alert('Hubo un error al guardar tus resultados. Reintenta por favor.');
+    } finally {
+      this.guardandoResultado = false;
+    }
+  }
+
+  async reintentarExamen() {
+    if (!this.examenActivo || !this.usuario) return;
+
+    try {
+      // 1. Borrar de la base de datos
+      await this.supabaseSvc.eliminarResultadoExamen(this.usuario.id, this.examenActivo.id);
+
+      // 2. Limpiar estado local
+      this.intentosExamenMap.delete(this.examenActivo.id);
+      this.examenesPasados.delete(this.examenActivo.id);
+
+      this.examenFinalizado = false;
+      this.resultadoExamen = null;
+      this.respuestasUsuario = new Array(this.examenActivo.preguntas.length).fill(-1);
+
+      // 3. Recalcular progreso y sincronizar
+      this.recalcularProgresoLocal();
+      await this.supabaseSvc.actualizarProgresoInscripcion(
+        this.usuario.id,
+        this.cursoId!,
+        this.progresoGeneral
+      );
+
+      // Scroll arriba
+      const mainElement = document.querySelector('main');
+      if (mainElement) mainElement.scrollTop = 0;
+
+    } catch (error) {
+      console.error('Error al reiniciar examen:', error);
+      this.mensajeErrorOverlay = 'No se pudo reiniciar el examen. Intenta de nuevo.';
+      this.mostrarOverlayError = true;
+    }
+  }
+
+  cerrarError() {
+    this.mostrarOverlayError = false;
+    this.mensajeErrorOverlay = '';
   }
 
   toggleModulo(mod: Modulo) {
@@ -274,7 +521,7 @@ export class CursoPage implements OnInit, ViewWillEnter {
 
       if (updateError) throw updateError;
 
-      console.log('Progreso guardado exitosamente en lecciones_completadas');
+
 
     } catch (error) {
       console.error('Error al marcar lección como completada:', error);
@@ -285,7 +532,16 @@ export class CursoPage implements OnInit, ViewWillEnter {
     // 1. Marcar como completada
     await this.marcarCompletada();
 
-    // 2. Buscar la siguiente lección
+    // 2. ¿Es la última lección del módulo y hay un examen?
+    if (this.esUltimaLeccionModulo && this.tieneExamenModuloActual) {
+      this.seleccionarExamen(this.moduloActualExamen!);
+      // Scroll to top
+      const mainElement = document.querySelector('main');
+      if (mainElement) mainElement.scrollTop = 0;
+      return;
+    }
+
+    // 3. Si no hay examen o no es la última lección, buscar la siguiente lección
     let encontradaActiva = false;
     let siguienteLec: Leccion | null = null;
     let siguienteModulo: Modulo | null = null;
@@ -311,7 +567,32 @@ export class CursoPage implements OnInit, ViewWillEnter {
       const mainElement = document.querySelector('main');
       if (mainElement) mainElement.scrollTop = 0;
     } else {
-      // Si no hay más lecciones, volver al dashboard o mostrar mensaje
+      this.volverAlDashboard();
+    }
+  }
+
+  async irASiguienteDesdeExamen() {
+    let encontradoActivo = false;
+    let siguienteLec: Leccion | null = null;
+    let siguienteModulo: Modulo | null = null;
+
+    for (const mod of this.modulos) {
+      if (encontradoActivo) {
+        if (mod.lecciones.length > 0) {
+          siguienteLec = mod.lecciones[0];
+          siguienteModulo = mod;
+          break;
+        }
+      }
+      if (mod.examen?.id === this.examenActivo?.id) {
+        encontradoActivo = true;
+      }
+    }
+
+    if (siguienteLec) {
+      if (siguienteModulo) siguienteModulo.expandido = true;
+      this.seleccionarLeccion(siguienteLec);
+    } else {
       this.volverAlDashboard();
     }
   }

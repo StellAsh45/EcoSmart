@@ -167,7 +167,7 @@
 
               <div class="flex items-center gap-3">
                 <button (click)="eliminarModulo(i); $event.stopPropagation()"
-                  class="p-2 text-primary-50 hover:text-red-400 transition-colors bg-transparent border-none cursor-pointer">
+                  class="p-2 text-primary-50/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all bg-transparent border-none cursor-pointer">
                   <ion-icon name="trash-outline" class="text-lg"></ion-icon>
                 </button>
 
@@ -219,7 +219,7 @@
                     </div>
 
                     <button (click)="eliminarLeccion(i, li); $event.stopPropagation()"
-                      class="opacity-0 group-hover/lesson:opacity-100 p-2 text-primary-50 hover:text-red-400 transition-all bg-transparent border-none cursor-pointer">
+                      class="p-2 text-primary-50/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all bg-transparent border-none cursor-pointer">
                       <ion-icon name="trash-outline"></ion-icon>
                     </button>
                   </div>
@@ -361,44 +361,6 @@
     </div>
   </div>
 
-  <!-- Overlay éxito -->
-  <div *ngIf="mostrarOverlayExito"
-    class="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
-    <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-2xl"></div>
-
-    <div class="relative flex flex-col items-center text-center space-y-6">
-      <div
-        class="w-32 h-32 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(16,249,129,0.3)] animate-[scaleIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
-        <ion-icon name="checkmark-circle-outline" class="text-7xl text-slate-950"></ion-icon>
-      </div>
-
-      <div class="space-y-2 animate-[fadeIn_0.5s_ease-out_0.2s_both]">
-        <h2 class="text-4xl font-black text-white tracking-tight font-heading">¡Guardado con éxito!</h2>
-        <p class="text-emerald-400 font-bold uppercase tracking-widest text-sm">Tu curso ya está en la nube</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Overlay de Error -->
-  <div *ngIf="mostrarOverlayError"
-    class="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
-    <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-2xl"></div>
-    <div class="relative flex flex-col items-center text-center space-y-6 max-w-md">
-      <div
-        class="w-28 h-28 bg-red-500 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(239,68,68,0.3)] animate-[scaleIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
-        <ion-icon name="alert-circle-outline" class="text-6xl text-slate-950"></ion-icon>
-      </div>
-      <div class="space-y-2 animate-[fadeIn_0.5s_ease-out_0.2s_both]">
-        <h2 class="text-3xl font-black text-white tracking-tight font-heading uppercase">Ups, algo salió mal</h2>
-        <p class="text-red-400 font-bold uppercase tracking-widest text-xs">{{mensajeErrorOverlay}}</p>
-      </div>
-      <button (click)="mostrarOverlayError = false"
-        class="mt-8 bg-slate-800 text-white font-black py-4 px-10 rounded-2xl transition-all shadow-xl animate-[fadeIn_0.5s_ease-out_0.4s_both] border-none cursor-pointer active:scale-95 border border-white/10">
-        Intentar de nuevo
-      </button>
-    </div>
-  </div>
-
   <!-- Pantalla de Carga -->
   <div *ngIf="cargando"
     class="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-2xl animate-[fadeIn_0.5s_ease-out]">
@@ -420,4 +382,16 @@
       </div>
     </div>
   </div>
+
+  <app-overlay-confirmacion 
+    [mostrar]="mostrarOverlay" 
+    [titulo]="tituloOverlay"
+    [mensaje]="mensajeOverlay" 
+    [icono]="iconoOverlay" 
+    [textoConfirmar]="textoConfirmarOverlay"
+    [textoCancelar]="textoCancelarOverlay"
+    [claseConfirmar]="claseConfirmarOverlay" 
+    (confirmar)="accionConfirmacionOverlay()" 
+    (cancelar)="mostrarOverlay = false">
+  </app-overlay-confirmacion>
 </ion-content>

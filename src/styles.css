@@ -624,9 +624,6 @@
     --tw-gradient-position: to top right in oklab;
     background-image: linear-gradient(var(--tw-gradient-stops));
   }
-  .bg-\[url\(\'https\:\/\/grainy-gradients\.vercel\.app\/noise\.svg\'\)\] {
-    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-  }
   .from-primary-600\/20 {
     --tw-gradient-from: color-mix(in srgb, #059669 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {

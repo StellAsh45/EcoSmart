@@ -26,6 +26,7 @@ export class AuthGuard implements CanActivate {
       return false;
     }
 
+    // Verificar si el usuario es admin para evitar que entre al dashboard de estudiante
     if (perfil?.rol === 'admin') {
       this.router.navigate(['/dashboard-admin']);
       return false;

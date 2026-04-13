@@ -62,9 +62,6 @@ const VARIANTS = {
 
         <!-- Particles Overlay -->
         <div class="particles-container pointer-events-none"></div>
-
-        <!-- Subtle Grain Texture -->
-        <div class="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-soft-light"></div>
     </div>
   `,
   styles: [`
