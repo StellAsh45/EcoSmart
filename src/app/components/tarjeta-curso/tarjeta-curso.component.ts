@@ -38,11 +38,19 @@ import { bookOutline, leafOutline } from 'ionicons/icons';
         <h3 class="text-2xl font-black text-primary-400 mb-3 drop-shadow-sm leading-tight group-hover:text-primary-300 transition-colors">
           {{titulo}}
         </h3>
-        <p class="text-primary-50 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
+        <p class="text-primary-50 text-sm font-medium mb-4 leading-relaxed transition-all duration-300"
+           [ngClass]="expandirDescripcion ? '' : 'line-clamp-2'">
           {{descripcion}}
         </p>
 
+        <button *ngIf="descripcion && descripcion.length > 100" 
+                (click)="toggleDescripcion($event)"
+                class="text-primary-400 hover:text-primary-300 text-[10px] font-black uppercase tracking-widest mb-6 transition-colors bg-transparent border-none cursor-pointer p-0 flex items-center gap-1">
+          {{ expandirDescripcion ? 'Ver menos' : 'Ver más...' }}
+        </button>
+
         <div class="flex items-center text-primary-50 text-[10px] font-black uppercase tracking-widest mb-6 py-4 border-y border-white/5">
+
           <div class="flex items-center gap-2">
             <ion-icon name="book-outline" class="text-primary-500 text-sm"></ion-icon>
             <span>{{lecciones}} lecciones</span>
@@ -74,4 +82,12 @@ export class TarjetaCursoComponent {
   @Input() nivel: string = '';
   @Input() lecciones: number = 0;
   @Input() duracion: string = '';
+
+  expandirDescripcion: boolean = false;
+
+  toggleDescripcion(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.expandirDescripcion = !this.expandirDescripcion;
+  }
 }

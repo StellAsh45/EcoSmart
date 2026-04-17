@@ -41,6 +41,7 @@ interface CursoCatalogo {
   estado: string;
   inscrito: boolean;
   expandido: boolean;
+  mostrarDescripcionCompleta: boolean;
   totalLecciones: number;
   modulosDetalle: ModuloDetalle[];
 }
@@ -137,6 +138,7 @@ export class CatalogoPage implements OnInit {
       for (const curso of cursosRaw) {
         curso.inscrito = cursosInscritos.has(curso.id);
         curso.expandido = false;
+        curso.mostrarDescripcionCompleta = false;
         curso.modulosDetalle = [];
         curso.totalLecciones = 0;
 

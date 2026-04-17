@@ -165,13 +165,12 @@
                             </h2>
 
                             <h3 *ngSwitchCase="'subtitulo'"
-                                class="text-xl md:text-2xl font-bold text-primary-50 mt-8 mb-4">
+                                class="text-xl md:text-2xl font-bold text-primary-500 mt-8 mb-4">
                                 {{bloque.valor}}
                             </h3>
 
                             <div *ngSwitchCase="'texto'"
-                                class="text-lg text-slate-50 font-medium whitespace-pre-wrap py-4">
-                                {{bloque.valor}}
+                                class="text-lg text-slate-50 font-medium whitespace-pre-wrap py-4">{{bloque.valor}}
                             </div>
 
                             <div *ngSwitchCase="'imagen'"
@@ -414,26 +413,27 @@
     </div>
 
     <!-- Floating Progress Pill (Sticky Examen) -->
-    <div *ngIf="examenActivo && !examenFinalizado" 
-       class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] w-[280px] sm:w-[320px] animate-[slideUp_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_both]">
-       
-       <div class="bg-slate-900/60 backdrop-blur-2xl border border-primary-500/30 rounded-full px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-2">
-         <div class="flex items-center justify-between w-full">
-           <div class="flex items-center gap-2">
-             <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
-             <span class="text-[10px] font-black text-white uppercase tracking-widest">Tu Progreso</span>
-           </div>
-           <span class="text-xs font-black text-primary-400">
-             {{preguntasRespondidas}} / {{examenActivo.preguntas.length}}
-           </span>
-         </div>
-         
-         <!-- Mini Progress Bar -->
-         <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-           <div class="h-full bg-primary-500 transition-all duration-500 ease-out"
-             [style.width.%]="(preguntasRespondidas / examenActivo.preguntas.length) * 100">
-           </div>
-         </div>
-       </div>
-     </div>
+    <div *ngIf="examenActivo && !examenFinalizado"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] w-[280px] sm:w-[320px] animate-[slideUp_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_both]">
+
+        <div
+            class="bg-slate-900/60 backdrop-blur-2xl border border-primary-500/30 rounded-full px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-2">
+            <div class="flex items-center justify-between w-full">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-black text-white uppercase tracking-widest">Tu Progreso</span>
+                </div>
+                <span class="text-xs font-black text-primary-400">
+                    {{preguntasRespondidas}} / {{examenActivo.preguntas.length}}
+                </span>
+            </div>
+
+            <!-- Mini Progress Bar -->
+            <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-primary-500 transition-all duration-500 ease-out"
+                    [style.width.%]="(preguntasRespondidas / examenActivo.preguntas.length) * 100">
+                </div>
+            </div>
+        </div>
+    </div>
 </ion-content>

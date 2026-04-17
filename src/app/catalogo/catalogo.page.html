@@ -116,9 +116,16 @@
                 {{ curso.titulo }}
               </h3>
 
-              <p class="text-primary-50 text-sm font-medium line-clamp-2 mb-8 leading-relaxed flex-1">
+              <p class="text-primary-50 text-sm font-medium mb-4 leading-relaxed flex-1 transition-all duration-300"
+                 [ngClass]="curso.mostrarDescripcionCompleta ? '' : 'line-clamp-2'">
                 {{ curso.descripcion }}
               </p>
+
+              <button *ngIf="curso.descripcion && curso.descripcion.length > 100" 
+                (click)="curso.mostrarDescripcionCompleta = !curso.mostrarDescripcionCompleta"
+                class="text-primary-400 hover:text-primary-300 text-[10px] font-black uppercase tracking-widest mb-6 transition-colors bg-transparent border-none cursor-pointer p-0 flex items-center gap-1">
+                {{ curso.mostrarDescripcionCompleta ? 'Ver menos' : 'Ver más...' }}
+              </button>
 
               <div class="flex flex-col sm:flex-row gap-4 mt-auto">
                 <button *ngIf="!curso.inscrito" (click)="inscribirse(curso.id)"

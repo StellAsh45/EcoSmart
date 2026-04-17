@@ -239,6 +239,7 @@ export class ConstructorCursoPage implements OnInit, ViewWillEnter {
     if (!this.validarTodo()) return;
 
     this.guardando = true;
+    this.cursoForm.disable(); // Bloquear todos los controles del formulario
 
     try {
       if (this.archivoImagenPendiente) {
@@ -257,7 +258,7 @@ export class ConstructorCursoPage implements OnInit, ViewWillEnter {
       } = await this.supabaseSvc.obtenerUsuario();
 
       const cursoData = {
-        ...this.cursoForm.value,
+        ...this.cursoForm.getRawValue(), // Usar getRawValue para incluir campos disabled
         creado_por: user?.id
       };
 
@@ -367,7 +368,7 @@ export class ConstructorCursoPage implements OnInit, ViewWillEnter {
         }
       }
 
-      const imagenFinal = this.cursoForm.get('imagen_url')?.value;
+      const imagenFinal = this.cursoForm.getRawValue().imagen_url;
 
       if (this.archivoImagenPendiente && this.imagenOriginal && this.imagenOriginal !== imagenFinal) {
         await this.borrarImagenDeStorage(this.imagenOriginal);
@@ -385,6 +386,7 @@ export class ConstructorCursoPage implements OnInit, ViewWillEnter {
       this.tituloOverlay = '¡Guardado con éxito!';
       this.mensajeOverlay = 'Tu curso ya está en la nube';
       this.iconoOverlay = 'checkmark-circle-outline';
+      this.claseConfirmarOverlay = 'bg-emerald-500';
       this.textoConfirmarOverlay = '';
       this.textoCancelarOverlay = '';
       this.accionConfirmacionOverlay = () => { this.mostrarOverlay = false; };
@@ -399,6 +401,7 @@ export class ConstructorCursoPage implements OnInit, ViewWillEnter {
       this.mostrarNotificacionError('Hubo un error al guardar el curso');
     } finally {
       this.guardando = false;
+      this.cursoForm.enable(); // Reactivar el formulario al terminar
     }
   }
 
