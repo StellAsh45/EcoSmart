@@ -17,7 +17,7 @@
             <form class="space-y-10" [formGroup]="formularioRegistro" (ngSubmit)="manejarRegistro()">
 
                 <!-- Nombre -->
-                <app-campo-entrada etiqueta="Nombre completo" [icono]="iconos.nombre" placeholder="Juan Pérez"
+                <app-campo-entrada etiqueta="Nombre completo" [icono]="iconos.nombre" placeholder="Nombre y apellido"
                     [control]="$any(formularioRegistro.get('nombre'))">
                 </app-campo-entrada>
 
