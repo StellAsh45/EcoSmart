@@ -13,7 +13,6 @@ import { CampoEntradaComponent } from '../components/campo-entrada/campo-entrada
 @Component({
   selector: 'app-ingreso',
   templateUrl: './ingreso.page.html',
-  styleUrls: ['./ingreso.page.scss'],
   standalone: true,
   imports: [
     IonContent,

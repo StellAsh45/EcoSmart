@@ -20,7 +20,6 @@ import {
 @Component({
   selector: 'app-dashboard-estudiante',
   templateUrl: './dashboard-estudiante.page.html',
-  styleUrls: ['./dashboard-estudiante.page.scss'],
   standalone: true,
   imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent]
 })

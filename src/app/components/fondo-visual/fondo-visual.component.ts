@@ -100,7 +100,7 @@ const VARIANTS = {
 export class FondoVisualComponent implements OnInit {
   @Input() variante: VarianteFondo = 'primary';
 
-  configuracion = VARIANTS['primary'];
+  configuracion!: any;
 
   ngOnInit() {
     this.configuracion = VARIANTS[this.variante] || VARIANTS['primary'];

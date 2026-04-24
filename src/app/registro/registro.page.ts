@@ -12,7 +12,6 @@ import { ContenedorAutenticacionComponent } from '../components/contenedor-auten
 @Component({
   selector: 'app-registro',
   templateUrl: './registro.page.html',
-  styleUrls: ['./registro.page.scss'],
   standalone: true,
   imports: [
     IonContent,
