@@ -6,6 +6,8 @@ import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 import { addIcons } from 'ionicons';
 import {
   bookOutline,
@@ -91,6 +93,8 @@ export class CursoPage implements OnInit, ViewWillEnter {
   guardandoResultado = false;
   mostrarOverlayError = false;
   mensajeErrorOverlay = '';
+  fechaExpedicion = '';
+  generandoCertificado = false;
 
   get preguntasRespondidas(): number {
     return this.respuestasUsuario.filter(r => r !== -1).length;
@@ -632,6 +636,36 @@ export class CursoPage implements OnInit, ViewWillEnter {
   async cerrarSesion() {
     await this.supabaseSvc.cerrarSesion();
     this.router.navigate(['/ingreso']);
+  }
+
+  async descargarCertificado() {
+    this.generandoCertificado = true;
+    this.fechaExpedicion = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    setTimeout(() => {
+      const element = document.getElementById('certificado-container');
+      if (!element) {
+        this.generandoCertificado = false;
+        return;
+      }
+      
+      const opt: any = {
+        margin:       0,
+        filename:     `Certificado-${this.curso?.titulo?.replace(/\s+/g, '-') || 'Curso'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+
+      html2pdf().from(element).set(opt).save().then(() => {
+        this.generandoCertificado = false;
+      }).catch((err: any) => {
+        console.error('Error al generar el certificado PDF', err);
+        this.generandoCertificado = false;
+        this.mensajeErrorOverlay = 'Error al generar el certificado. Intenta de nuevo.';
+        this.mostrarOverlayError = true;
+      });
+    }, 100);
   }
 
   trackByBloque(index: number, bloque: BloqueContenido): string {

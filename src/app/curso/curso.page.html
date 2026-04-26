@@ -347,9 +347,9 @@
                             e inténtalo de nuevo!'}}
                         </p>
 
-                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
                             <button (click)="reintentarExamen()"
-                                class="w-full sm:w-auto bg-emerald-500 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all hover:bg-emerald-400 hover:-translate-y-1 active:scale-95 text-xl border-none cursor-pointer flex items-center gap-2">
+                                class="w-full sm:w-auto bg-emerald-500 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all hover:bg-emerald-400 hover:-translate-y-1 active:scale-95 text-xl border-none cursor-pointer flex items-center justify-center gap-2">
                                 <ion-icon name="sync-outline"></ion-icon>
                                 Volver a intentar
                             </button>
@@ -359,6 +359,15 @@
                                 <span class="tracking-tight">{{ esUltimaActividadCurso ? 'Ir al Dashboard' : 'Siguiente
                                     Lección' }}</span>
                                 <ion-icon *ngIf="!esUltimaActividadCurso" name="arrow-forward-outline"></ion-icon>
+                            </button>
+
+                            <button *ngIf="esUltimaActividadCurso && resultadoExamen && resultadoExamen.porcentaje >= 70" 
+                                (click)="descargarCertificado()"
+                                [disabled]="generandoCertificado"
+                                class="w-full sm:w-auto bg-primary-500 text-slate-950 font-black py-5 px-12 rounded-[2rem] transition-all hover:bg-primary-400 hover:-translate-y-1 active:scale-95 text-xl border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50">
+                                <span *ngIf="!generandoCertificado">Descargar Certificado</span>
+                                <span *ngIf="generandoCertificado">Generando...</span>
+                                <ion-icon *ngIf="!generandoCertificado" name="document-text-outline"></ion-icon>
                             </button>
                         </div>
                     </div>
@@ -440,5 +449,61 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- Contenedor Oculto para Certificado PDF -->
+    <div style="position: fixed; left: -9999px; top: 0;">
+      <div id="certificado-container" class="bg-white text-slate-900" style="width: 1056px; height: 816px; padding: 40px; box-sizing: border-box; font-family: sans-serif; position: relative; overflow: hidden; background-color: #ffffff;">
+          <!-- Decoración perimetral -->
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 20px; background-color: #10b981;"></div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background-color: #10b981;"></div>
+          <div style="position: absolute; top: 0; left: 0; bottom: 0; width: 20px; background-color: #10b981;"></div>
+          <div style="position: absolute; top: 0; right: 0; bottom: 0; width: 20px; background-color: #10b981;"></div>
+          
+          <!-- Elementos gráficos de fondo -->
+          <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; filter: blur(50px);"></div>
+          <div style="position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: rgba(20, 184, 166, 0.15); border-radius: 50%; filter: blur(50px);"></div>
+          
+          <div style="border: 4px solid #10b981; width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; z-index: 10; background: rgba(255, 255, 255, 0.85);">
+              <div style="margin-bottom: 20px;">
+                  <h1 style="color: #10b981; font-size: 60px; font-weight: 900; margin: 0; letter-spacing: 2px; text-transform: uppercase; text-align: center;">Certificado de Finalización</h1>
+              </div>
+              
+              <p style="font-size: 26px; color: #64748b; margin-top: 20px; letter-spacing: 1px;">Este documento certifica con orgullo que</p>
+              
+              <h2 style="font-size: 52px; font-weight: 800; color: #0f172a; margin: 20px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; width: 85%; text-align: center; text-transform: uppercase;">
+                  {{nombreUsuario}}
+              </h2>
+              
+              <p style="font-size: 26px; color: #64748b; letter-spacing: 1px; margin-bottom: 20px; margin-top: 10px;">ha completado con éxito todas las lecciones y exámenes del curso</p>
+              
+              <h3 style="font-size: 42px; color: #0284c7; font-weight: 800; text-align: center; margin: 0; max-width: 80%;">
+                  {{curso?.titulo}}
+              </h3>
+              
+              <p style="font-size: 20px; color: #94a3b8; font-weight: 600; margin-top: 50px;">Expedido el día: <span style="color: #475569;">{{fechaExpedicion}}</span></p>
+              
+              <!-- Firmas y sellos virtuales -->
+              <div style="margin-top: 60px; display: flex; justify-content: space-between; width: 85%; align-items: flex-end;">
+                  <div style="text-align: center;">
+                      <div style="width: 220px; border-bottom: 2px solid #94a3b8; margin-bottom: 10px; font-family: 'Brush Script MT', cursive; font-size: 34px; color: #334155; line-height: 0.6;">EcoSmart</div>
+                      <p style="color: #64748b; font-weight: bold; margin: 0; font-size: 18px;">Dirección General</p>
+                  </div>
+                  
+                  <div style="text-align: center; margin-bottom: -15px;">
+                      <div style="width: 120px; height: 120px; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);">
+                          <p style="color: white; font-weight: 900; font-size: 18px; text-transform: uppercase; text-align: center; line-height: 1.2;">100%<br>Completado</p>
+                      </div>
+                  </div>
+                  
+                  <div style="text-align: center;">
+                      <div style="color: #cbd5e1; font-size: 13px; margin-bottom: 10px; font-family: monospace; letter-spacing: -0.5px;">{{usuario?.id}}</div>
+                      <div style="width: 220px; border-top: 2px solid #94a3b8; padding-top: 10px;">
+                          <p style="color: #64748b; font-weight: bold; margin: 0; font-size: 18px;">ID de Estudiante Validado</p>
+                      </div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
     </div>
 </ion-content>
