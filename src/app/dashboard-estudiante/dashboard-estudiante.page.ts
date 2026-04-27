@@ -19,11 +19,13 @@ import {
   documentTextOutline
 } from 'ionicons/icons';
 
+import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
+
 @Component({
   selector: 'app-dashboard-estudiante',
   templateUrl: './dashboard-estudiante.page.html',
   standalone: true,
-  imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent]
+  imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent, TarjetaEstadisticaComponent]
 })
 export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   @ViewChild(IonContent) content!: IonContent;
@@ -34,6 +36,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   cursosActivosCount = 0;
   cursosCompletadosCount = 0;
   cargando = true;
+  descargandoCertificado = false;
 
   constructor(
     private supabaseSvc: SupabaseService,
@@ -109,6 +112,9 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   }
 
   async descargarCertificado(insc: any) {
+    if (this.descargandoCertificado) return;
+    this.descargandoCertificado = true;
+    
     try {
       // 1. Buscar en la base de datos si ya existe el certificado
       const { data, error } = await this.supabaseSvc.cliente
@@ -146,6 +152,10 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
     } catch (error) {
       console.error('Error al descargar certificado:', error);
       alert('Hubo un error al generar el certificado.');
+    } finally {
+      setTimeout(() => {
+        this.descargandoCertificado = false;
+      }, 3000);
     }
   }
 }

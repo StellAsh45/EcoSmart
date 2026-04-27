@@ -54,8 +54,8 @@ export class SupabaseService {
       .select('id, activo')
       .eq('email', email)
       .maybeSingle();
-    
-    return { 
+
+    return {
       existe: !!data && !error,
       activo: data?.activo ?? false
     };

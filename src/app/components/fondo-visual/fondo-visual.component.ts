@@ -17,7 +17,7 @@ const VARIANTS = {
     overlay: 'from-slate-950/30 via-slate-950/5 to-slate-950/50'
   },
   deep: {
-    image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
     gradient1: 'bg-primary-500/40',
     gradient2: 'bg-accent-neon/40',
     overlay: 'from-slate-950/40 via-transparent to-slate-950/60'

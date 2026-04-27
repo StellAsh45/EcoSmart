@@ -32,6 +32,7 @@ import {
   personRemoveOutline,
   rocketOutline
 } from 'ionicons/icons';
+import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
 
 type EstadoColumna = 'estado' | 'status' | 'activo';
 
@@ -67,7 +68,8 @@ interface UsuarioAdmin {
     RouterLink,
     FondoVisualComponent,
     EcoSmartLogoComponent,
-    OverlayConfirmacionComponent
+    OverlayConfirmacionComponent,
+    TarjetaEstadisticaComponent
   ]
 })
 export class DashboardAdminPage implements OnInit, ViewWillEnter {

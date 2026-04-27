@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-// @ts-ignore
 import html2pdf from 'html2pdf.js';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileOpener } from '@capacitor-community/file-opener';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root'
@@ -10,14 +12,25 @@ export class GeneradorCertificadosService {
   constructor() { }
 
   async generarYDescargar(tituloCurso: string, nombreEstudiante: string, fechaEmision: string | Date) {
-    const fecha = new Date(fechaEmision).toLocaleDateString('es-ES', {
+    const fechaObj = new Date(fechaEmision);
+    const fecha = fechaObj.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
 
-    // ID de verificación único
-    const idVerificacion = 'ECO-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + new Date(fechaEmision).getFullYear();
+    // NORMALIZACIÓN DE SEMILLA: Para que el ID sea realmente fijo
+    const nombreLimpio = String(nombreEstudiante || 'estudiante').toLowerCase().trim().replace(/\s+/g, '');
+    const cursoLimpio = String(tituloCurso || 'curso').toLowerCase().trim().replace(/\s+/g, '');
+    const seed = `${nombreLimpio}-${cursoLimpio}-${fechaObj.getFullYear()}`;
+
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+      hash |= 0;
+    }
+    const idUnico = Math.abs(hash).toString(36).toUpperCase().padStart(6, '0').substring(0, 6);
+    const idVerificacion = 'ECO-' + idUnico + '-' + fechaObj.getFullYear();
 
     const container = document.createElement('div');
     container.style.position = 'absolute';
@@ -26,6 +39,13 @@ export class GeneradorCertificadosService {
     document.body.appendChild(container);
 
     container.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+        .firma-ecosmart {
+          font-family: 'Dancing Script', cursive !important;
+          font-weight: 700;
+        }
+      </style>
       <div id="certificado-temp" style="width: 1122px; height: 794px; background-color: #020617; position: relative; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; box-sizing: border-box;">
 
         <!-- Fondo con gradientes -->
@@ -72,7 +92,7 @@ export class GeneradorCertificadosService {
                 class="block text-lg sm:text-xl md:text-3xl font-black tracking-tight drop-shadow-sm font-heading leading-none">
                 <span class="text-primary-800">Eco</span><span class="text-primary-900">Smart</span>
               </span>
-              <p style="text-primary-50; font-size: 11px; font-weight: 700; margin: 0; letter-spacing: 4px; text-transform: uppercase;">Plataforma de Educación Ambiental</p>
+              <p style="color:#ffffff; font-size: 11px; font-weight: 700; margin: 0; letter-spacing: 4px; text-transform: uppercase;">Plataforma de Educación Ambiental</p>
             </div>
           </div>
 
@@ -89,7 +109,7 @@ export class GeneradorCertificadosService {
           </div>
 
           <!-- Texto de presentación -->
-          <p style="text-primary-50; font-size: 15px; margin: 0 0 6px 0; font-weight: 400; letter-spacing: 1px;">La plataforma EcoSmart certifica y hace constar que</p>
+          <p style="color:#ffffff; font-size: 15px; margin: 0 0 6px 0; font-weight: 400; letter-spacing: 1px;">La plataforma EcoSmart certifica y hace constar que</p>
 
           <!-- Nombre del estudiante -->
           <div style="text-align: center; margin: 25px auto; padding: 15px 0; border-bottom: 2px solid rgba(16,249,129,0.6); border-top: 2px solid rgba(16,249,129,0.6); width: 75%;">
@@ -97,7 +117,7 @@ export class GeneradorCertificadosService {
           </div>
 
           <!-- Texto de logro -->
-          <p style="color: #f8fafc; font-size: 15px; margin: 0 0 4px 0; font-weight: 400; text-align: center;">
+          <p style="color:#ffffff; font-size: 15px; margin: 0 0 4px 0; font-weight: 400; text-align: center;">
             Ha cursado y aprobado satisfactoriamente todos los módulos y exámenes del curso de
           </p>
 
@@ -109,7 +129,7 @@ export class GeneradorCertificadosService {
 
             <!-- Fecha -->
             <div style="text-align: left;">
-              <p style="text-primary-50; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 5px 0;">Fecha de Emisión</p>
+              <p style="color:#ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 5px 0;">Fecha de Emisión</p>
               <p style="color: #10f981; font-size: 16px; font-weight: 700; margin: 0;">${fecha}</p>
             </div>
 
@@ -123,9 +143,9 @@ export class GeneradorCertificadosService {
 
             <!-- Firma + ID -->
             <div style="text-align: right;">
-              <p style="text-primary-50; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 5px 0;">Firma Autorizada</p>
-              <p style="color: #10f981; font-size: 24px; font-weight: 400; margin:0 0 10px 0; font-family: 'Brush Script MT', Georgia, serif; font-style: italic;">EcoSmart</p>
-              <p style="text-slate-300; font-size: 9px; font-weight: 700; margin: 0; letter-spacing: 1px;">ID: ${idVerificacion}</p>
+              <p style="color:#ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; margin: 0;">Firma Autorizada</p>
+              <p class="firma-ecosmart" style="color: #10f981; font-size: 24px; font-weight: 400; margin:0 0 15px 0;">EcoSmart</p>
+              <p style="color:#cbd5e1; font-size: 9px; font-weight: 700; margin: 0; letter-spacing: 1px;">ID: ${idVerificacion}</p>
             </div>
           </div>
 
@@ -134,19 +154,45 @@ export class GeneradorCertificadosService {
     `;
 
     const element = document.getElementById('certificado-temp') as HTMLElement;
+    const fileName = `Certificado-EcoSmart-${nombreEstudiante.replace(/\s+/g, '-')}.pdf`;
 
     const opt: any = {
       margin: 0,
-      filename: `Certificado-EcoSmart-${nombreEstudiante.replace(/\s+/g, '-')}.pdf`,
+      filename: fileName,
       image: { type: 'jpeg', quality: 1 },
       html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#020617' },
       jsPDF: { unit: 'px', format: [1122, 794], orientation: 'landscape' }
     };
 
     try {
-      await html2pdf().from(element).set(opt).save();
+      if (Capacitor.isNativePlatform()) {
+        // Generar PDF como base64
+        const pdfBase64 = await html2pdf().from(element).set(opt).outputPdf('datauristring');
+        const base64Data = pdfBase64.split(',')[1];
+
+        // Guardar archivo en el dispositivo
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache
+        });
+
+        // Abrir el archivo con el visor nativo
+        await FileOpener.open({
+          filePath: savedFile.uri,
+          contentType: 'application/pdf'
+        });
+      } else {
+        // Comportamiento para PC
+        await html2pdf().from(element).set(opt).save();
+      }
+    } catch (error) {
+      console.error('Error al generar o abrir el certificado:', error);
+      throw error;
     } finally {
-      document.body.removeChild(container);
+      if (container.parentNode) {
+        document.body.removeChild(container);
+      }
     }
   }
 }

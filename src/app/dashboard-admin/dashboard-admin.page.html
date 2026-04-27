@@ -43,61 +43,17 @@
 
       <!-- Resumen estadístico -->
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div
-          class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-primary-500 hover:-translate-y-1">
-          <div
-            class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-primary-500/20 group-hover:text-primary-400 transition-all">
-            <ion-icon name="people-outline" class="text-3xl"></ion-icon>
-          </div>
-          <div>
-            <p
-              class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-primary-400 transition-all">
-              Total Estudiantes
-            </p>
-            <p class="text-3xl font-black text-white">
-              <span *ngIf="cargando" class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
-              <span *ngIf="!cargando">{{estadisticas.totalUsuarios}}</span>
-            </p>
-          </div>
-        </div>
+        <app-tarjeta-estadistica titulo="Total Estudiantes" [valor]="estadisticas.totalUsuarios" icono="people-outline"
+          variante="primario" [cargando]="cargando" [retraso]="0">
+        </app-tarjeta-estadistica>
 
-        <!-- Cursos creados -->
-        <div
-          class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
-          <div
-            class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
-            <ion-icon name="book-outline" class="text-3xl"></ion-icon>
-          </div>
-          <div>
-            <p
-              class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-emerald-400 transition-all">
-              Cursos Creados
-            </p>
-            <p class="text-3xl font-black text-white">
-              <span *ngIf="cargando" class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
-              <span *ngIf="!cargando">{{estadisticas.totalCursos}}</span>
-            </p>
-          </div>
-        </div>
+        <app-tarjeta-estadistica titulo="Cursos Creados" [valor]="estadisticas.totalCursos" icono="book-outline"
+          variante="esmeralda" [cargando]="cargando" [retraso]="2.5">
+        </app-tarjeta-estadistica>
 
-        <!-- Cursos publicados -->
-        <div
-          class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-blue-500 hover:-translate-y-1">
-          <div
-            class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
-            <ion-icon name="stats-chart-outline" class="text-3xl"></ion-icon>
-          </div>
-          <div>
-            <p
-              class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-blue-400 transition-all">
-              Cursos Publicados
-            </p>
-            <p class="text-3xl font-black text-white">
-              <span *ngIf="cargando" class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
-              <span *ngIf="!cargando">{{estadisticas.cursosPublicados}}</span>
-            </p>
-          </div>
-        </div>
+        <app-tarjeta-estadistica titulo="Cursos Publicados" [valor]="estadisticas.cursosPublicados"
+          icono="stats-chart-outline" variante="azul" [cargando]="cargando" [retraso]="5">
+        </app-tarjeta-estadistica>
       </section>
 
       <!-- Gestión de cursos -->
@@ -266,24 +222,9 @@
 
         <div *ngIf="mostrandoUsuarios" class="space-y-6">
           <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div
-              class="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 flex items-center gap-6 hover:bg-white/10 transition-all group border-b-4 border-b-transparent hover:border-b-emerald-500 hover:-translate-y-1">
-              <div
-                class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
-                <ion-icon name="checkmark-circle-outline" class="text-3xl"></ion-icon>
-              </div>
-              <div>
-                <p
-                  class="text-xs font-black text-primary-50 uppercase tracking-widest mb-1 group-hover:text-emerald-400 transition-all">
-                  Estudiantes Activos
-                </p>
-                <p class="text-3xl font-black text-white">
-                  <span *ngIf="cargandoUsuarios"
-                    class="inline-block w-12 h-8 bg-white/10 rounded-lg animate-pulse"></span>
-                  <span *ngIf="!cargandoUsuarios">{{ usuariosActivos }}</span>
-                </p>
-              </div>
-            </div>
+            <app-tarjeta-estadistica titulo="Estudiantes Activos" [valor]="usuariosActivos"
+              icono="checkmark-circle-outline" variante="esmeralda" [cargando]="cargandoUsuarios" [retraso]="0">
+            </app-tarjeta-estadistica>
           </section>
 
           <div class="bg-slate-950/30 rounded-[2rem] border border-white/10 overflow-hidden">

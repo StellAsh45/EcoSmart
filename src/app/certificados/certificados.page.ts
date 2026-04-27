@@ -15,12 +15,13 @@ import {
 } from 'ionicons/icons';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
+import { TarjetaCertificadoComponent } from '../components/tarjeta-certificado/tarjeta-certificado.component';
 
 @Component({
   selector: 'app-certificados',
   templateUrl: './certificados.page.html',
   standalone: true,
-  imports: [CommonModule, IonContent, IonIcon, IonSpinner, FondoVisualComponent, EcoSmartLogoComponent]
+  imports: [CommonModule, IonContent, IonIcon, IonSpinner, FondoVisualComponent, EcoSmartLogoComponent, TarjetaCertificadoComponent]
 })
 export class CertificadosPage implements OnInit, ViewWillEnter {
 
@@ -28,6 +29,7 @@ export class CertificadosPage implements OnInit, ViewWillEnter {
   cargando = true;
   usuario: any = null;
   nombreUsuario = '';
+  descargando = false;
 
   private supabaseSvc = inject(SupabaseService);
   private generadorCertSvc = inject(GeneradorCertificadosService);
@@ -95,14 +97,25 @@ export class CertificadosPage implements OnInit, ViewWillEnter {
   }
 
   async descargarCertificado(cert: any) {
-    if (cert.pdf_url) {
-      window.open(cert.pdf_url, '_blank');
-    } else {
-      await this.generadorCertSvc.generarYDescargar(
-        cert.curso_titulo,
-        cert.usuario_nombre,
-        cert.fecha_emision
-      );
+    if (this.descargando) return;
+    this.descargando = true;
+
+    try {
+      if (cert.pdf_url) {
+        window.open(cert.pdf_url, '_blank');
+      } else {
+        await this.generadorCertSvc.generarYDescargar(
+          cert.curso_titulo,
+          cert.usuario_nombre,
+          cert.fecha_emision
+        );
+      }
+    } catch (error) {
+      console.error('Error al descargar:', error);
+    } finally {
+      setTimeout(() => {
+        this.descargando = false;
+      }, 3000);
     }
   }
 
@@ -111,4 +124,3 @@ export class CertificadosPage implements OnInit, ViewWillEnter {
     this.router.navigate(['/ingreso']);
   }
 }
-
