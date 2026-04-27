@@ -1,0 +1,92 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+    <div class="min-h-screen relative flex flex-col font-sans selection:bg-emerald-500/30 selection:text-white">
+        <!-- Fondo Visual -->
+        <app-fondo-visual variante="admin"></app-fondo-visual>
+
+        <!-- Cabecera -->
+        <header
+            class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button (click)="volver()"
+                    class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-xl border-none cursor-pointer">
+                    <ion-icon name="arrow-back-outline" class="text-xl"></ion-icon>
+                </button>
+
+                <a class="flex items-center gap-3 group no-underline text-white">
+                    <div class="relative">
+                        <div
+                            class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <app-eco-smart-logo
+                            clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
+                    </div>
+                    <span class="text-xl font-black tracking-tight text-white font-heading">
+                        Certificados
+                    </span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
+                <button type="button" (click)="cerrarSesion()"
+                    class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 overflow-hidden border border-white/10 transition-all">
+                    <ion-icon name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenido -->
+        <main class="relative z-10 flex-1 p-6 pt-32 overflow-y-auto custom-scrollbar">
+            <div class="max-w-7xl mx-auto mt-8 sm:mt-10">
+                <div *ngIf="cargando" class="flex justify-center py-20">
+                    <ion-spinner name="crescent" class="text-emerald-400 w-12 h-12"></ion-spinner>
+                </div>
+
+                <div *ngIf="!cargando && certificados.length === 0"
+                    class="text-center py-20 bg-slate-900/5 backdrop-blur-xl rounded-[3rem] border border-white/5">
+                    <ion-icon name="school-outline" class="text-8xl text-emerald-500/80 mb-6"></ion-icon>
+                    <h2 class="text-2xl font-black text-white mb-2">Sin certificados aún</h2>
+                    <p class="text-slate-400 font-medium text-lg max-w-md mx-auto">Completa un curso para obtener tu
+                        primer certificado y descargarlo.</p>
+                </div>
+
+                <div *ngIf="!cargando && certificados.length > 0"
+                    class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 xl:gap-10">
+                    <div *ngFor="let cert of certificados"
+                        class="bg-slate-900/40 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/5 hover:border-emerald-500/30 hover:bg-slate-900/60 transition-all duration-500 group flex flex-col h-full relative overflow-hidden">
+
+                        <div
+                            class="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/5 transition-colors duration-500">
+                        </div>
+
+                        <div class="relative z-10 flex-1 flex flex-col">
+                            <div
+                                class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 mb-6 border border-emerald-500/20 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-500 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                                <ion-icon name="ribbon-outline" class="text-3xl"></ion-icon>
+                            </div>
+
+                            <h4 class="text-xl font-black text-primary-500 mb-3 leading-tight font-heading">
+                                {{cert.curso_titulo}}</h4>
+                            <p class="text-sm font-medium text-slate-400 mb-8 flex-1">
+                                Expedido a nombre de: <br>
+                                <strong class="text-slate-200">{{cert.usuario_nombre}}</strong>
+                            </p>
+
+                            <div class="flex items-center justify-between border-t border-white/5 pt-4 mb-6">
+                                <span
+                                    class="text-[10px] font-black text-primary-400 uppercase tracking-widest">Fecha</span>
+                                <span class="text-xs font-bold text-white">{{formatearFecha(cert.fecha_emision)}}</span>
+                            </div>
+
+                            <button (click)="descargarCertificado(cert)"
+                                class="w-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-black py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 border border-emerald-500/30 hover:border-emerald-500 hover:-translate-y-1 shadow-lg shadow-emerald-500/0 hover:shadow-emerald-500/25 cursor-pointer">
+                                <ion-icon name="download-outline" class="text-xl"></ion-icon>
+                                Descargar PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</ion-content>

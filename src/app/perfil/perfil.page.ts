@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular/standalone';
@@ -14,6 +14,7 @@ import {
   mailOutline,
   saveOutline,
   arrowBackOutline,
+  arrowForwardOutline,
   logOutOutline,
   shieldCheckmarkOutline,
   personOutline,
@@ -24,7 +25,11 @@ import {
   shieldOutline,
   keyOutline,
   checkmarkCircleOutline,
-  shieldCheckmark
+  shieldCheckmark,
+  documentTextOutline,
+  schoolOutline,
+  ribbonOutline,
+  downloadOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -50,7 +55,6 @@ export class PerfilPage implements OnInit {
   cargando = true;
   guardando = false;
 
-  // Overlays de Feedback
   mostrarOverlayExito = false;
   mostrarOverlayError = false;
   mensajeErrorOverlay = '';
@@ -58,7 +62,6 @@ export class PerfilPage implements OnInit {
   nombre = '';
   correo = '';
 
-  // Iconos para los campos
   iconos = {
     nombre: personOutline,
     correo: mailOutline,
@@ -78,6 +81,7 @@ export class PerfilPage implements OnInit {
       mailOutline,
       saveOutline,
       arrowBackOutline,
+      arrowForwardOutline,
       logOutOutline,
       shieldCheckmarkOutline,
       personOutline,
@@ -88,7 +92,11 @@ export class PerfilPage implements OnInit {
       shieldOutline,
       keyOutline,
       checkmarkCircleOutline,
-      shieldCheckmark
+      shieldCheckmark,
+      documentTextOutline,
+      schoolOutline,
+      ribbonOutline,
+      downloadOutline
     });
   }
 
@@ -144,7 +152,7 @@ export class PerfilPage implements OnInit {
         this.usuario?.email?.split('@')[0] ||
         '';
 
-      this.nombre = nombreCargado; // Para el header
+      this.nombre = nombreCargado;
       this.correo = this.usuario?.email || '';
 
       this.perfilForm.patchValue({
@@ -287,7 +295,7 @@ export class PerfilPage implements OnInit {
       });
 
       this.mostrarOverlayExito = true;
-      setTimeout(() => this.mostrarOverlayExito = false, 4000);
+      setTimeout(() => this.mostrarOverlayExito = false, 2000);
     } catch (err) {
       console.error('Error actualizando perfil:', err);
       this.mostrarMensajeError('No fue posible actualizar el perfil. Intenta nuevamente.');
@@ -303,5 +311,9 @@ export class PerfilPage implements OnInit {
 
   volver(): void {
     this.router.navigate(['/dashboard-estudiante']);
+  }
+
+  irACertificados(): void {
+    this.router.navigate(['/certificados']);
   }
 }

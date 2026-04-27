@@ -16,6 +16,23 @@
     }
 }
 
+/*
+ * Transición de cambio de lección:
+ * Solo se aplica transition durante el fade-OUT.
+ * El snap de vuelta a opacity:1 es INSTANTÁNEO (sin transition),
+ * así el backdrop-blur no tiene que "acomodarse" y no hay parpadeo.
+ */
+#main-scroll-container {
+    /* Sin transition aquí = el snap a opacity:1 es inmediato */
+}
+
+#main-scroll-container.leccion-fade-out {
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+}
+
 .custom-scrollbar {
     &::-webkit-scrollbar {
         width: 8px;
@@ -57,6 +74,7 @@
         transform: translate(-50%, 50px);
         opacity: 0;
     }
+
     to {
         transform: translate(-50%, 0);
         opacity: 1;
@@ -68,6 +86,7 @@
         transform: scale(0.9);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;

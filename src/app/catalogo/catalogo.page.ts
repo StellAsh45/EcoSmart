@@ -5,6 +5,7 @@ import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { addIcons } from 'ionicons';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
+import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
 import {
   arrowBackOutline,
   personOutline,
@@ -51,7 +52,7 @@ interface CursoCatalogo {
   templateUrl: './catalogo.page.html',
   styleUrls: ['./catalogo.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonContent, IonIcon, FondoVisualComponent],
+  imports: [CommonModule, IonContent, IonIcon, FondoVisualComponent, EcoSmartLogoComponent],
 })
 export class CatalogoPage implements OnInit {
   usuario: any = null;

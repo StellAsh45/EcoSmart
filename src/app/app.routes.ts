@@ -69,5 +69,11 @@ export const routes: Routes = [
     path: 'curso/:id',
     canActivate: [AuthGuard],
     loadComponent: () => import('./curso/curso.page').then(m => m.CursoPage)
+  },
+  {
+    path: 'certificados',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./certificados/certificados.page').then(m => m.CertificadosPage)
   }
+
 ];

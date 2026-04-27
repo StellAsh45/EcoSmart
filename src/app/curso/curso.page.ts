@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -6,8 +6,7 @@ import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
-// @ts-ignore
-import html2pdf from 'html2pdf.js';
+
 import { addIcons } from 'ionicons';
 import {
   bookOutline,
@@ -31,7 +30,8 @@ import {
   radioButtonOnOutline,
   radioButtonOffOutline,
   warningOutline,
-  alertCircleOutline
+  alertCircleOutline,
+  homeOutline
 } from 'ionicons/icons';
 
 interface Leccion {
@@ -74,6 +74,7 @@ export interface BloqueContenido {
 
 })
 export class CursoPage implements OnInit, ViewWillEnter {
+  @ViewChild(IonContent, { static: false }) ionContent!: IonContent;
   cursoId: string | null = null;
   curso: any = null;
   modulos: Modulo[] = [];
@@ -92,6 +93,7 @@ export class CursoPage implements OnInit, ViewWillEnter {
   resultadoExamen: any = null;
   guardandoResultado = false;
   mostrarOverlayError = false;
+  transicionando = false;
   mensajeErrorOverlay = '';
   fechaExpedicion = '';
   generandoCertificado = false;
@@ -116,7 +118,7 @@ export class CursoPage implements OnInit, ViewWillEnter {
       documentTextOutline, chevronDownOutline, chevronUpOutline,
       arrowForwardOutline, schoolOutline, chatbubbleEllipsesOutline,
       checkmarkOutline, radioButtonOnOutline, radioButtonOffOutline, syncOutline,
-      warningOutline, alertCircleOutline
+      warningOutline, alertCircleOutline, homeOutline
     });
   }
 
@@ -344,45 +346,90 @@ export class CursoPage implements OnInit, ViewWillEnter {
   }
 
   seleccionarLeccion(leccion: Leccion) {
-    this.leccionActiva = leccion;
-    this.examenActivo = null;
-    this.examenFinalizado = false;
-    this.resultadoExamen = null;
+    this.transicionando = true;
     this.sidebarAbierto = false;
 
-    // Parsear bloques
-    try {
-      this.bloquesActivos = JSON.parse(leccion.contenido_html || '[]');
-    } catch {
-      this.bloquesActivos = [];
-    }
+    setTimeout(() => {
+      this.leccionActiva = leccion;
+      this.examenActivo = null;
+      this.examenFinalizado = false;
+      this.resultadoExamen = null;
+
+      try {
+        this.bloquesActivos = JSON.parse(leccion.contenido_html || '[]');
+      } catch {
+        this.bloquesActivos = [];
+      }
+
+      // Scroll INSTANTÁNEO para lecciones
+      this.hacerScrollArriba(false);
+
+      setTimeout(() => { this.transicionando = false; }, 50);
+    }, 250);
   }
 
   seleccionarExamen(modulo: Modulo) {
     if (!modulo.examen) return;
 
-    const idExamen = modulo.examen.id;
-    this.leccionActiva = null;
-    this.examenActivo = {
-      id: idExamen,
-      titulo: modulo.examen.titulo,
-      preguntas: modulo.examen.preguntas,
-      modulo_id: modulo.id
-    };
+    this.transicionando = true;
+    this.sidebarAbierto = false;
 
-    // Restaurar estado previo si existe
-    if (this.intentosExamenMap.has(idExamen)) {
-      const previo = this.intentosExamenMap.get(idExamen);
-      this.resultadoExamen = previo;
-      this.respuestasUsuario = [...previo.respuestas]; // Clonar array de respuestas
-      this.examenFinalizado = true;
-    } else {
-      this.respuestasUsuario = new Array(this.examenActivo.preguntas.length).fill(-1);
-      this.examenFinalizado = false;
-      this.resultadoExamen = null;
+    setTimeout(() => {
+      const idExamen = modulo.examen.id;
+      this.leccionActiva = null;
+      this.examenActivo = {
+        id: idExamen,
+        titulo: modulo.examen.titulo,
+        preguntas: modulo.examen.preguntas,
+        modulo_id: modulo.id
+      };
+
+      if (this.intentosExamenMap.has(idExamen)) {
+        const previo = this.intentosExamenMap.get(idExamen);
+        this.resultadoExamen = previo;
+        this.respuestasUsuario = [...previo.respuestas];
+        this.examenFinalizado = true;
+      } else {
+        this.respuestasUsuario = new Array(this.examenActivo.preguntas.length).fill(-1);
+        this.examenFinalizado = false;
+        this.resultadoExamen = null;
+      }
+
+      // Scroll INSTANTÁNEO para examen
+      this.hacerScrollArriba(false);
+
+      setTimeout(() => { this.transicionando = false; }, 50);
+    }, 250);
+  }
+
+  private hacerScrollArriba(suave: boolean = false) {
+    const behavior = suave ? 'smooth' : 'auto' as ScrollBehavior;
+
+    // 1. Intentar con el contenedor main (el que tiene el overflow)
+    const mainElement = document.getElementById('main-scroll-container');
+    if (mainElement) {
+      mainElement.scrollTo({ top: 0, behavior });
     }
 
-    this.sidebarAbierto = false;
+    // 2. Intentar con ionContent (API oficial de Ionic)
+    if (this.ionContent) {
+      this.ionContent.scrollToTop(suave ? 500 : 0);
+    }
+
+    // 3. Fallback absoluto
+    if (!suave) {
+      window.scrollTo(0, 0);
+    }
+  }
+
+  private hacerScrollAbajo() {
+    // Método definitivo: scrollIntoView sobre el bloque de resultados
+    setTimeout(() => {
+      const elemento = document.getElementById('bloque-resultados');
+      if (elemento) {
+        elemento.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 150);
   }
 
   seleccionarOpcion(preguntaIndex: number, opcionIndex: number) {
@@ -430,6 +477,12 @@ export class CursoPage implements OnInit, ViewWillEnter {
       this.resultadoExamen = data;
       this.examenFinalizado = true;
 
+      // Scroll suave hacia abajo para ver los resultados
+      // Aumentamos el tiempo para asegurar que el DOM se haya actualizado con el nuevo contenido
+      setTimeout(() => {
+        this.hacerScrollAbajo();
+      }, 350);
+
       if (porcentaje >= 70) {
         this.examenesPasados.add(this.examenActivo!.id);
         this.intentosExamenMap.set(this.examenActivo!.id, data);
@@ -456,35 +509,40 @@ export class CursoPage implements OnInit, ViewWillEnter {
   async reintentarExamen() {
     if (!this.examenActivo || !this.usuario) return;
 
-    try {
-      // 1. Borrar de la base de datos
-      await this.supabaseSvc.eliminarResultadoExamen(this.usuario.id, this.examenActivo.id);
+    // Iniciamos transición de salida
+    this.transicionando = true;
 
-      // 2. Limpiar estado local
-      this.intentosExamenMap.delete(this.examenActivo.id);
-      this.examenesPasados.delete(this.examenActivo.id);
+    setTimeout(async () => {
+      try {
+        await this.supabaseSvc.eliminarResultadoExamen(this.usuario.id, this.examenActivo!.id);
 
-      this.examenFinalizado = false;
-      this.resultadoExamen = null;
-      this.respuestasUsuario = new Array(this.examenActivo.preguntas.length).fill(-1);
+        this.intentosExamenMap.delete(this.examenActivo!.id);
+        this.examenesPasados.delete(this.examenActivo!.id);
 
-      // 3. Recalcular progreso y sincronizar
-      this.recalcularProgresoLocal();
-      await this.supabaseSvc.actualizarProgresoInscripcion(
-        this.usuario.id,
-        this.cursoId!,
-        this.progresoGeneral
-      );
+        this.examenFinalizado = false;
+        this.resultadoExamen = null;
+        this.respuestasUsuario = new Array(this.examenActivo!.preguntas.length).fill(-1);
 
-      // Scroll arriba
-      const mainElement = document.querySelector('main');
-      if (mainElement) mainElement.scrollTop = 0;
+        this.recalcularProgresoLocal();
+        await this.supabaseSvc.actualizarProgresoInscripcion(
+          this.usuario.id,
+          this.cursoId!,
+          this.progresoGeneral
+        );
 
-    } catch (error) {
-      console.error('Error al reiniciar examen:', error);
-      this.mensajeErrorOverlay = 'No se pudo reiniciar el examen. Intenta de nuevo.';
-      this.mostrarOverlayError = true;
-    }
+        // Scroll SUAVE hacia arriba para el reintento
+        this.hacerScrollArriba(true);
+
+        // Esperamos un poco a que el scroll avance antes de mostrar el contenido
+        setTimeout(() => {
+          this.transicionando = false;
+        }, 300);
+
+      } catch (error) {
+        console.error('Error al reiniciar examen:', error);
+        this.transicionando = false;
+      }
+    }, 250);
   }
 
   cerrarError() {
@@ -539,9 +597,6 @@ export class CursoPage implements OnInit, ViewWillEnter {
     // 2. ¿Es la última lección del módulo y hay un examen?
     if (this.esUltimaLeccionModulo && this.tieneExamenModuloActual) {
       this.seleccionarExamen(this.moduloActualExamen!);
-      // Scroll to top
-      const mainElement = document.querySelector('main');
-      if (mainElement) mainElement.scrollTop = 0;
       return;
     }
 
@@ -567,9 +622,6 @@ export class CursoPage implements OnInit, ViewWillEnter {
     if (siguienteLec) {
       if (siguienteModulo) siguienteModulo.expandido = true;
       this.seleccionarLeccion(siguienteLec);
-      // Scroll to top
-      const mainElement = document.querySelector('main');
-      if (mainElement) mainElement.scrollTop = 0;
     } else {
       this.volverAlDashboard();
     }
@@ -623,9 +675,6 @@ export class CursoPage implements OnInit, ViewWillEnter {
     if (anteriorLec) {
       if (anteriorModulo) anteriorModulo.expandido = true;
       this.seleccionarLeccion(anteriorLec);
-      // Scroll to top
-      const mainElement = document.querySelector('main');
-      if (mainElement) mainElement.scrollTop = 0;
     }
   }
 
@@ -638,35 +687,7 @@ export class CursoPage implements OnInit, ViewWillEnter {
     this.router.navigate(['/ingreso']);
   }
 
-  async descargarCertificado() {
-    this.generandoCertificado = true;
-    this.fechaExpedicion = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-    
-    setTimeout(() => {
-      const element = document.getElementById('certificado-container');
-      if (!element) {
-        this.generandoCertificado = false;
-        return;
-      }
-      
-      const opt: any = {
-        margin:       0,
-        filename:     `Certificado-${this.curso?.titulo?.replace(/\s+/g, '-') || 'Curso'}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-      };
 
-      html2pdf().from(element).set(opt).save().then(() => {
-        this.generandoCertificado = false;
-      }).catch((err: any) => {
-        console.error('Error al generar el certificado PDF', err);
-        this.generandoCertificado = false;
-        this.mensajeErrorOverlay = 'Error al generar el certificado. Intenta de nuevo.';
-        this.mostrarOverlayError = true;
-      });
-    }, 100);
-  }
 
   trackByBloque(index: number, bloque: BloqueContenido): string {
     return bloque.id;
