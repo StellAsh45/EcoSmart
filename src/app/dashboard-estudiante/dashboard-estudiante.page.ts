@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, Platform, ViewWillEnter } from '@ionic/angular/standalone';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { GeneradorCertificadosService } from '../services/generador-certificados.service';
@@ -16,7 +16,10 @@ import {
   timeOutline,
   playCircleOutline,
   checkmarkCircleOutline,
-  documentTextOutline
+  documentTextOutline,
+  leafOutline,
+  sparklesOutline,
+  closeOutline
 } from 'ionicons/icons';
 
 import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
@@ -24,6 +27,7 @@ import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/t
 @Component({
   selector: 'app-dashboard-estudiante',
   templateUrl: './dashboard-estudiante.page.html',
+  styleUrls: ['./dashboard-estudiante.page.scss'],
   standalone: true,
   imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent, TarjetaEstadisticaComponent]
 })
@@ -38,10 +42,22 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   cargando = true;
   descargandoCertificado = false;
 
+  // Variables para la cinemática
+  clicksLogo = 0;
+  mostrarCinematica = false;
+  clickTimer: any;
+  animacionSacudida = false;
+  sacudidaOcasionalTimer: any;
+
+  // Posición dinámica para la cinemática
+  maskX = '50%';
+  maskY = '50%';
+
   constructor(
     private supabaseSvc: SupabaseService,
     private router: Router,
-    private generadorCertSvc: GeneradorCertificadosService
+    private generadorCertSvc: GeneradorCertificadosService,
+    private platform: Platform
   ) {
     addIcons({
       'at-outline': atOutline,
@@ -51,7 +67,10 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
       'book-outline': bookOutline,
       'play-circle-outline': playCircleOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,
-      'document-text-outline': documentTextOutline
+      'document-text-outline': documentTextOutline,
+      'leaf-outline': leafOutline,
+      'sparkles-outline': sparklesOutline,
+      'close-outline': closeOutline
     });
   }
 
@@ -61,6 +80,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   async ionViewWillEnter() {
     this.content?.scrollToTop(0);
     this.cargando = true;
+    this.iniciarSacudidaOcasional();
     try {
       const { data, error } = await this.supabaseSvc.obtenerUsuario();
       if (error) throw error;
@@ -107,14 +127,15 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   }
 
   async cerrarSesion() {
+    if (this.mostrarCinematica) return;
     await this.supabaseSvc.cerrarSesion();
     this.router.navigate(['/ingreso']);
   }
 
   async descargarCertificado(insc: any) {
-    if (this.descargandoCertificado) return;
+    if (this.descargandoCertificado || this.mostrarCinematica) return;
     this.descargandoCertificado = true;
-    
+
     try {
       // 1. Buscar en la base de datos si ya existe el certificado
       const { data, error } = await this.supabaseSvc.cliente
@@ -157,5 +178,76 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
         this.descargandoCertificado = false;
       }, 3000);
     }
+  }
+
+  iniciarSacudidaOcasional() {
+    this.sacudidaOcasionalTimer = setInterval(() => {
+      if (!this.mostrarCinematica) {
+        this.animacionSacudida = true;
+        setTimeout(() => {
+          this.animacionSacudida = false;
+        }, 500);
+      }
+    }, 3000);
+  }
+
+  ngOnDestroy() {
+    if (this.sacudidaOcasionalTimer) {
+      clearInterval(this.sacudidaOcasionalTimer);
+    }
+  }
+
+  alHacerClickLogo(event?: any) {
+    if (this.mostrarCinematica) return;
+
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    this.clicksLogo++;
+
+    this.animacionSacudida = true;
+    setTimeout(() => {
+      this.animacionSacudida = false;
+    }, 200);
+
+    clearTimeout(this.clickTimer);
+    this.clickTimer = setTimeout(() => {
+      this.clicksLogo = 0;
+    }, 2000);
+
+    if (this.clicksLogo >= 5 && !this.mostrarCinematica) {
+      if (event && event.currentTarget) {
+        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+        this.maskX = `${rect.left + rect.width / 2}px`;
+        this.maskY = `${rect.top + rect.height / 2}px`;
+      } else {
+        this.maskX = '50%';
+        this.maskY = '50%';
+      }
+      this.activarCinematica();
+    }
+  }
+
+  activarCinematica() {
+    this.clicksLogo = 0;
+    this.mostrarCinematica = true;
+
+    // Bloqueamos el botón de atrás en Android/iOS durante la animación
+    const subscription = this.platform.backButton.subscribeWithPriority(9999, () => {
+      // No hacemos nada, bloqueando la navegación hacia atrás
+    });
+
+    // Exactamente a 1.5s (cuando la pantalla está negra) ruteamos a la nueva vista del clicker
+    setTimeout(() => {
+      this.router.navigate(['/clicker']).then(() => {
+        // Liberamos la suscripción del botón de atrás
+        subscription.unsubscribe();
+        // Restablecemos el estado solo DESPUÉS de que la navegación haya finalizado
+        // para evitar que parpadee el dashboard
+        this.mostrarCinematica = false;
+      });
+    }, 1500);
   }
 }

@@ -1,0 +1,65 @@
+.cinematica-superposicion {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: auto;
+  cursor: wait;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cinematica-iris {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(2, 6, 23, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+  backdrop-filter: blur(12px);
+
+  /* Máscara invertida usando el logo */
+  -webkit-mask-image: url('/assets/icon/EcoSmart-icon.png'), linear-gradient(black, black);
+  -webkit-mask-position: center, center;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  -webkit-mask-composite: destination-out;
+  mask-image: url('/assets/icon/EcoSmart-icon.png'), linear-gradient(black, black);
+  mask-position: center, center;
+  mask-repeat: no-repeat, no-repeat;
+  mask-composite: exclude;
+
+  animation: cerrarIrisSombra 1.5s ease-in-out forwards;
+}
+
+@keyframes cerrarIrisSombra {
+  0% {
+    -webkit-mask-size: 800vmax, 100% 100%;
+    mask-size: 800vmax, 100% 100%;
+  }
+
+  100% {
+    -webkit-mask-size: 0vmax, 100% 100%;
+    mask-size: 0vmax, 100% 100%;
+  }
+}
+
+@keyframes sacudirLogo {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateX(-8px) rotate(-16deg);
+  }
+
+  50% {
+    transform: translateX(8px) rotate(16deg);
+  }
+
+  75% {
+    transform: translateX(-8px) rotate(-16deg);
+  }
+}
+
+.anim-shake {
+  animation: sacudirLogo 0.3s ease-in-out;
+}

@@ -92,7 +92,7 @@ export class SupabaseService {
       .single();
   }
 
-  async actualizarPerfil(id: string, datos: { nombre?: string; rol?: string }) {
+  async actualizarPerfil(id: string, datos: { nombre?: string; rol?: string; eco_tokens?: number }) {
     return this.supabase
       .from('profiles')
       .upsert({
@@ -444,5 +444,25 @@ export class SupabaseService {
 
     resets.push(Date.now());
     localStorage.setItem(key, JSON.stringify(resets));
+  }
+
+  // CLICKER
+
+  async obtenerPertenenciasClicker(usuarioId: string) {
+    return this.supabase
+      .from('clicker_pertenencias')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .maybeSingle();
+  }
+
+  async actualizarPertenenciasClicker(usuarioId: string, datos: { hojas?: number; nivel_arbol?: number; mejoras?: any; ultima_recoleccion?: string }) {
+    return this.supabase
+      .from('clicker_pertenencias')
+      .upsert({
+        usuario_id: usuarioId,
+        ...datos,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'usuario_id' });
   }
 }

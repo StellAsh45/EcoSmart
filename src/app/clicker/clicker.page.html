@@ -1,0 +1,263 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+  <div
+    class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
+    <app-fondo-visual variante="estudiante"></app-fondo-visual>
+
+    <!-- Cinemática Easter Egg (Apertura) -->
+    <div *ngIf="mostrarCinematica" class="cinematica-superposicion">
+      <!-- El iris que se abre -->
+      <div class="cinematica-iris-abrir"></div>
+    </div>
+
+    <!-- Cabecera de Navegación -->
+    <header
+      class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button (click)="toggleTienda()"
+          class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all hover:scale-105 active:scale-95 group">
+          <ion-icon [name]="mostrarTienda ? 'close-outline' : 'storefront-outline'"
+            class="text-primary-400 text-xl sm:text-2xl group-hover:rotate-12 transition-transform"></ion-icon>
+        </button>
+        <span class="text-2xl font-black tracking-tight text-white drop-shadow-sm font-heading hidden sm:block">
+          EcoClicker
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3 sm:gap-6">
+        <!-- Currencies en el Navbar -->
+        <div
+          class="flex items-center gap-3 sm:gap-6 bg-slate-900/40 px-4 py-2 rounded-2xl border border-white/10 min-w-[120px] sm:min-w-[160px]">
+          <div class="flex items-center gap-2">
+            <ion-icon name="leaf" class="text-emerald-400 text-xl sm:text-2xl"></ion-icon>
+            <span *ngIf="!cargando" class="text-white font-black text-sm sm:text-lg animate-[fadeIn_0.3s_ease-out]">
+              {{hojas | number:'1.0-1'}}
+            </span>
+            <div *ngIf="cargando" class="w-8 h-4 bg-white/10 rounded-md animate-pulse"></div>
+          </div>
+          <div class="w-px h-4 bg-white/10"></div>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 border-2 border-yellow-200 flex items-center justify-center moneda-shine">
+              <app-eco-smart-logo clasePersonalizada="w-4 h-4 sm:w-5 sm:h-5 logo-moneda-camuflado"></app-eco-smart-logo>
+            </div>
+            <span *ngIf="!cargando" class="text-white font-black text-sm sm:text-lg animate-[fadeIn_0.3s_ease-out]">
+              {{ecoTokens}}
+            </span>
+            <div *ngIf="cargando" class="w-8 h-4 bg-white/10 rounded-md animate-pulse"></div>
+          </div>
+        </div>
+
+        <!-- Botón de Salir -->
+        <button (click)="salirJuego()"
+          class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-xl border-none cursor-pointer">
+          <ion-icon name="arrow-back-outline" class="text-xl"></ion-icon>
+        </button>
+      </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-1 pt-20 pb-20 px-4 sm:px-6 relative z-10 flex flex-col items-center justify-center min-h-screen">
+      <div class="w-full max-w-3xl mx-auto flex flex-col items-center relative">
+        <div class="fixed inset-0 pointer-events-none z-[15] overflow-hidden">
+          <div *ngFor="let hoja of hojasAnimadas" class="absolute hoja-cayendo flex items-center justify-center"
+            [style.left.px]="hoja.x" [style.top.px]="hoja.y" [style.--rot]="hoja.rotacion + 'deg'"
+            [style.--scale]="hoja.escala" [style.--drift]="hoja.drift + 'px'"
+            [style.animation-duration.s]="hoja.duracion">
+            <ion-icon name="leaf" [class.text-yellow-400]="hoja.esCritico" [class.drop-shadow-gold]="hoja.esCritico"
+              [class.text-[#22c55e]]="!hoja.esCritico" [class.drop-shadow-verde]="!hoja.esCritico"
+              class="text-4xl opacity-90"></ion-icon>
+            <span class="absolute font-black text-white text-xl texto-plus pointer-events-none"
+              [class.text-yellow-200]="hoja.esCritico">+{{hoja.valor}}</span>
+          </div>
+        </div>
+        <div class="relative z-10 my-8 cursor-pointer group contenedor-arbol-juego flex justify-center items-center"
+          (click)="clickArbolJuego($event)">
+          <!-- Resplandor detrás del árbol -->
+          <div
+            class="absolute w-64 h-64 bg-primary-500/30 blur-[80px] rounded-full group-hover:bg-primary-400/40 transition-colors duration-300">
+          </div>
+          <!-- Logo con recorte natural -->
+          <app-eco-smart-logo [class.anim-shake]="animacionArbolJuego"
+            clasePersonalizada="w-64 h-48 sm:w-80 sm:h-60 object-cover object-top drop-shadow-[0_0_40px_rgba(34,197,94,0.8)] transition-transform duration-200 group-hover:scale-105 active:scale-95">
+          </app-eco-smart-logo>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sidebar de Mejoras (Tienda) -->
+    <aside [class.sidebar-abierta]="mostrarTienda"
+      class="fixed left-0 top-0 h-full w-[320px] sm:w-[400px] bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 z-[100] transform -translate-x-full transition-transform duration-500 ease-in-out flex flex-col">
+
+      <div class="p-8 border-b border-white/10 flex items-center justify-between">
+        <div class="flex flex-col">
+          <h3 class="text-primary-400 font-black text-2xl tracking-tighter">Tienda Natural</h3>
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Generación: {{calcularLPS() | number:'1.0-1'}}
+            hojas/s</span>
+        </div>
+        <button (click)="toggleTienda()"
+          class="text-slate-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer">
+          <ion-icon name="close-outline" class="text-3xl"></ion-icon>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+        <!-- Mejora: Fertilizante -->
+        <button (click)="comprarMejora('fertilizante')" [disabled]="hojas < calcularPrecio('fertilizante')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="flask-outline" class="text-emerald-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Fertilizante Orgánico</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-emerald-400 font-bold text-sm">LVL {{mejoras.fertilizante}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">+{{1 + (mejoras.fertilizante * 2)}} / clic</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-emerald-500/10 px-6 py-3 rounded-2xl border border-emerald-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('fertilizante')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Regadera -->
+        <button (click)="comprarMejora('regadera')" [disabled]="hojas < calcularPrecio('regadera')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="water-outline" class="text-blue-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Riego Automático</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-blue-400 font-bold text-sm">LVL {{mejoras.regadera}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">+1 / seg</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-blue-500/10 px-6 py-3 rounded-2xl border border-blue-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('regadera')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Ecosistema -->
+        <button (click)="comprarMejora('ecosistema')" [disabled]="hojas < calcularPrecio('ecosistema')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-primary-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="planet-outline" class="text-primary-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Ecosistema Vivo</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-primary-400 font-bold text-sm">LVL {{mejoras.ecosistema}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">+5 / seg</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-primary-500/10 px-6 py-3 rounded-2xl border border-primary-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('ecosistema')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Poda Maestra -->
+        <button (click)="comprarMejora('podaMaestra')" [disabled]="hojas < calcularPrecio('podaMaestra')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-yellow-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="cut-outline" class="text-yellow-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Poda Maestra</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-yellow-400 font-bold text-sm">LVL {{mejoras.podaMaestra}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">Críticos %</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-yellow-500/10 px-6 py-3 rounded-2xl border border-yellow-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('podaMaestra')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Invernadero Inteligente -->
+        <button (click)="comprarMejora('invernadero')" [disabled]="hojas < calcularPrecio('invernadero')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-orange-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="thermometer-outline" class="text-orange-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Invernadero I.A.</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-orange-400 font-bold text-sm">LVL {{mejoras.invernadero}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">LPS +10%</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-orange-500/10 px-6 py-3 rounded-2xl border border-orange-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('invernadero')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Abono Milenario -->
+        <button (click)="comprarMejora('abono')" [disabled]="hojas < calcularPrecio('abono')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="bonfire-outline" class="text-red-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Abono Milenario</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-red-400 font-bold text-sm">LVL {{mejoras.abono}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">Multi. Crítico</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-red-500/10 px-6 py-3 rounded-2xl border border-red-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('abono')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Santuario Animal -->
+        <button (click)="comprarMejora('santuario')" [disabled]="hojas < calcularPrecio('santuario')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-pink-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="paw-outline" class="text-pink-400 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Santuario Animal</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-pink-400 font-bold text-sm">LVL {{mejoras.santuario}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">+10 / seg</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-pink-500/10 px-6 py-3 rounded-2xl border border-pink-500/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('santuario')}}</span>
+          </div>
+        </button>
+
+        <!-- Mejora: Fotosíntesis Avanzada -->
+        <button (click)="comprarMejora('fotosintesis')" [disabled]="hojas < calcularPrecio('fotosintesis')"
+          class="w-full group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed">
+          <div
+            class="w-16 h-16 rounded-3xl bg-yellow-300/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ion-icon name="sunny-outline" class="text-yellow-200 text-3xl"></ion-icon>
+          </div>
+          <span class="text-white font-black text-lg mb-1">Fotosíntesis Pro</span>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-yellow-200 font-bold text-sm">LVL {{mejoras.fotosintesis}}</span>
+            <span class="text-slate-400 text-xs uppercase font-black">Clic +5% LPS</span>
+          </div>
+          <div
+            class="mt-auto flex items-center gap-2 bg-yellow-300/10 px-6 py-3 rounded-2xl border border-yellow-300/20 w-full justify-center">
+            <ion-icon name="leaf" class="text-emerald-400"></ion-icon>
+            <span class="text-white font-black">{{calcularPrecio('fotosintesis')}}</span>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Overlay / Backdrop -->
+    <div *ngIf="mostrarTienda" (click)="toggleTienda()"
+      class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[90] animate-[fadeIn_0.3s_ease-out]">
+    </div>
+  </div>
+</ion-content>
