@@ -198,7 +198,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   }
 
   alHacerClickLogo(event?: any) {
-    if (this.mostrarCinematica) return;
+    if (this.mostrarCinematica || this.clicksLogo >= 5) return;
 
     if (event) {
       event.preventDefault();
@@ -217,7 +217,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
       this.clicksLogo = 0;
     }, 2000);
 
-    if (this.clicksLogo >= 5 && !this.mostrarCinematica) {
+    if (this.clicksLogo >= 5) {
       if (event && event.currentTarget) {
         const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
         this.maskX = `${rect.left + rect.width / 2}px`;
@@ -233,13 +233,10 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   activarCinematica() {
     this.clicksLogo = 0;
     this.mostrarCinematica = true;
-
-    // Bloqueamos el botón de atrás en Android/iOS durante la animación
     const subscription = this.platform.backButton.subscribeWithPriority(9999, () => {
-      // No hacemos nada, bloqueando la navegación hacia atrás
     });
 
-    // Exactamente a 1.5s (cuando la pantalla está negra) ruteamos a la nueva vista del clicker
+    // Exactamente a 1s (cuando la pantalla está negra) ruteamos a la nueva vista del clicker
     setTimeout(() => {
       this.router.navigate(['/clicker']).then(() => {
         // Liberamos la suscripción del botón de atrás
@@ -248,6 +245,6 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
         // para evitar que parpadee el dashboard
         this.mostrarCinematica = false;
       });
-    }, 1500);
+    }, 1000);
   }
 }

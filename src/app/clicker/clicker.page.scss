@@ -7,6 +7,14 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  animation: fadeOutCinematica 0.4s ease-out 0.6s forwards;
+}
+
+@keyframes fadeOutCinematica {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 .cinematica-iris-abrir {
@@ -26,46 +34,280 @@
 
   -webkit-mask-size: 0vmax, 100% 100%;
   mask-size: 0vmax, 100% 100%;
-  animation: abrirIrisSombraNueva 1.5s ease-in-out 0.1s both;
+  animation: abrirIrisSombraNueva 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes abrirIrisSombraNueva {
   0% {
     -webkit-mask-size: 0vmax, 100% 100%;
     mask-size: 0vmax, 100% 100%;
-    -webkit-mask-position: center, center;
-    mask-position: center, center;
   }
 
   100% {
-    -webkit-mask-size: 800vmax, 100% 100%;
-    mask-size: 800vmax, 100% 100%;
-    -webkit-mask-position: center, center;
-    mask-position: center, center;
+    -webkit-mask-size: 250vmax, 100% 100%;
+    mask-size: 250vmax, 100% 100%;
   }
 }
 
-@keyframes sacudirLogoClicker {
+.views-slider {
+  width: 300%;
+}
 
-  0%,
+.views-slider>* {
+  width: 33.333% !important;
+}
+
+/* Navegacion  */
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  transition: all 0.3s ease;
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+
+  &.active {
+    color: #22c55e;
+    transform: scale(1.1);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      width: 4px;
+      height: 4px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+  }
+
+  ion-icon {
+    transition: transform 0.2s;
+  }
+
+  &:active ion-icon {
+    transform: scale(0.9);
+  }
+}
+
+/* Background de la Tienda */
+.vista-tienda-bg {
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Tarjetas de mejoras*/
+.upgrade-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 12px 16px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    display: none;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.15;
+    filter: grayscale(1);
+    cursor: not-allowed;
+  }
+
+  .upgrade-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  &:hover:not(:disabled) .upgrade-icon {
+    transform: scale(1.15) rotate(8deg);
+  }
+
+  .upgrade-price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+
+    .effect-label {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+
+    div {
+      transition: all 0.2s;
+    }
+  }
+
+  &.can-afford {
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+
+    /* Borde Superior que se apaga en las esquinas */
+    &::before {
+      content: '';
+      display: block;
+      /* Asegurar visibilidad */
+      position: absolute;
+      top: 0;
+      left: 5%;
+      right: 5%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+      z-index: 10;
+      opacity: 1 !important;
+    }
+
+    /* Borde Inferior que se apaga en las esquinas */
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 5%;
+      right: 5%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+      z-index: 10;
+      opacity: 1 !important;
+    }
+
+    .upgrade-shimmer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+        transform: skewX(-25deg);
+        animation: sweep-light 4s infinite;
+      }
+    }
+  }
+
+  &:hover:not(:disabled).can-afford {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.08);
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes sweep-light {
+  0% {
+    left: -150%;
+  }
+
+  30% {
+    left: 150%;
+  }
+
   100% {
-    transform: translateX(0) rotate(0deg);
+    left: 150%;
+  }
+}
+
+/* Animación de Sacudida Enérgica (Shake) */
+@keyframes sacudirLogoClicker {
+  0% {
+    transform: scale(1) rotate(0deg);
   }
 
   25% {
-    transform: translateX(-4px) rotate(-8deg);
+    transform: scale(0.92) rotate(-8deg);
   }
 
   50% {
-    transform: translateX(4px) rotate(8deg);
+    transform: scale(1.08) rotate(8deg);
   }
 
   75% {
-    transform: translateX(-4px) rotate(-8deg);
+    transform: scale(0.95) rotate(-8deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Optimización del Árbol para Móviles */
+.contenedor-arbol-juego {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.logo-arbol-interactivo {
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.contenedor-arbol-juego:active .logo-arbol-interactivo {
+  transform: scale(0.92);
+}
+
+@media (min-width: 640px) {
+  .contenedor-arbol-juego:hover .logo-arbol-interactivo {
+    transform: scale(1.05);
   }
 }
 
 .anim-shake {
+  display: inline-block;
   animation: sacudirLogoClicker 0.2s cubic-bezier(.36, .07, .19, .97) both;
 }
 
@@ -82,12 +324,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0) 45%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0) 55%,
-      transparent 100%);
+  background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0) 45%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 55%, transparent 100%);
   transform: rotate(45deg);
   animation: shine-coin 3s infinite;
 }
@@ -125,15 +362,12 @@
   }
 }
 
-/* Estilos para el texto de +1 */
 .texto-plus {
   text-shadow: 0 0 10px rgba(124, 188, 2, 1);
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-/* Usamos :host ::ng-deep para saltar la encapsulación de Angular y llegar al img interno */
 :host ::ng-deep .logo-moneda-camuflado {
-  /* Tono dorado, el proposito es mezclar el logo con la moneda */
   filter: grayscale(1) brightness(1.3) sepia(1) saturate(10) hue-rotate(-10deg) !important;
   opacity: 0.6 !important;
   mix-blend-mode: overlay !important;
@@ -146,10 +380,6 @@
 
 .drop-shadow-gold {
   filter: drop-shadow(0 0 15px rgba(251, 191, 36, 1)) drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
-}
-
-.sidebar-abierta {
-  transform: translateX(0) !important;
 }
 
 .custom-scrollbar {

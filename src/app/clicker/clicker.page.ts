@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
 import { addIcons } from 'ionicons';
-import { leafOutline, leaf, sparklesOutline, arrowBackOutline, flaskOutline, waterOutline, planetOutline, cutOutline, storefrontOutline, closeOutline, thermometerOutline, bonfireOutline, pawOutline, sunnyOutline, timeOutline } from 'ionicons/icons';
+import { leafOutline, leaf, sparklesOutline, arrowBackOutline, flaskOutline, waterOutline, planetOutline, cutOutline, storefrontOutline, storefront, closeOutline, thermometerOutline, bonfireOutline, pawOutline, sunnyOutline, timeOutline, statsChartOutline, statsChart } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase';
 
 @Component({
@@ -17,13 +17,18 @@ import { SupabaseService } from '../services/supabase';
   imports: [IonContent, CommonModule, FormsModule, IonIcon, FondoVisualComponent, EcoSmartLogoComponent]
 })
 export class ClickerPage implements OnDestroy {
+  vistaActual: 'juego' | 'tienda' | 'estadisticas' = 'juego';
   mostrarCinematica = false;
   hojas = 0;
   ecoTokens = 0;
   animacionArbolJuego = false;
   usuarioId: string | null = null;
   cargando = true;
-  mostrarTienda = false;
+  private ultimoClick = 0;
+  private readonly COOLDOWN_CLICK = 50;
+
+  private audioCtx: AudioContext | null = null;
+  private audioHojas: HTMLAudioElement | null = null;
 
   // Hojas cayendo
   hojasAnimadas: any[] = [];
@@ -35,8 +40,8 @@ export class ClickerPage implements OnDestroy {
 
   // Precios iniciales (Nivel 0)
   readonly PRECIOS_BASE = {
-    fertilizante: 50,   // Mejora clic
-    regadera: 200,       // Pasivo Nivel 1
+    fertilizante: 30,   // Mejora clic
+    regadera: 100,       // Pasivo Nivel 1
     ecosistema: 1000,    // Pasivo Nivel 2
     podaMaestra: 500,    // Probabilidad Crítico
     invernadero: 2500,   // Multiplicador Pasivo
@@ -54,11 +59,11 @@ export class ClickerPage implements OnDestroy {
     regaderaPasivo: 1,         // Hojas por segundo base por nivel
     ecosistemaPasivo: 5,       // Hojas por segundo base por nivel
     invernaderoBonus: 0.1,     // +10% de producción pasiva extra por nivel
-    abonoBonusCritico: 1,      // Aumenta el multiplicador x5 base (+1 por nivel)
-    criticoBaseChance: 0.05,   // 5% de probabilidad base de crítico
-    criticoChancePorNivel: 0.03, // +3% de probabilidad por cada nivel de Poda Maestra
+    abonoBonusCritico: 0.5,     // Aumenta el multiplicador (+0.5 por nivel)
+    criticoBaseChance: 0.01,   // 1% de probabilidad base de crítico
+    criticoChancePorNivel: 0.01, // +1% de probabilidad por cada nivel de Poda Maestra
     santuarioPasivo: 10,       // Hojas por segundo base por nivel
-    fotosintesisBonus: 0.05    // Cada nivel añade 5% de tu LPS al valor del clic
+    fotosintesisBonus: 0.05    // Cada nivel añade 5% de Hojas/s al valor del clic
   };
 
   // ==============================================================================
@@ -91,13 +96,27 @@ export class ClickerPage implements OnDestroy {
       planetOutline,
       cutOutline,
       storefrontOutline,
+      storefront,
       closeOutline,
       thermometerOutline,
       bonfireOutline,
       pawOutline,
       sunnyOutline,
-      timeOutline
+      timeOutline,
+      statsChartOutline,
+      statsChart
     });
+
+    // Pre-cargar sonido de hojas real (Usamos una URL más estable)
+    this.audioHojas = new Audio('https://www.soundjay.com/nature/sounds/dry-leaves-rustling-01.mp3');
+    this.audioHojas.volume = 0.3;
+
+    // Si hay error de carga, nos aseguramos de usar el fallback
+    this.audioHojas.onerror = () => {
+      this.audioHojas = null;
+    };
+
+    this.audioHojas.load();
   }
 
   async ionViewWillEnter() {
@@ -136,14 +155,14 @@ export class ClickerPage implements OnDestroy {
 
             // Calculamos el valor esperado promedio incluyendo críticos
             const chanceCritico = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
-            const multiCritico = 5 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
+            const multiCritico = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
 
             // Factor promedio: (1 + chance * (multi - 1))
             const factorPromedio = 1 + (chanceCritico * (multiCritico - 1));
             const hojasGanadas = segundosTranscurridos * lps * factorPromedio;
 
             if (hojasGanadas > 0) {
-              this.hojas = Number((this.hojas + hojasGanadas).toFixed(1));
+              this.hojas = Math.floor(this.hojas + hojasGanadas);
 
               // Actualizamos inmediatamente para evitar doble cobro por refresco
               this.supabase.actualizarPertenenciasClicker(this.usuarioId, {
@@ -161,38 +180,43 @@ export class ClickerPage implements OnDestroy {
     // Bucle de generación pasiva mientras el usuario está en la página
     this.iniciarGeneracionPasiva();
 
-    // La animación de apertura dura 1.6s en total
+    // La animación de apertura dura aproximadamente 1s con el fade out final
     setTimeout(() => {
       this.mostrarCinematica = false;
-    }, 1650);
+    }, 1000);
   }
 
-  clickArbolJuego(event: any) {
+  recolectarHojas(event: any) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
+    const ahora = Date.now();
+    if (ahora - this.ultimoClick < this.COOLDOWN_CLICK) return; // Anti-auto-clicker
+    this.ultimoClick = ahora;
 
-    // Hojas por click: Base (1) + (Nivel Fertilizante * Bonus) + (Bonus Fotosíntesis * LPS)
-    const bonusPasivo = this.calcularLPS() * (this.mejoras.fotosintesis * this.BALANCE.fotosintesisBonus);
-    let incremento = 1 + (this.mejoras.fertilizante * this.BALANCE.fertilizantePorNivel) + bonusPasivo;
+    this.reproducirSonidoHojas();
+
+    let incremento = this.obtenerValorToqueReal();
     let esCritico = false;
 
     // Lógica de Críticos (Poda Maestra)
     const chanceCritico = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
     if (Math.random() < chanceCritico) {
-      // Multiplicador base x5 + Bonus por nivel de Abono
-      const multiCritico = 5 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
+      // Multiplicador base x2 + Bonus por nivel de Abono
+      const multiCritico = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
       incremento *= multiCritico;
       esCritico = true;
     }
 
-    this.hojas = Number((this.hojas + incremento).toFixed(1));
+    // Convertimos a entero para evitar problemas de coma flotante en el balance principal
+    const incrementoFinal = Math.floor(incremento);
+    this.hojas += incrementoFinal;
 
     // Guardado en base de datos (Throttled: cada 10 clics para no saturar)
     if (this.usuarioId && (Math.floor(this.hojas) % 10 === 0)) {
       this.supabase.actualizarPertenenciasClicker(this.usuarioId, {
-        hojas: this.hojas,
+        hojas: Math.floor(this.hojas),
         ultima_recoleccion: new Date().toISOString()
       });
     }
@@ -212,7 +236,7 @@ export class ClickerPage implements OnDestroy {
       yBase = rect.top + rect.height / 3;
     }
 
-    this.generarHojaAnimada(xBase, yBase, incremento, esCritico);
+    this.generarHojaAnimada(xBase, yBase, incrementoFinal, esCritico);
   }
 
   // Genera una hoja animada 
@@ -220,7 +244,7 @@ export class ClickerPage implements OnDestroy {
     const id = this.hojaIdCounter++;
     this.hojasAnimadas.push({
       id,
-      valor,
+      valor: this.formatearNumero(Math.floor(valor)),
       esCritico,
       x: x + (Math.random() * 80 - 40),
       y: y + (Math.random() * 40 - 20),
@@ -235,8 +259,68 @@ export class ClickerPage implements OnDestroy {
     }, 2500);
   }
 
-  toggleTienda() {
-    this.mostrarTienda = !this.mostrarTienda;
+  reproducirSonidoHojas() {
+    // Intentamos reproducir el sonido real pre-cargado
+    if (this.audioHojas) {
+      this.audioHojas.currentTime = 0;
+      this.audioHojas.play().catch(() => {
+        // Si falla por políticas de autoplay o red, usamos el sintetizador como fallback
+        this.sintetizarSonidoHojas();
+      });
+    } else {
+      this.sintetizarSonidoHojas();
+    }
+  }
+
+  sintetizarSonidoHojas() {
+    try {
+      if (!this.audioCtx) {
+        this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+      const now = this.audioCtx.currentTime;
+      const duration = 0.4;
+      const noiseBuffer = this.audioCtx.createBuffer(1, this.audioCtx.sampleRate * duration, this.audioCtx.sampleRate);
+      const noiseData = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1;
+      const source = this.audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+      const filter = this.audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(3000, now);
+      filter.Q.value = 1;
+      const gain = this.audioCtx.createGain();
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.05, now + 0.05);
+      gain.gain.linearRampToValueAtTime(0, now + duration);
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      source.start(now);
+    } catch (e) { }
+  }
+
+  // Helpers para Estadísticas
+  obtenerValorToqueReal(): number {
+    const baseClic = 1 + (this.mejoras.fertilizante * this.BALANCE.fertilizantePorNivel);
+    const bonusFotosintesis = this.calcularLPS() * (this.mejoras.fotosintesis * this.BALANCE.fotosintesisBonus);
+    return baseClic + bonusFotosintesis;
+  }
+
+  obtenerChanceCritico(): number {
+    return (this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel)) * 100;
+  }
+
+  obtenerMultiplicadorCritico(): number {
+    return 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
+  }
+
+  obtenerTotalNiveles(): number {
+    return Object.values(this.mejoras).reduce((a: any, b: any) => a + b, 0) as number;
+  }
+
+  cambiarVista(vista: 'juego' | 'tienda' | 'estadisticas') {
+    this.vistaActual = vista;
   }
 
   // Lógica de Mejoras
@@ -251,9 +335,20 @@ export class ClickerPage implements OnDestroy {
       (this.mejoras.ecosistema * this.BALANCE.ecosistemaPasivo) +
       (this.mejoras.santuario * this.BALANCE.santuarioPasivo);
 
-    // Multiplicador Invernadero
     const multiplicador = 1 + (this.mejoras.invernadero * this.BALANCE.invernaderoBonus);
-    return Number((baseLPS * multiplicador).toFixed(1));
+    return baseLPS * multiplicador;
+  }
+
+  formatearNumero(num: number): string {
+    if (num < 1000) return Math.floor(num).toString();
+
+    const unidades = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp'];
+    const orden = Math.floor(Math.log10(Math.abs(num)) / 3);
+    const unidad = unidades[orden] || '??';
+    const valorReducido = num / Math.pow(10, orden * 3);
+
+    // Si es entero exacto no ponemos decimales, si no, uno solo
+    return valorReducido.toFixed(valorReducido >= 100 ? 0 : 1) + unidad;
   }
 
   async comprarMejora(tipo: string) {
@@ -264,7 +359,7 @@ export class ClickerPage implements OnDestroy {
 
       // Persistencia inmediata al comprar
       await this.supabase.actualizarPertenenciasClicker(this.usuarioId, {
-        hojas: this.hojas,
+        hojas: Math.floor(this.hojas),
         mejoras: this.mejoras,
         ultima_recoleccion: new Date().toISOString()
       });
@@ -283,14 +378,13 @@ export class ClickerPage implements OnDestroy {
         // Críticos Pasivos: Misma lógica que los clics
         const chanceCritico = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
         if (Math.random() < chanceCritico) {
-          const multiCritico = 5 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
+          const multiCritico = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
           lps *= multiCritico;
           esCritico = true;
         }
 
-        this.hojas = Number((this.hojas + lps).toFixed(1));
+        this.hojas += lps;
 
-        // Generación visual pasiva
         const arbolElement = document.querySelector('.contenedor-arbol-juego');
         if (arbolElement) {
           const rect = arbolElement.getBoundingClientRect();

@@ -26,13 +26,13 @@
   mask-repeat: no-repeat, no-repeat;
   mask-composite: exclude;
 
-  animation: cerrarIrisSombra 1.5s ease-in-out forwards;
+  animation: cerrarIrisSombra 1.0s cubic-bezier(0.64, 0, 0.78, 0) forwards;
 }
 
 @keyframes cerrarIrisSombra {
   0% {
-    -webkit-mask-size: 800vmax, 100% 100%;
-    mask-size: 800vmax, 100% 100%;
+    -webkit-mask-size: 250vmax, 100% 100%;
+    mask-size: 250vmax, 100% 100%;
   }
 
   100% {
