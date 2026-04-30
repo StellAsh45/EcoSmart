@@ -44,7 +44,7 @@
           </div>
         </div>
 
-        <button (click)="salirJuego()"
+        <button (click)="salirJuego()" [disabled]="mostrarAvisoOffline" [class.opacity-30]="mostrarAvisoOffline"
           class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-xl border-none cursor-pointer">
           <ion-icon name="arrow-back-outline" class="text-xl"></ion-icon>
         </button>
@@ -64,11 +64,16 @@
               [style.left.px]="hoja.x" [style.top.px]="hoja.y" [style.--rot]="hoja.rotacion + 'deg'"
               [style.--scale]="hoja.escala" [style.--drift]="hoja.drift + 'px'"
               [style.animation-duration.s]="hoja.duracion">
-              <ion-icon name="leaf" [class.text-yellow-400]="hoja.esCritico" [class.drop-shadow-gold]="hoja.esCritico"
-                [class.text-[#22c55e]]="!hoja.esCritico" [class.drop-shadow-verde]="!hoja.esCritico"
+              <ion-icon name="leaf" [class.text-purple-400]="hoja.esSuperCritico"
+                [class.drop-shadow-purple]="hoja.esSuperCritico"
+                [class.text-yellow-400]="hoja.esCritico && !hoja.esSuperCritico"
+                [class.drop-shadow-gold]="hoja.esCritico && !hoja.esSuperCritico"
+                [class.text-[#7cbc02]]="!hoja.esCritico && !hoja.esSuperCritico"
+                [class.drop-shadow-verde]="!hoja.esCritico && !hoja.esSuperCritico"
                 class="text-4xl opacity-90"></ion-icon>
               <span class="font-black text-white text-xl texto-plus pointer-events-none drop-shadow-lg"
-                [class.text-yellow-200]="hoja.esCritico">+{{hoja.valor}}</span>
+                [class.text-purple-200]="hoja.esSuperCritico"
+                [class.text-yellow-200]="hoja.esCritico && !hoja.esSuperCritico">+{{hoja.valor}}</span>
             </div>
           </div>
 
@@ -92,215 +97,36 @@
               <p class="text-primary-50 text-xs font-bold tracking-widest">Potencia tu árbol con mejoras</p>
             </div>
 
-            <!-- Listado de Mejoras -->
-            <div class="grid grid-cols-1 gap-4">
-              <!-- Fertilizante -->
-              <button (click)="comprarMejora('fertilizante')" [disabled]="hojas < calcularPrecio('fertilizante')"
-                [class.can-afford]="hojas >= calcularPrecio('fertilizante')" style="color: #10b981"
-                class="upgrade-card group border-emerald-500/20 hover:border-emerald-500/50 bg-emerald-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-emerald-500/20 text-emerald-400">
-                  <ion-icon name="flask-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Fertilizante</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Aumenta las hojas que recibes por cada
-                    toque manual.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-emerald-400">+{{BALANCE.fertilizantePorNivel}} Hojas/Toque</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-emerald-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('fertilizante'))}}
-                  </div>
-                  <span
-                    class="bg-emerald-500/20 text-emerald-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.fertilizante}}</span>
-                </div>
-              </button>
+            <!-- CATEGORÍA 1: POTENCIA DE TOQUE -->
+            <div class="pt-2 pb-1 border-b border-white/5 mb-2">
+              <h3 class="text-indigo-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                <ion-icon name="hand-right-outline"></ion-icon>
+                Mejoras de Toque
+              </h3>
+            </div>
 
-              <!-- Regadera -->
-              <button (click)="comprarMejora('regadera')" [disabled]="hojas < calcularPrecio('regadera')"
-                [class.can-afford]="hojas >= calcularPrecio('regadera')" style="color: #3b82f6"
-                class="upgrade-card group border-blue-500/20 hover:border-blue-500/50 bg-blue-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-blue-500/20 text-blue-400">
-                  <ion-icon name="water-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Riego Auto</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Genera hojas automáticamente de forma
-                    constante.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-blue-400">+{{BALANCE.regaderaPasivo}} Hoja/Seg</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-blue-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('regadera'))}}
-                  </div>
-                  <span
-                    class="bg-blue-500/20 text-blue-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.regadera}}</span>
-                </div>
-              </button>
+            <div class="grid grid-cols-1 gap-1">
+              <app-tarjeta-mejora *ngFor="let mejora of listaMejorasToque" [nombre]="mejora.nombre"
+                [descripcion]="mejora.desc" [icono]="mejora.icono" [color]="mejora.color" [nivel]="mejoras[mejora.id]"
+                [precio]="calcularPrecio(mejora.id)" [efectoTexto]="obtenerEfectoTexto(mejora.id)"
+                [puedeComprar]="hojas >= calcularPrecio(mejora.id)" (comprar)="comprarMejora(mejora.id)">
+              </app-tarjeta-mejora>
+            </div>
 
-              <!-- Ecosistema -->
-              <button (click)="comprarMejora('ecosistema')" [disabled]="hojas < calcularPrecio('ecosistema')"
-                [class.can-afford]="hojas >= calcularPrecio('ecosistema')" style="color: #10b981"
-                class="upgrade-card group border-primary-500/20 hover:border-primary-500/50 bg-primary-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-primary-500/20 text-primary-400">
-                  <ion-icon name="planet-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Ecosistema</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Mejora la producción natural base del
-                    ecosistema.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-primary-400">+{{BALANCE.ecosistemaPasivo}} Hojas/Seg</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-primary-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('ecosistema'))}}
-                  </div>
-                  <span
-                    class="bg-primary-500/20 text-primary-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.ecosistema}}</span>
-                </div>
-              </button>
+            <!-- CATEGORÍA 2: GENERACIÓN PASIVA -->
+            <div class="pt-6 pb-1 border-b border-white/5 mb-2">
+              <h3 class="text-emerald-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                <ion-icon name="time-outline"></ion-icon>
+                Producción pasiva (Hojas por segundo)
+              </h3>
+            </div>
 
-              <!-- Poda Maestra -->
-              <button (click)="comprarMejora('podaMaestra')" [disabled]="hojas < calcularPrecio('podaMaestra')"
-                [class.can-afford]="hojas >= calcularPrecio('podaMaestra')" style="color: #eab308"
-                class="upgrade-card group border-yellow-500/20 hover:border-yellow-500/50 bg-yellow-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-yellow-500/20 text-yellow-400">
-                  <ion-icon name="cut-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Poda</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Más oportunidad de obtener clics con daño
-                    extra.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-yellow-400">+{{BALANCE.criticoChancePorNivel * 100}}% Prob.
-                    Crítico</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-yellow-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('podaMaestra'))}}
-                  </div>
-                  <span
-                    class="bg-yellow-500/20 text-yellow-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.podaMaestra}}</span>
-                </div>
-              </button>
-
-              <!-- Invernadero -->
-              <button (click)="comprarMejora('invernadero')" [disabled]="hojas < calcularPrecio('invernadero')"
-                [class.can-afford]="hojas >= calcularPrecio('invernadero')" style="color: #f97316"
-                class="upgrade-card group border-orange-500/20 hover:border-orange-500/50 bg-orange-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-orange-500/20 text-orange-400">
-                  <ion-icon name="thermometer-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Invernadero</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Bono multiplicador a toda tu producción
-                    pasiva.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-orange-400">+{{BALANCE.invernaderoBonus * 100}}% Prod. Total</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-orange-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('invernadero'))}}
-                  </div>
-                  <span
-                    class="bg-orange-500/20 text-orange-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.invernadero}}</span>
-                </div>
-              </button>
-
-              <!-- Abono -->
-              <button (click)="comprarMejora('abono')" [disabled]="hojas < calcularPrecio('abono')"
-                [class.can-afford]="hojas >= calcularPrecio('abono')" style="color: #ef4444"
-                class="upgrade-card group border-red-500/20 hover:border-red-500/50 bg-red-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-red-500/20 text-red-400">
-                  <ion-icon name="bonfire-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Abono</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Aumenta la fuerza de tus golpes críticos
-                    cuando ocurren.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-red-400">+{{BALANCE.abonoBonusCritico}}x Daño Crítico</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-red-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('abono'))}}
-                  </div>
-                  <span class="bg-red-500/20 text-red-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.abono}}</span>
-                </div>
-              </button>
-
-              <!-- Santuario -->
-              <button (click)="comprarMejora('santuario')" [disabled]="hojas < calcularPrecio('santuario')"
-                [class.can-afford]="hojas >= calcularPrecio('santuario')" style="color: #ec4899"
-                class="upgrade-card group border-pink-500/20 hover:border-pink-500/50 bg-pink-500/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-pink-500/20 text-pink-400">
-                  <ion-icon name="paw-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Santuario</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Animales que recolectan gran cantidad de
-                    hojas por ti.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-pink-400">+{{BALANCE.santuarioPasivo}} Hojas/Seg</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-pink-500/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('santuario'))}}
-                  </div>
-                  <span
-                    class="bg-pink-500/20 text-pink-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.santuario}}</span>
-                </div>
-              </button>
-
-              <!-- Fotosíntesis -->
-              <button (click)="comprarMejora('fotosintesis')" [disabled]="hojas < calcularPrecio('fotosintesis')"
-                [class.can-afford]="hojas >= calcularPrecio('fotosintesis')" style="color: #fde047"
-                class="upgrade-card group border-yellow-200/20 hover:border-yellow-200/50 bg-yellow-200/5">
-                <div class="upgrade-shimmer"></div>
-                <div class="upgrade-icon bg-yellow-200/20 text-yellow-200">
-                  <ion-icon name="sunny-outline"></ion-icon>
-                </div>
-                <div class="flex-1 text-left min-w-0">
-                  <h4 class="text-white font-bold text-base leading-none">Fotosíntesis</h4>
-                  <p class="text-slate-400 text-[10px] leading-tight -mt-0.5">Convierte parte de tu producción pasiva en
-                    fuerza de toque.</p>
-                </div>
-                <div class="upgrade-price flex-shrink-0 flex flex-col items-end gap-1">
-                  <span class="effect-label text-yellow-200">+{{BALANCE.fotosintesisBonus * 100}}% Bonus Toque</span>
-                  <div
-                    class="flex items-center gap-1 text-white font-black text-sm bg-yellow-200/20 px-2.5 py-1.5 rounded-xl">
-                    <ion-icon name="leaf" class="text-emerald-400 text-xs"></ion-icon>
-                    {{formatearNumero(calcularPrecio('fotosintesis'))}}
-                  </div>
-                  <span
-                    class="bg-yellow-200/20 text-yellow-200 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">LVL
-                    {{mejoras.fotosintesis}}</span>
-                </div>
-              </button>
+            <div class="grid grid-cols-1 gap-1">
+              <app-tarjeta-mejora *ngFor="let mejora of listaMejorasPasivo" [nombre]="mejora.nombre"
+                [descripcion]="mejora.desc" [icono]="mejora.icono" [color]="mejora.color" [nivel]="mejoras[mejora.id]"
+                [precio]="calcularPrecio(mejora.id)" [efectoTexto]="obtenerEfectoTexto(mejora.id)"
+                [puedeComprar]="hojas >= calcularPrecio(mejora.id)" (comprar)="comprarMejora(mejora.id)">
+              </app-tarjeta-mejora>
             </div>
           </div>
         </section>
@@ -310,29 +136,36 @@
           <div class="max-w-md mx-auto space-y-6">
             <div class="text-center">
               <h2 class="text-white font-black text-3xl tracking-tighter uppercase">Estadísticas</h2>
-              <p class="text-primary-400 text-xs font-bold tracking-widest">RENDIMIENTO GENERAL</p>
             </div>
 
             <div class="grid grid-cols-1 gap-4">
               <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
-                <span class="text-slate-400 font-bold">Producción Pasiva (LPS)</span>
-                <span class="text-emerald-400 font-black">{{formatearNumero(calcularLPS())}}</span>
+                <span class="text-[#3b82f6] font-bold">Producción pasiva (H/S)</span>
+                <span class="text-[#3b82f6] font-black">{{formatearNumero(calcularLPS())}}</span>
               </div>
               <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
-                <span class="text-slate-400 font-bold">Valor por Toque</span>
+                <span class="text-emerald-400 font-bold">Valor por toque</span>
                 <span class="text-emerald-400 font-black">{{formatearNumero(obtenerValorToqueReal())}}</span>
               </div>
               <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
-                <span class="text-slate-400 font-bold">Probabilidad de Crítico</span>
+                <span class="text-yellow-400 font-bold">Probabilidad de crítico</span>
                 <span class="text-yellow-400 font-black">{{obtenerChanceCritico() | number:'1.0-1'}}%</span>
               </div>
               <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
-                <span class="text-slate-400 font-bold">Multiplicador Crítico</span>
-                <span class="text-red-400 font-black">x{{obtenerMultiplicadorCritico()}}</span>
+                <span class="text-red-400 font-bold">Multiplicador de críticos</span>
+                <span class="text-red-400 font-black">x{{obtenerMultiplicadorCritico() | number:'1.1-1'}}</span>
               </div>
               <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
-                <span class="text-slate-400 font-bold">Total Mejoras Compradas</span>
-                <span class="text-primary-400 font-black">{{obtenerTotalNiveles()}}</span>
+                <span class="text-purple-400 font-bold">Probabilidad de supercríticos</span>
+                <span class="text-purple-400 font-black">{{obtenerChanceSuperCritico() | number:'1.1-2'}}%</span>
+              </div>
+              <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+                <span class="text-[#22d3ee] font-bold">Multiplicador de supercríticos</span>
+                <span class="text-[#22d3ee] font-black">x{{obtenerMultiplicadorSuperCritico() | number:'1.1-1'}}</span>
+              </div>
+              <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+                <span class="text-primary-50 font-bold">Total mejoras compradas</span>
+                <span class="text-primary-50 font-black">{{obtenerTotalNiveles()}}</span>
               </div>
             </div>
           </div>
@@ -363,5 +196,39 @@
       </button>
     </nav>
 
+    <!-- GANANCIAS OFFLINE -->
+    <div *ngIf="mostrarAvisoOffline"
+      class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+      <div
+        class="bg-slate-900/90 border border-white/10 p-8 rounded-[32px] w-full max-w-sm text-center space-y-6 shadow-2xl animate-pop-in backdrop-blur-xl">
+        <div class="relative inline-block">
+          <div class="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full"></div>
+          <div
+            class="relative bg-emerald-500/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/30">
+            <ion-icon name="leaf" class="text-emerald-400 text-4xl"></ion-icon>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h2 class="text-primary-400 font-black text-2xl tracking-tighter uppercase">¡Bienvenido de vuelta!</h2>
+          <p class="text-primary-50 text-sm leading-relaxed">
+            Tu arbol ha producido durante <span
+              class="text-emerald-400 font-bold">{{formatearTiempo(segundosOffline)}}</span> de ausencia, en total:
+          </p>
+        </div>
+
+        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+          <div class="flex items-center justify-center gap-2">
+            <ion-icon name="leaf" class="text-emerald-400 text-xl"></ion-icon>
+            <span class="text-white text-3xl font-black tabular-nums">{{formatearNumero(hojasGanadasOffline)}}</span>
+          </div>
+        </div>
+
+        <button (click)="cerrarAvisoOffline()"
+          class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+          ¡EXCELENTE!
+        </button>
+      </div>
+    </div>
   </div>
 </ion-content>
