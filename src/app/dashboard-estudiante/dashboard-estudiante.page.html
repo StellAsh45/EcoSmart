@@ -1,10 +1,10 @@
 <ion-content [fullscreen]="true" [scrollY]="!mostrarCinematica" class="bg-slate-950 [--background:transparent]">
     <div
         class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
-        <app-fondo-visual variante="estudiante"></app-fondo-visual>
+        <app-fondo-visual *ngIf="!mostrarCinematica" variante="estudiante"></app-fondo-visual>
 
         <!-- Cinemática -->
-        <div *ngIf="mostrarCinematica" class="cinematica-superposicion">
+        <div *ngIf="mostrarCinematica" slot="fixed" class="cinematica-superposicion">
             <!-- La mascara-->
             <div class="cinematica-iris"></div>
         </div>
@@ -88,8 +88,9 @@
                             </button>
                         </div>
 
-                        <div class="w-full flex justify-center items-center lg:block relative group/img mt-8 lg:mt-0 cursor-pointer select-none"
-                            (click)="alHacerClickLogo($event)">
+                        <div class="w-full flex justify-center items-center lg:block relative group/img mt-8 lg:mt-0 select-none"
+                            [class.cursor-pointer]="!mostrarCinematica" [class.pointer-events-none]="mostrarCinematica"
+                            style="touch-action: manipulation;" (click)="alHacerClickLogo($event)">
                             <div
                                 class="absolute inset-0 bg-primary-500/20 blur-3xl rounded-[3rem] opacity-0 group-hover/img:opacity-100 transition-opacity duration-1000">
                             </div>

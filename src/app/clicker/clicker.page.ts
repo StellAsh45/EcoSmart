@@ -25,7 +25,9 @@ export class ClickerPage implements OnDestroy {
   usuarioId: string | null = null;
   cargando = true;
   private ultimoClick = 0;
-  private readonly COOLDOWN_CLICK = 50;
+  private ultimoClickSync = 0;
+  private readonly COOLDOWN_CLICK = 50; // Límite de balance: 20 clics/seg max
+  private readonly UMBRAL_SYNC = 5000;   // Estabilidad: Guardar cada 5 segundos
 
   private audioCtx: AudioContext | null = null;
   private audioHojas: HTMLAudioElement | null = null;
@@ -180,19 +182,22 @@ export class ClickerPage implements OnDestroy {
     // Bucle de generación pasiva mientras el usuario está en la página
     this.iniciarGeneracionPasiva();
 
-    // La animación de apertura dura aproximadamente 1s con el fade out final
+    // La animación de apertura dura aproximadamente 0.6s
     setTimeout(() => {
       this.mostrarCinematica = false;
-    }, 1000);
+    }, 600);
   }
 
   recolectarHojas(event: any) {
+    if (this.mostrarCinematica) return;
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
     const ahora = Date.now();
-    if (ahora - this.ultimoClick < this.COOLDOWN_CLICK) return; // Anti-auto-clicker
+
+    // 1. BALANCE: Cooldown estricto para evitar romper la economía del juego
+    if (ahora - this.ultimoClick < this.COOLDOWN_CLICK) return;
     this.ultimoClick = ahora;
 
     this.reproducirSonidoHojas();
@@ -200,43 +205,42 @@ export class ClickerPage implements OnDestroy {
     let incremento = this.obtenerValorToqueReal();
     let esCritico = false;
 
-    // Lógica de Críticos (Poda Maestra)
+    // Lógica de Críticos
     const chanceCritico = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
     if (Math.random() < chanceCritico) {
-      // Multiplicador base x2 + Bonus por nivel de Abono
       const multiCritico = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
       incremento *= multiCritico;
       esCritico = true;
     }
 
-    // Convertimos a entero para evitar problemas de coma flotante en el balance principal
     const incrementoFinal = Math.floor(incremento);
     this.hojas += incrementoFinal;
 
-    // Guardado en base de datos (Throttled: cada 10 clics para no saturar)
-    if (this.usuarioId && (Math.floor(this.hojas) % 10 === 0)) {
+    // 2. ESTABILIDAD: Guardado Throttled (Evita saturar Supabase con autoclickers)
+    if (this.usuarioId && (ahora - this.ultimoClickSync > this.UMBRAL_SYNC)) {
+      this.ultimoClickSync = ahora;
       this.supabase.actualizarPertenenciasClicker(this.usuarioId, {
         hojas: Math.floor(this.hojas),
         ultima_recoleccion: new Date().toISOString()
       });
     }
+
+    // 3. RENDIMIENTO: Feedback visual con límite de partículas
     this.animacionArbolJuego = true;
-    setTimeout(() => {
-      this.animacionArbolJuego = false;
-    }, 150);
+    setTimeout(() => { this.animacionArbolJuego = false; }, 100);
 
-    // Que las hojas salgan desde el arbol
-    const arbolElement = document.querySelector('.contenedor-arbol-juego');
-    let xBase = window.innerWidth / 2;
-    let yBase = window.innerHeight / 2;
+    if (this.hojasAnimadas.length < 30) { // Máximo 30 hojas simultáneas
+      const arbolElement = document.querySelector('.contenedor-arbol-juego');
+      let xBase = window.innerWidth / 2;
+      let yBase = window.innerHeight / 2;
 
-    if (arbolElement) {
-      const rect = arbolElement.getBoundingClientRect();
-      xBase = rect.left + rect.width / 2;
-      yBase = rect.top + rect.height / 3;
+      if (arbolElement) {
+        const rect = arbolElement.getBoundingClientRect();
+        xBase = rect.left + rect.width / 2;
+        yBase = rect.top + rect.height / 3;
+      }
+      this.generarHojaAnimada(xBase, yBase, incrementoFinal, esCritico);
     }
-
-    this.generarHojaAnimada(xBase, yBase, incrementoFinal, esCritico);
   }
 
   // Genera una hoja animada 
@@ -320,6 +324,7 @@ export class ClickerPage implements OnDestroy {
   }
 
   cambiarVista(vista: 'juego' | 'tienda' | 'estadisticas') {
+    if (this.mostrarCinematica) return;
     this.vistaActual = vista;
   }
 
@@ -352,6 +357,7 @@ export class ClickerPage implements OnDestroy {
   }
 
   async comprarMejora(tipo: string) {
+    if (this.mostrarCinematica) return;
     const precio = this.calcularPrecio(tipo);
     if (this.hojas >= precio && this.usuarioId) {
       this.hojas = Number((this.hojas - precio).toFixed(1));
@@ -404,6 +410,7 @@ export class ClickerPage implements OnDestroy {
   }
 
   salirJuego() {
+    if (this.mostrarCinematica) return;
     // Guardamos estado final antes de salir
     if (this.usuarioId) {
       this.supabase.actualizarPertenenciasClicker(this.usuarioId, {

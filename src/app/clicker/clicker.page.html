@@ -4,12 +4,12 @@
     <app-fondo-visual variante="estudiante"></app-fondo-visual>
 
     <!-- Cinemática Easter Egg (Apertura) -->
-    <div *ngIf="mostrarCinematica" class="cinematica-superposicion">
+    <div *ngIf="mostrarCinematica" slot="fixed" class="cinematica-superposicion">
       <div class="cinematica-iris-abrir"></div>
     </div>
 
     <!-- Cabecera -->
-    <header
+    <header [attr.inert]="mostrarCinematica ? '' : null"
       class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-6 py-4 flex justify-between items-center">
       <div class="flex items-center gap-3">
         <span class="text-xl font-black tracking-tighter text-white font-heading">
@@ -52,7 +52,7 @@
     </header>
 
     <!-- Contenedor Deslizable de Vistas -->
-    <div class="flex-1 relative overflow-hidden mt-16 mb-20">
+    <div class="flex-1 relative overflow-hidden mt-16 mb-20" [attr.inert]="mostrarCinematica ? '' : null">
       <div class="views-slider h-full w-[300%] flex transition-transform duration-500 ease-out"
         [style.transform]="vistaActual === 'tienda' ? 'translateX(-33.33%)' : (vistaActual === 'estadisticas' ? 'translateX(-66.66%)' : 'translateX(0)')">
 
@@ -342,7 +342,7 @@
     </div>
 
     <!-- Barra de Navegación Inferior -->
-    <nav
+    <nav [attr.inert]="mostrarCinematica ? '' : null"
       class="fixed bottom-0 w-full z-50 bg-slate-950/80 backdrop-blur-3xl border-t border-white/10 px-4 py-3 pb-6 flex justify-around items-center">
       <button (click)="cambiarVista('juego')" class="nav-btn" [class.active]="vistaActual === 'juego'">
         <app-eco-smart-logo

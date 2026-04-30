@@ -55,13 +55,18 @@ const VARIANTS = {
 
             <!-- Mesh Gradients Overlay -->
             <div class="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none">
-                <div class="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-[150px] animate-pulse" [ngClass]="configuracion.gradient1"></div>
-                <div class="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full blur-[150px] animate-pulse delay-1000" [ngClass]="configuracion.gradient2"></div>
+                <div class="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-[150px] animate-pulse" 
+                    [ngClass]="configuracion.gradient1"
+                    [style.animation-play-state]="pausado ? 'paused' : 'running'"></div>
+                <div class="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full blur-[150px] animate-pulse delay-1000" 
+                    [ngClass]="configuracion.gradient2"
+                    [style.animation-play-state]="pausado ? 'paused' : 'running'"></div>
             </div>
         </div>
 
         <!-- Particles Overlay -->
-        <div class="particles-container pointer-events-none"></div>
+        <div class="particles-container pointer-events-none"
+            [style.animation-play-state]="pausado ? 'paused' : 'running'"></div>
     </div>
   `,
   styles: [`
@@ -99,6 +104,7 @@ const VARIANTS = {
 })
 export class FondoVisualComponent implements OnInit {
   @Input() variante: VarianteFondo = 'primary';
+  @Input() pausado: boolean = false;
 
   configuracion!: any;
 

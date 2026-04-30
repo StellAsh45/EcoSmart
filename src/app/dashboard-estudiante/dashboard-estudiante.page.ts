@@ -45,13 +45,10 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   // Variables para la cinemática
   clicksLogo = 0;
   mostrarCinematica = false;
+  cinematicaIniciada = false; // Nueva bandera de seguridad
   clickTimer: any;
   animacionSacudida = false;
   sacudidaOcasionalTimer: any;
-
-  // Posición dinámica para la cinemática
-  maskX = '50%';
-  maskY = '50%';
 
   constructor(
     private supabaseSvc: SupabaseService,
@@ -198,7 +195,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   }
 
   alHacerClickLogo(event?: any) {
-    if (this.mostrarCinematica || this.clicksLogo >= 5) return;
+    if (this.mostrarCinematica || this.cinematicaIniciada || this.clicksLogo >= 5) return;
 
     if (event) {
       event.preventDefault();
@@ -217,34 +214,30 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
       this.clicksLogo = 0;
     }, 2000);
 
-    if (this.clicksLogo >= 5) {
-      if (event && event.currentTarget) {
-        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-        this.maskX = `${rect.left + rect.width / 2}px`;
-        this.maskY = `${rect.top + rect.height / 2}px`;
-      } else {
-        this.maskX = '50%';
-        this.maskY = '50%';
-      }
+    if (this.clicksLogo >= 4) {
       this.activarCinematica();
     }
   }
 
   activarCinematica() {
+    if (this.cinematicaIniciada) return;
+    
+    // Detenemos procesos para dar prioridad a la animación
+    if (this.sacudidaOcasionalTimer) clearInterval(this.sacudidaOcasionalTimer);
+    clearTimeout(this.clickTimer);
+
+    this.cinematicaIniciada = true;
     this.clicksLogo = 0;
     this.mostrarCinematica = true;
     const subscription = this.platform.backButton.subscribeWithPriority(9999, () => {
     });
 
-    // Exactamente a 1s (cuando la pantalla está negra) ruteamos a la nueva vista del clicker
     setTimeout(() => {
       this.router.navigate(['/clicker']).then(() => {
-        // Liberamos la suscripción del botón de atrás
         subscription.unsubscribe();
-        // Restablecemos el estado solo DESPUÉS de que la navegación haya finalizado
-        // para evitar que parpadee el dashboard
         this.mostrarCinematica = false;
+        this.cinematicaIniciada = false;
       });
-    }, 1000);
+    }, 600);
   }
 }

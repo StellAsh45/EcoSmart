@@ -8,31 +8,37 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  contain: strict;
 }
 
 .cinematica-iris {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(2, 6, 23, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
-  backdrop-filter: blur(12px);
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: black;
+  transform: translate3d(-50%, -50%, 0); /* Aceleración GPU */
+  pointer-events: none;
 
-  /* Máscara invertida usando el logo */
   -webkit-mask-image: url('/assets/icon/EcoSmart-icon.png'), linear-gradient(black, black);
   -webkit-mask-position: center, center;
   -webkit-mask-repeat: no-repeat, no-repeat;
+  -webkit-mask-size: 100vmax, 100% 100%;
+  mask-size: 100vmax, 100% 100%;
   -webkit-mask-composite: destination-out;
-  mask-image: url('/assets/icon/EcoSmart-icon.png'), linear-gradient(black, black);
-  mask-position: center, center;
-  mask-repeat: no-repeat, no-repeat;
   mask-composite: exclude;
 
-  animation: cerrarIrisSombra 1.0s cubic-bezier(0.64, 0, 0.78, 0) forwards;
+  will-change: -webkit-mask-size;
+  
+  animation: cerrarIrisSombra 0.6s ease-in-out forwards;
 }
 
 @keyframes cerrarIrisSombra {
   0% {
-    -webkit-mask-size: 250vmax, 100% 100%;
-    mask-size: 250vmax, 100% 100%;
+    -webkit-mask-size: 100vmax, 100% 100%;
+    mask-size: 100vmax, 100% 100%;
   }
 
   100% {
@@ -42,6 +48,7 @@
 }
 
 @keyframes sacudirLogo {
+
   0%,
   100% {
     transform: translateX(0) rotate(0deg);
