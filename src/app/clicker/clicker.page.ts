@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
 import { addIcons } from 'ionicons';
-import { leafOutline, leaf, sparklesOutline, arrowBackOutline, flaskOutline, waterOutline, planetOutline, cutOutline, storefrontOutline, storefront, closeOutline, thermometerOutline, bonfireOutline, pawOutline, sunnyOutline, timeOutline, statsChartOutline, statsChart, handRightOutline, infiniteOutline, mapOutline, hammerOutline } from 'ionicons/icons';
+import { leafOutline, leaf, sparklesOutline, arrowBackOutline, flaskOutline, waterOutline, planetOutline, cutOutline, storefrontOutline, storefront, closeOutline, thermometerOutline, bonfireOutline, pawOutline, sunnyOutline, timeOutline, statsChartOutline, statsChart, handRightOutline, infiniteOutline, mapOutline, hammerOutline, gitBranchOutline } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase';
 
 import { TarjetaMejoraComponent } from '../components/tarjeta-mejora/tarjeta-mejora.component';
@@ -42,24 +42,24 @@ export class ClickerPage implements OnDestroy {
   // CONFIGURACIÓN Y BALANCE DEL JUEGO (Valores base de cada upgrade)
   // ==============================================================================
 
-  // Precios iniciales (Nivel 0)
   readonly PRECIOS_BASE = {
     fertilizante: 30,   // Mejora clic
-    regadera: 100,       // Pasivo Nivel 1
-    ecosistema: 1000,    // Pasivo Nivel 2
+    regadera: 150,       // Pasivo Nivel 1
+    ecosistema: 2000,    // Pasivo Nivel 2
     podaMaestra: 500,    // Probabilidad Crítico
     invernadero: 2500,   // Multiplicador Pasivo
     abono: 3000,          // Potencia Crítico
-    santuario: 5000,     // Pasivo Nivel 3
+    santuario: 6000,     // Pasivo Nivel 3
     guantes: 1500,       // Multiplicador Clic Nivel 1
     superCrit: 5000,     // Probabilidad Supercrítica
     potenciadorSuperCrit: 15000, // Potencia Supercrítica
     reservaNatural: 35000, // Pasivo Nivel 4
     fotosintesis: 7500,   // Sinergia Pasivo -> Clic
-    herramientasTitanio: 1200 // Mejora clic Tier 1.5
+    herramientasTitanio: 1200, // Mejora clic
+    ecoPulso: 10000        // Sinergia Clic -> Pasivo
   };
 
-  // Crecimiento de costos: 1.3 significa que cada nivel cuesta un 30% más que el anterior
+  // Crecimiento de costos: 1.4 significa que cada nivel cuesta un 30% más que el anterior
   readonly FACTOR_CRECIMIENTO = 1.4;
 
   // Valores de los Bonos
@@ -67,7 +67,7 @@ export class ClickerPage implements OnDestroy {
     fertilizantePorNivel: 3,   // Hojas extra por clic por cada nivel
     regaderaPasivo: 5,         // Hojas por segundo base por nivel
     ecosistemaPasivo: 20,      // Hojas por segundo base por nivel
-    invernaderoBonus: 0.15,    // +15% de producción pasiva extra por nivel
+    invernaderoBonus: 0.10,    // +10% de producción pasiva extra por nivel
     abonoBonusCritico: 0.2,     // Aumenta el multiplicador
     criticoBaseChance: 0.01,   // 1% de probabilidad base de crítico
     criticoChancePorNivel: 0.01, // +1% de probabilidad por cada nivel de Poda Maestra
@@ -77,7 +77,8 @@ export class ClickerPage implements OnDestroy {
     superCritMulti: 0.05,      // +0.05x potencia Supercrítica por nivel
     reservaNaturalPasivo: 200,  // +200 Hojas/seg por nivel
     fotosintesisBonus: 0.05,    // Cada nivel añade 5% de Hojas/s al valor del clic
-    herramientasTitanioBonus: 20 // +20 Hojas extra por clic por nivel
+    herramientasTitanioBonus: 20, // +20 Hojas extra por clic por nivel
+    ecoPulsoBonus: 0.02        // Cada nivel añade 2% del poder de toque al LPS
   };
 
   // ==============================================================================
@@ -98,27 +99,29 @@ export class ClickerPage implements OnDestroy {
     potenciadorSuperCrit: 0,
     reservaNatural: 0,
     fotosintesis: 0,
-    herramientasTitanio: 0
+    herramientasTitanio: 0,
+    ecoPulso: 0
   };
 
   // Configuración de la Tienda para el *ngFor
   listaMejorasToque = [
     { id: 'fertilizante', nombre: 'Fertilizante', desc: 'Hojas extra por cada toque manual.', icono: 'flask-outline', color: '#10b981' },
-    { id: 'podaMaestra', nombre: 'Poda maestra', desc: 'Aumenta la probabilidad de críticos.', icono: 'cut-outline', color: '#eab308' },
-    { id: 'herramientasTitanio', nombre: 'Herramientas de titanio', desc: 'Potencia drásticamente cada toque.', icono: 'hammer-outline', color: '#94a3b8' },
+    { id: 'podaMaestra', nombre: 'Poda maestra', desc: 'Aumenta la probabilidad de realizar críticos.', icono: 'cut-outline', color: '#eab308' },
+    { id: 'herramientasTitanio', nombre: 'Herramientas de titanio', desc: 'Potencia cada toque.', icono: 'hammer-outline', color: '#94a3b8' },
     { id: 'guantes', nombre: 'Guantes', desc: 'Multiplicador directo al poder de toque.', icono: 'hand-right-outline', color: '#6366f1' },
     { id: 'abono', nombre: 'Nutrientes', desc: 'Aumenta el multiplicador de críticos.', icono: 'bonfire-outline', color: '#ef4444' },
     { id: 'superCrit', nombre: 'Esencia estelar', desc: 'Probabilidad de realizar supercríticos.', icono: 'sparkles-outline', color: '#c084fc' },
-    { id: 'fotosintesis', nombre: 'Fotosíntesis', desc: 'Las H/S potencian tu clic.', icono: 'sunny-outline', color: '#fde047' },
+    { id: 'fotosintesis', nombre: 'Fotosíntesis', desc: 'Las H/S potencian cada toque.', icono: 'sunny-outline', color: '#fde047' },
     { id: 'potenciadorSuperCrit', nombre: 'Abono galáctico', desc: 'Aumenta la potencia de los supercríticos.', icono: 'infinite-outline', color: '#22d3ee' }
   ];
 
   listaMejorasPasivo = [
     { id: 'regadera', nombre: 'Regadera', desc: 'Genera hojas automáticamente.', icono: 'water-outline', color: '#3b82f6' },
-    { id: 'ecosistema', nombre: 'Ecosistema', desc: 'Mejora la producción natural base.', icono: 'planet-outline', color: '#10b981' },
-    { id: 'invernadero', nombre: 'Invernadero', desc: 'Bono multiplicador a toda tu producción.', icono: 'thermometer-outline', color: '#f97316' },
+    { id: 'ecosistema', nombre: 'Ecosistema', desc: 'Mejora la producción natural base de hojas.', icono: 'planet-outline', color: '#10b981' },
+    { id: 'invernadero', nombre: 'Invernadero', desc: 'Bono multiplicador a toda tu producción de hojas.', icono: 'thermometer-outline', color: '#f97316' },
     { id: 'santuario', nombre: 'Santuario', desc: 'Animales recolectores de alta eficiencia.', icono: 'paw-outline', color: '#ec4899' },
-    { id: 'reservaNatural', nombre: 'Reserva natural', desc: 'Zona de conservación masiva.', icono: 'map-outline', color: '#059669' }
+    { id: 'ecoPulso', nombre: 'Eco-Pulso', desc: 'Cada toque envía un impulso que acelera la producción pasiva.', icono: 'git-branch-outline', color: '#a855f7' },
+    { id: 'reservaNatural', nombre: 'Reserva natural', desc: 'Zona de conservación masiva, produce aún mas hojas.', icono: 'map-outline', color: '#059669' }
   ];
 
   constructor(
@@ -147,7 +150,8 @@ export class ClickerPage implements OnDestroy {
       handRightOutline,
       infiniteOutline,
       mapOutline,
-      hammerOutline
+      hammerOutline,
+      gitBranchOutline
     });
 
     // Pre-cargar sonido de hojas real (Usamos una URL más estable)
@@ -160,6 +164,9 @@ export class ClickerPage implements OnDestroy {
     };
 
     this.audioHojas.load();
+
+    // Listener para detectar cuando el usuario sale o vuelve a la app sin cerrar la vista
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   async ionViewWillEnter() {
@@ -178,47 +185,8 @@ export class ClickerPage implements OnDestroy {
         this.ecoTokens = profile.eco_tokens || 0;
       }
 
-      // 2. Carga de hojas y mejoras del juego
-      const { data: clickerData } = await this.supabase.obtenerPertenenciasClicker(this.usuarioId);
-      if (clickerData) {
-        this.hojas = clickerData.hojas || 0;
-        this.nivelArbol = clickerData.nivel_arbol || 1;
-        if (clickerData.mejoras) {
-          this.mejoras = { ...this.mejoras, ...clickerData.mejoras };
-        }
-
-        // Generación pasiva (inactiva)
-        if (clickerData.ultima_recoleccion) {
-          const ultima = new Date(clickerData.ultima_recoleccion).getTime();
-          const ahora = new Date().getTime();
-          const segundosTranscurridos = Math.floor((ahora - ultima) / 1000);
-
-          if (segundosTranscurridos > 0) {
-            const lps = this.calcularLPS();
-
-            // Calculamos el valor esperado promedio incluyendo críticos
-            const chanceCritico = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
-            const multiCritico = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
-
-            // Factor promedio: (1 + chance * (multi - 1))
-            const factorPromedio = 1 + (chanceCritico * (multiCritico - 1));
-            const hojasGanadas = segundosTranscurridos * lps * factorPromedio;
-
-            if (hojasGanadas > 0) {
-              const ganadasFinal = Math.floor(hojasGanadas);
-              this.hojasGanadasOffline = ganadasFinal;
-              this.segundosOffline = segundosTranscurridos;
-              this.hojas = Math.floor(this.hojas + ganadasFinal);
-
-              // Actualizamos inmediatamente para evitar doble cobro por refresco
-              this.supabase.actualizarPertenenciasClicker(this.usuarioId, {
-                hojas: this.hojas,
-                ultima_recoleccion: new Date().toISOString()
-              });
-            }
-          }
-        }
-      }
+      // 2. Carga y verificación de inactividad
+      await this.cargarYVerificarInactividad();
     }
 
     this.cargando = false;
@@ -229,7 +197,7 @@ export class ClickerPage implements OnDestroy {
     // La animación de apertura dura aproximadamente 0.6s
     setTimeout(() => {
       this.mostrarCinematica = false;
-      
+
       // Si ganamos algo offline, mostramos el aviso después de la cinemática
       if (this.hojasGanadasOffline > 0) {
         setTimeout(() => {
@@ -239,17 +207,98 @@ export class ClickerPage implements OnDestroy {
     }, 600);
   }
 
+  // Lógica para manejar cambios de visibilidad (segundo plano / primer plano)
+  private handleVisibilityChange = async () => {
+    if (document.visibilityState === 'hidden') {
+      // Al ocultar la app, sincronizamos para tener un punto de referencia exacto
+      await this.sincronizarHojas();
+    } else if (document.visibilityState === 'visible') {
+      // Al volver, esperamos un momento y verificamos cuánto tiempo pasó
+      setTimeout(async () => {
+        await this.cargarYVerificarInactividad();
+
+        // Si no estamos en medio de la cinemática inicial y hubo ganancias, mostramos el aviso
+        if (!this.mostrarCinematica && this.hojasGanadasOffline > 0) {
+          this.mostrarAvisoOffline = true;
+        }
+      }, 300);
+    }
+  };
+
+  async sincronizarHojas() {
+    if (this.usuarioId) {
+      await this.supabase.actualizarPertenenciasClicker(this.usuarioId, {
+        hojas: Math.floor(this.hojas),
+        ultima_recoleccion: new Date().toISOString()
+      });
+    }
+  }
+
+  async cargarYVerificarInactividad() {
+    if (!this.usuarioId) return;
+
+    const { data: clickerData } = await this.supabase.obtenerPertenenciasClicker(this.usuarioId);
+    if (clickerData) {
+      this.hojas = clickerData.hojas || 0;
+      this.nivelArbol = clickerData.nivel_arbol || 1;
+      if (clickerData.mejoras) {
+        this.mejoras = { ...this.mejoras, ...clickerData.mejoras };
+      }
+
+      await this.procesarGananciasOffline(clickerData);
+    }
+  }
+
+  private async procesarGananciasOffline(clickerData: any) {
+    if (clickerData.ultima_recoleccion) {
+      const ultima = new Date(clickerData.ultima_recoleccion).getTime();
+      const ahora = new Date().getTime();
+      const segundosTranscurridos = Math.floor((ahora - ultima) / 1000);
+
+      if (segundosTranscurridos > 5) { // Umbral de 5 segundos para considerar inactividad
+        const lps = this.calcularLPS();
+        if (lps <= 0) return;
+
+        const chanceNormal = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
+        const chanceSuper = this.mejoras.superCrit * this.BALANCE.superCritChance;
+
+        const multiNormal = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
+        const multiSuper = 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+
+        const factorPromedio = 1 + (chanceNormal * (multiNormal - 1)) + (chanceSuper * multiNormal * (multiSuper - 1));
+        const hojasGanadas = segundosTranscurridos * lps * factorPromedio;
+
+        if (hojasGanadas > 0) {
+          const ganadasFinal = Math.floor(hojasGanadas);
+          this.hojasGanadasOffline = ganadasFinal;
+          this.segundosOffline = segundosTranscurridos;
+          this.hojas = Math.floor(this.hojas + ganadasFinal);
+
+          // Guardamos inmediatamente el nuevo estado
+          await this.supabase.actualizarPertenenciasClicker(this.usuarioId!, {
+            hojas: this.hojas,
+            ultima_recoleccion: new Date().toISOString()
+          });
+        } else {
+          this.hojasGanadasOffline = 0;
+        }
+      } else {
+        this.hojasGanadasOffline = 0;
+      }
+    }
+  }
+
   hojasGanadasOffline: number = 0;
   segundosOffline: number = 0;
   mostrarAvisoOffline: boolean = false;
-  
+
   cerrarAvisoOffline() {
     this.mostrarAvisoOffline = false;
   }
 
   formatearTiempo(segundos: number): string {
     if (segundos < 60) return `${segundos}s`;
-    
+
     const h = Math.floor(segundos / 3600);
     const m = Math.floor((segundos % 3600) / 60);
     const s = segundos % 60;
@@ -283,7 +332,7 @@ export class ClickerPage implements OnDestroy {
     const rand = Math.random();
 
     const multiNormal = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
-    const multiSuper = 3 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+    const multiSuper = 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
 
     if (rand < chanceSuper) {
       incremento *= (multiNormal * multiSuper);
@@ -399,18 +448,48 @@ export class ClickerPage implements OnDestroy {
     } catch (e) { }
   }
 
-  // Helpers para Estadísticas
-  obtenerValorToqueReal(): number {
-    const baseClic = 1 +
+  // 1. Valores puramente base (sin ninguna sinergia ni multiplicador final)
+  private obtenerBaseToquePuro(): number {
+    return 1 +
       (this.mejoras.fertilizante * this.BALANCE.fertilizantePorNivel) +
       (this.mejoras.herramientasTitanio * this.BALANCE.herramientasTitanioBonus);
+  }
 
-    const bonusFotosintesis = this.calcularLPS() * (this.mejoras.fotosintesis * this.BALANCE.fotosintesisBonus);
+  private obtenerBasePasivoPuro(): number {
+    return (this.mejoras.regadera * this.BALANCE.regaderaPasivo) +
+      (this.mejoras.ecosistema * this.BALANCE.ecosistemaPasivo) +
+      (this.mejoras.santuario * this.BALANCE.santuarioPasivo) +
+      (this.mejoras.reservaNatural * this.BALANCE.reservaNaturalPasivo);
+  }
 
-    // Multiplicadores
-    const multiGuantes = 1 + (this.mejoras.guantes * this.BALANCE.guantesBonus);
+  // 2. Cálculos Finales con Sinergia Simétrica
+  obtenerValorToqueReal(): number {
+    const baseToque = this.obtenerBaseToquePuro();
+    const basePasivo = this.obtenerBasePasivoPuro();
+    const multiG = 1 + (this.mejoras.guantes * this.BALANCE.guantesBonus);
+    const multiI = 1 + (this.mejoras.invernadero * this.BALANCE.invernaderoBonus);
 
-    return (baseClic + bonusFotosintesis) * multiGuantes;
+    const kF = this.mejoras.fotosintesis * this.BALANCE.fotosintesisBonus;
+    const kM = this.mejoras.ecoPulso * this.BALANCE.ecoPulsoBonus;
+
+    // Sinergia simétrica: El toque se beneficia del pasivo ya potenciado por el toque base
+    const pasivoPotenciado = (basePasivo + (kM * baseToque)) * multiI;
+
+    return (baseToque + (kF * pasivoPotenciado)) * multiG;
+  }
+
+  calcularLPS(): number {
+    const baseToque = this.obtenerBaseToquePuro();
+    const basePasivo = this.obtenerBasePasivoPuro();
+    const multiG = 1 + (this.mejoras.guantes * this.BALANCE.guantesBonus);
+    const multiI = 1 + (this.mejoras.invernadero * this.BALANCE.invernaderoBonus);
+
+    const kF = this.mejoras.fotosintesis * this.BALANCE.fotosintesisBonus;
+    const kM = this.mejoras.ecoPulso * this.BALANCE.ecoPulsoBonus;
+
+    const toquePotenciado = (baseToque + (kF * basePasivo)) * multiG;
+
+    return (basePasivo + (kM * toquePotenciado)) * multiI;
   }
 
   obtenerChanceCritico(): number {
@@ -426,7 +505,7 @@ export class ClickerPage implements OnDestroy {
   }
 
   obtenerMultiplicadorSuperCritico(): number {
-    return 3 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+    return 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
   }
 
   obtenerTotalNiveles(): number {
@@ -443,17 +522,6 @@ export class ClickerPage implements OnDestroy {
     const nivel = this.mejoras[tipo] || 0;
     const base = (this.PRECIOS_BASE as any)[tipo];
     return Math.floor(base * Math.pow(this.FACTOR_CRECIMIENTO, nivel));
-  }
-
-  calcularLPS(): number {
-    const baseLPS = (this.mejoras.regadera * this.BALANCE.regaderaPasivo) +
-      (this.mejoras.ecosistema * this.BALANCE.ecosistemaPasivo) +
-      (this.mejoras.santuario * this.BALANCE.santuarioPasivo) +
-      (this.mejoras.reservaNatural * this.BALANCE.reservaNaturalPasivo);
-
-    const multiInvernadero = 1 + (this.mejoras.invernadero * this.BALANCE.invernaderoBonus);
-
-    return baseLPS * multiInvernadero;
   }
 
   formatearNumero(num: number): string {
@@ -482,6 +550,7 @@ export class ClickerPage implements OnDestroy {
       case 'ecosistema': return `+${this.BALANCE.ecosistemaPasivo} Hojas/Seg`;
       case 'invernadero': return `+${this.BALANCE.invernaderoBonus * 100}% Prod. Total`;
       case 'santuario': return `+${this.BALANCE.santuarioPasivo} Hojas/Seg`;
+      case 'ecoPulso': return `+${this.BALANCE.ecoPulsoBonus * 100}% Toque a H/S`;
       case 'reservaNatural': return `+${this.BALANCE.reservaNaturalPasivo} Hojas/Seg`;
       default: return '';
     }
@@ -511,12 +580,22 @@ export class ClickerPage implements OnDestroy {
       let lps = this.calcularLPS();
       if (lps > 0) {
         let esCritico = false;
+        let esSuperCritico = false;
 
-        // Críticos Pasivos: Misma lógica que los clics
-        const chanceCritico = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
-        if (Math.random() < chanceCritico) {
-          const multiCritico = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
-          lps *= multiCritico;
+        // Críticos y Supercríticos Pasivos
+        const chanceSuper = this.mejoras.superCrit * this.BALANCE.superCritChance;
+        const chanceNormal = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
+
+        const rand = Math.random();
+        const multiNormal = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
+        const multiSuper = 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+
+        if (rand < chanceSuper) {
+          lps *= (multiNormal * multiSuper);
+          esSuperCritico = true;
+          esCritico = true;
+        } else if (rand < chanceNormal) {
+          lps *= multiNormal;
           esCritico = true;
         }
 
@@ -529,7 +608,8 @@ export class ClickerPage implements OnDestroy {
             rect.left + rect.width / 2,
             rect.top + rect.height / 3,
             lps,
-            esCritico
+            esCritico,
+            esSuperCritico
           );
         }
       }
@@ -538,6 +618,7 @@ export class ClickerPage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.passiveInterval) clearInterval(this.passiveInterval);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   salirJuego() {

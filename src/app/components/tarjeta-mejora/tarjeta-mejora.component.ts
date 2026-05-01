@@ -8,7 +8,7 @@ import { IonIcon } from '@ionic/angular/standalone';
   imports: [CommonModule, IonIcon],
   template: `
     <button (click)="onComprar()" [disabled]="!puedeComprar" [class.can-afford]="puedeComprar" [class.comprando]="comprando"
-      [style.color]="color" class="upgrade-card group flex flex-col items-start p-3 pt-2 gap-2"
+      [style.color]="color" [style.--card-color]="color" class="upgrade-card group flex flex-col items-start p-3 pt-2 gap-2"
       [style.background-color]="puedeComprar ? (color + '15') : 'rgba(255,255,255,0.03)'">
       
       <div class="upgrade-shimmer"></div>
@@ -63,14 +63,13 @@ import { IonIcon } from '@ionic/angular/standalone';
       border-color: rgba(255, 255, 255, 0.1);
 
       &:not(:disabled) {
-        border-color: color-mix(in srgb, currentColor, transparent 80%) !important;
+        border-color: color-mix(in srgb, var(--card-color), transparent 80%) !important;
       }
 
 
       &:active:not(:disabled) {
-        transform: scale(0.92) !important;
-        filter: brightness(2) !important;
-        background: rgba(255, 255, 255, 0.2) !important;
+        transform: scale(0.97) !important;
+        background: color-mix(in srgb, var(--card-color), transparent 85%) !important;
         transition: none !important;
       }
 
@@ -90,7 +89,7 @@ import { IonIcon } from '@ionic/angular/standalone';
         font-size: 22px;
         flex-shrink: 0;
         transition: all 0.3s;
-        box-shadow: 0 0 20px -5px currentColor;
+        box-shadow: 0 0 20px -5px var(--card-color);
       }
 
       .upgrade-price {
@@ -105,7 +104,7 @@ import { IonIcon } from '@ionic/angular/standalone';
       &.can-afford {
         border: 1px solid transparent;
         background: rgba(255, 255, 255, 0.06);
-        box-shadow: 0 15px 40px -15px currentColor;
+        box-shadow: 0 15px 40px -15px var(--card-color);
 
         &::before {
           content: '';
@@ -115,9 +114,9 @@ import { IonIcon } from '@ionic/angular/standalone';
           left: 5%;
           right: 5%;
           height: 2px;
-          background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+          background: linear-gradient(90deg, transparent, var(--card-color) 50%, transparent);
           z-index: 10;
-          filter: drop-shadow(0 0 5px currentColor);
+          filter: drop-shadow(0 0 5px var(--card-color));
         }
 
         &::after {
@@ -128,9 +127,9 @@ import { IonIcon } from '@ionic/angular/standalone';
           left: 5%;
           right: 5%;
           height: 2px;
-          background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+          background: linear-gradient(90deg, transparent, var(--card-color) 50%, transparent);
           z-index: 10;
-          filter: drop-shadow(0 0 5px currentColor);
+          filter: drop-shadow(0 0 5px var(--card-color));
         }
 
         .upgrade-shimmer {
@@ -144,7 +143,7 @@ import { IonIcon } from '@ionic/angular/standalone';
             left: -150%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            background: linear-gradient(90deg, transparent, var(--card-color), transparent);
             opacity: 0.15;
             transform: skewX(-25deg);
             animation: sweep-light 2.5s infinite;
@@ -160,7 +159,7 @@ import { IonIcon } from '@ionic/angular/standalone';
     }
 
     .title-indicator {
-      box-shadow: 0 0 15px currentColor;
+      box-shadow: 0 0 15px var(--card-color);
       animation: breathe 2s infinite ease-in-out;
     }
 
@@ -176,14 +175,13 @@ import { IonIcon } from '@ionic/angular/standalone';
 
     @keyframes flash-compra {
       0% { 
-        filter: brightness(1.8) contrast(1.2) !important; 
-        transform: scale(0.92) !important;
-        background-color: currentColor !important;
-        color: white !important;
+        transform: scale(0.97) !important;
+        box-shadow: 0 0 50px 10px var(--card-color) !important;
+        background-color: color-mix(in srgb, var(--card-color), transparent 60%) !important;
       }
       100% { 
-        filter: brightness(1) contrast(1) !important;
         transform: scale(1) !important;
+        box-shadow: 0 15px 40px -15px var(--card-color) !important;
       }
     }
 

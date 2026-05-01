@@ -10,7 +10,7 @@
 
     <!-- Cabecera -->
     <header [attr.inert]="mostrarCinematica ? '' : null"
-      class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-white/10 px-6 py-4 flex justify-between items-center">
+      class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 py-4 flex justify-between items-center">
       <div class="flex items-center gap-3">
         <span class="text-xl font-black tracking-tighter text-white font-heading">
           EcoClicker
@@ -71,9 +71,9 @@
                 [class.text-[#7cbc02]]="!hoja.esCritico && !hoja.esSuperCritico"
                 [class.drop-shadow-verde]="!hoja.esCritico && !hoja.esSuperCritico"
                 class="text-4xl opacity-90"></ion-icon>
-              <span class="font-black text-white text-xl texto-plus pointer-events-none drop-shadow-lg"
-                [class.text-purple-200]="hoja.esSuperCritico"
-                [class.text-yellow-200]="hoja.esCritico && !hoja.esSuperCritico">+{{hoja.valor}}</span>
+              <span class="font-black text-xl texto-plus pointer-events-none drop-shadow-lg"
+                [style.color]="hoja.esSuperCritico ? '#d8b4fe' : (hoja.esCritico ? '#fef08a' : '#dcfce7')"
+                [style.--glow-color]="hoja.esSuperCritico ? '#a855f7' : (hoja.esCritico ? '#fbbf24' : '#7cbc02')">+{{hoja.valor}}</span>
             </div>
           </div>
 
@@ -98,8 +98,8 @@
             </div>
 
             <!-- CATEGORÍA 1: POTENCIA DE TOQUE -->
-            <div class="pt-2 pb-1 border-b border-white/5 mb-2">
-              <h3 class="text-indigo-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+            <div class="pt-2 pb-1 border-b border-emerald-400/20 mb-2">
+              <h3 class="text-emerald-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <ion-icon name="hand-right-outline"></ion-icon>
                 Mejoras de Toque
               </h3>
@@ -114,8 +114,8 @@
             </div>
 
             <!-- CATEGORÍA 2: GENERACIÓN PASIVA -->
-            <div class="pt-6 pb-1 border-b border-white/5 mb-2">
-              <h3 class="text-emerald-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+            <div class="pt-6 pb-1 border-b border-[#3b82f6]/20 mb-2">
+              <h3 class="text-[#3b82f6] text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <ion-icon name="time-outline"></ion-icon>
                 Producción pasiva (Hojas por segundo)
               </h3>
