@@ -51,32 +51,41 @@ import { IonIcon } from '@ionic/angular/standalone';
     .upgrade-card {
       width: 100%;
       text-align: left;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px;
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      /* Cambiamos all por propiedades específicas para evitar saltos */
+      transition: 
+        transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.3s ease,
+        opacity 0.3s ease,
+        filter 0.3s ease;
       cursor: pointer;
       position: relative;
       overflow: hidden;
       outline: none;
       font-family: inherit;
       background: rgba(255, 255, 255, 0.03);
-      border-color: rgba(255, 255, 255, 0.1);
+      transform: scale(1);
+      will-change: transform, opacity;
 
       &:not(:disabled) {
-        border-color: color-mix(in srgb, var(--card-color), transparent 80%) !important;
+        border-color: color-mix(in srgb, var(--card-color), transparent 80%);
       }
 
-
       &:active:not(:disabled) {
-        transform: scale(0.97) !important;
+        transform: scale(0.96);
         background: color-mix(in srgb, var(--card-color), transparent 85%) !important;
-        transition: none !important;
+        transition: transform 0.1s ease !important;
       }
 
       &:disabled {
-        opacity: 0.3;
-        filter: grayscale(1);
+        opacity: 0.4;
+        filter: grayscale(0.8);
         cursor: not-allowed;
+        border-color: rgba(255, 255, 255, 0.05);
+        transform: scale(1) !important; /* Aseguramos que no se quede escalado si se deshabilita mientras se presiona */
       }
 
       .upgrade-icon {
@@ -101,35 +110,30 @@ import { IonIcon } from '@ionic/angular/standalone';
         width: 95px;
       }
 
+      /* Pseudo-elementos siempre presentes pero controlados por opacidad para evitar saltos de layout */
+      &::before, &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+      }
+
+      &::before { top: 0; background: linear-gradient(90deg, transparent, var(--card-color), transparent); }
+      &::after { bottom: 0; background: linear-gradient(90deg, transparent, var(--card-color), transparent); }
+
       &.can-afford {
-        border: 1px solid transparent;
         background: rgba(255, 255, 255, 0.06);
-        box-shadow: 0 15px 40px -15px var(--card-color);
+        box-shadow: 0 10px 30px -10px var(--card-color);
+        border-color: color-mix(in srgb, var(--card-color), transparent 60%);
 
-        &::before {
-          content: '';
-          display: block;
-          position: absolute;
-          top: 0;
-          left: 5%;
-          right: 5%;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, var(--card-color) 50%, transparent);
-          z-index: 10;
-          filter: drop-shadow(0 0 5px var(--card-color));
-        }
-
-        &::after {
-          content: '';
-          display: block;
-          position: absolute;
-          bottom: 0;
-          left: 5%;
-          right: 5%;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, var(--card-color) 50%, transparent);
-          z-index: 10;
-          filter: drop-shadow(0 0 5px var(--card-color));
+        &::before, &::after {
+          opacity: 1;
         }
 
         .upgrade-shimmer {
@@ -144,9 +148,9 @@ import { IonIcon } from '@ionic/angular/standalone';
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, var(--card-color), transparent);
-            opacity: 0.15;
+            opacity: 0.1;
             transform: skewX(-25deg);
-            animation: sweep-light 2.5s infinite;
+            animation: sweep-light 3s infinite;
           }
         }
       }
@@ -154,7 +158,7 @@ import { IonIcon } from '@ionic/angular/standalone';
 
     @keyframes sweep-light {
       0% { left: -150%; }
-      35% { left: 150%; }
+      30% { left: 150%; }
       100% { left: 150%; }
     }
 
@@ -164,8 +168,8 @@ import { IonIcon } from '@ionic/angular/standalone';
     }
 
     @keyframes breathe {
-      0%, 100% { opacity: 1; transform: scaleY(1); filter: brightness(1.5); }
-      50% { opacity: 0.5; transform: scaleY(1.3); filter: brightness(0.8); }
+      0%, 100% { opacity: 1; transform: scaleY(1); filter: brightness(1.2); }
+      50% { opacity: 0.6; transform: scaleY(1.2); filter: brightness(0.9); }
     }
 
     .comprando {
@@ -175,13 +179,13 @@ import { IonIcon } from '@ionic/angular/standalone';
 
     @keyframes flash-compra {
       0% { 
-        transform: scale(0.97) !important;
-        box-shadow: 0 0 50px 10px var(--card-color) !important;
-        background-color: color-mix(in srgb, var(--card-color), transparent 60%) !important;
+        transform: scale(0.96);
+        box-shadow: 0 0 40px 5px var(--card-color);
+        background-color: color-mix(in srgb, var(--card-color), transparent 50%);
       }
       100% { 
-        transform: scale(1) !important;
-        box-shadow: 0 15px 40px -15px var(--card-color) !important;
+        transform: scale(1);
+        box-shadow: 0 10px 30px -10px var(--card-color);
       }
     }
 
@@ -193,6 +197,7 @@ import { IonIcon } from '@ionic/angular/standalone';
       filter: drop-shadow(0 0 8px currentColor);
     }
   `]
+
 })
 export class TarjetaMejoraComponent {
   @Input() nombre: string = '';
