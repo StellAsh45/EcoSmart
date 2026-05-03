@@ -51,8 +51,8 @@ export class ClickerPage implements OnDestroy {
     abono: 3000,          // Potencia Crítico
     santuario: 6000,     // Pasivo Nivel 3
     guantes: 1500,       // Multiplicador Clic Nivel 1
-    superCrit: 5000,     // Probabilidad Supercrítica
-    potenciadorSuperCrit: 15000, // Potencia Supercrítica
+    potenciaEstelar: 5000,     // Probabilidad Supercrítica
+    abonoGalactico: 15000, // Potencia Supercrítica
     reservaNatural: 35000, // Pasivo Nivel 4
     fotosintesis: 7500,   // Sinergia Pasivo -> Clic
     herramientasTitanio: 1200, // Mejora clic
@@ -73,8 +73,8 @@ export class ClickerPage implements OnDestroy {
     criticoChancePorNivel: 0.01, // +1% de probabilidad por cada nivel de Poda Maestra
     santuarioPasivo: 50,       // Hojas por segundo base por nivel 
     guantesBonus: 0.05,        // +5% multiplicador de clic por nivel 
-    superCritChance: 0.001,    // +0.1% prob. Supercrítica por nivel
-    superCritMulti: 0.05,      // +0.05x potencia Supercrítica por nivel
+    potenciaEstelarChance: 0.001,    // +0.1% prob. Supercrítica por nivel
+    abonoGalacticoMulti: 0.05,      // +0.05x potencia Supercrítica por nivel
     reservaNaturalPasivo: 200,  // +200 Hojas/seg por nivel
     fotosintesisBonus: 0.05,    // Cada nivel añade 5% de Hojas/s al valor del clic
     herramientasTitanioBonus: 20, // +20 Hojas extra por clic por nivel
@@ -95,8 +95,8 @@ export class ClickerPage implements OnDestroy {
     abono: 0,
     santuario: 0,
     guantes: 0,
-    superCrit: 0,
-    potenciadorSuperCrit: 0,
+    potenciaEstelar: 0,
+    abonoGalactico: 0,
     reservaNatural: 0,
     fotosintesis: 0,
     herramientasTitanio: 0,
@@ -110,9 +110,9 @@ export class ClickerPage implements OnDestroy {
     { id: 'herramientasTitanio', nombre: 'Herramientas de titanio', desc: 'Potencia cada toque.', icono: 'hammer-outline', color: '#94a3b8' },
     { id: 'guantes', nombre: 'Guantes', desc: 'Multiplicador directo al poder de toque.', icono: 'hand-right-outline', color: '#6366f1' },
     { id: 'abono', nombre: 'Nutrientes', desc: 'Aumenta el multiplicador de críticos.', icono: 'bonfire-outline', color: '#ef4444' },
-    { id: 'superCrit', nombre: 'Esencia estelar', desc: 'Probabilidad de realizar supercríticos.', icono: 'sparkles-outline', color: '#c084fc' },
+    { id: 'potenciaEstelar', nombre: 'Potencia estelar', desc: 'Probabilidad de realizar supercríticos.', icono: 'sparkles-outline', color: '#c084fc' },
     { id: 'fotosintesis', nombre: 'Fotosíntesis', desc: 'Las H/S potencian cada toque.', icono: 'sunny-outline', color: '#fde047' },
-    { id: 'potenciadorSuperCrit', nombre: 'Abono galáctico', desc: 'Aumenta la potencia de los supercríticos.', icono: 'infinite-outline', color: '#22d3ee' }
+    { id: 'abonoGalactico', nombre: 'Abono galáctico', desc: 'Aumenta la potencia de los supercríticos.', icono: 'infinite-outline', color: '#22d3ee' }
   ];
 
   listaMejorasPasivo = [
@@ -260,12 +260,11 @@ export class ClickerPage implements OnDestroy {
         if (lps <= 0) return;
 
         const chanceNormal = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
-        const chanceSuper = this.mejoras.superCrit * this.BALANCE.superCritChance;
-
+        const chanceSuper = this.mejoras.potenciaEstelar * this.BALANCE.potenciaEstelarChance;
         const multiNormal = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
-        const multiSuper = 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+        const multiSuper = 2 + (this.mejoras.abonoGalactico * this.BALANCE.abonoGalacticoMulti);
 
-        const factorPromedio = 1 + (chanceNormal * (multiNormal - 1)) + (chanceSuper * multiNormal * (multiSuper - 1));
+        const factorPromedio = 1 + chanceNormal * ((multiNormal - 1) + chanceSuper * multiNormal * (multiSuper - 1));
         const hojasGanadas = segundosTranscurridos * lps * factorPromedio;
 
         if (hojasGanadas > 0) {
@@ -326,21 +325,23 @@ export class ClickerPage implements OnDestroy {
     let esSuperCritico = false;
 
     // Lógica de Críticos y Supercríticos
-    const chanceSuper = this.mejoras.superCrit * this.BALANCE.superCritChance;
+    const chanceSuper = this.mejoras.potenciaEstelar * this.BALANCE.potenciaEstelarChance;
     const chanceNormal = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
 
     const rand = Math.random();
 
     const multiNormal = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
-    const multiSuper = 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+    const multiSuper = 2 + (this.mejoras.abonoGalactico * this.BALANCE.abonoGalacticoMulti);
 
-    if (rand < chanceSuper) {
-      incremento *= (multiNormal * multiSuper);
-      esSuperCritico = true;
+    if (rand < chanceNormal) {
       esCritico = true;
-    } else if (rand < chanceNormal) {
-      incremento *= multiNormal;
-      esCritico = true;
+      // El Supercrítico solo se puede dar si ya se dio el Crítico (Probabilidad Anidada)
+      if (Math.random() < chanceSuper) {
+        incremento *= (multiNormal * multiSuper);
+        esSuperCritico = true;
+      } else {
+        incremento *= multiNormal;
+      }
     }
 
     const incrementoFinal = Math.floor(incremento);
@@ -501,11 +502,11 @@ export class ClickerPage implements OnDestroy {
   }
 
   obtenerChanceSuperCritico(): number {
-    return (this.mejoras.superCrit * this.BALANCE.superCritChance) * 100;
+    return (this.mejoras.potenciaEstelar * this.BALANCE.potenciaEstelarChance) * 100;
   }
 
   obtenerMultiplicadorSuperCritico(): number {
-    return 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+    return 2 + (this.mejoras.abonoGalactico * this.BALANCE.abonoGalacticoMulti);
   }
 
   obtenerTotalNiveles(): number {
@@ -543,9 +544,9 @@ export class ClickerPage implements OnDestroy {
       case 'herramientasTitanio': return `+${this.BALANCE.herramientasTitanioBonus} Hojas/Toque`;
       case 'guantes': return `+${this.BALANCE.guantesBonus * 100}% Poder Clic`;
       case 'abono': return `+x${this.BALANCE.abonoBonusCritico} Daño Crit`;
-      case 'superCrit': return `+${(this.BALANCE.superCritChance * 100).toFixed(1)}% Prob. Super`;
+      case 'potenciaEstelar': return `+${(this.BALANCE.potenciaEstelarChance * 100).toFixed(1)}% Prob. Super`;
       case 'fotosintesis': return `+${this.BALANCE.fotosintesisBonus * 100}% Bonus Toque`;
-      case 'potenciadorSuperCrit': return `+x${this.BALANCE.superCritMulti} Multi. Super`;
+      case 'abonoGalactico': return `+x${this.BALANCE.abonoGalacticoMulti} Multi. Super`;
       case 'regadera': return `+${this.BALANCE.regaderaPasivo} Hojas/Seg`;
       case 'ecosistema': return `+${this.BALANCE.ecosistemaPasivo} Hojas/Seg`;
       case 'invernadero': return `+${this.BALANCE.invernaderoBonus * 100}% Prod. Total`;
@@ -583,20 +584,22 @@ export class ClickerPage implements OnDestroy {
         let esSuperCritico = false;
 
         // Críticos y Supercríticos Pasivos
-        const chanceSuper = this.mejoras.superCrit * this.BALANCE.superCritChance;
+        const chanceSuper = this.mejoras.potenciaEstelar * this.BALANCE.potenciaEstelarChance;
         const chanceNormal = this.BALANCE.criticoBaseChance + (this.mejoras.podaMaestra * this.BALANCE.criticoChancePorNivel);
 
         const rand = Math.random();
         const multiNormal = 2 + (this.mejoras.abono * this.BALANCE.abonoBonusCritico);
-        const multiSuper = 2 + (this.mejoras.potenciadorSuperCrit * this.BALANCE.superCritMulti);
+        const multiSuper = 2 + (this.mejoras.abonoGalactico * this.BALANCE.abonoGalacticoMulti);
 
-        if (rand < chanceSuper) {
-          lps *= (multiNormal * multiSuper);
-          esSuperCritico = true;
+        if (rand < chanceNormal) {
           esCritico = true;
-        } else if (rand < chanceNormal) {
-          lps *= multiNormal;
-          esCritico = true;
+          // Probabilidad Anidada para Pasivo
+          if (Math.random() < chanceSuper) {
+            lps *= (multiNormal * multiSuper);
+            esSuperCritico = true;
+          } else {
+            lps *= multiNormal;
+          }
         }
 
         this.hojas += lps;
