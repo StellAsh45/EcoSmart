@@ -3,12 +3,13 @@ import { Router } from '@angular/router';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { SupabaseService } from './services/supabase';
+import { SoporteBotonComponent } from './components/soporte-boton/soporte-boton.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonApp, IonRouterOutlet],
+  imports: [IonApp, IonRouterOutlet, SoporteBotonComponent],
 })
 export class AppComponent {
   constructor(

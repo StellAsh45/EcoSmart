@@ -465,4 +465,85 @@ export class SupabaseService {
         updated_at: new Date().toISOString()
       }, { onConflict: 'usuario_id' });
   }
+
+  // =========================
+  // SOPORTE
+  // =========================
+
+  async crearSolicitudSoporte(solicitud: { usuario_id: string; correo_usuario: string; contenido: string; titulo: string; nombre_usuario: string }) {
+    return this.supabase
+      .from('tickets_soporte')
+      .insert([solicitud])
+      .select()
+      .single();
+  }
+
+  async obtenerSolicitudesActivasUsuario(usuarioId: string) {
+    return this.supabase
+      .from('tickets_soporte')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .eq('estado', 'pendiente');
+  }
+
+  async obtenerTodasSolicitudesSoporte() {
+    return this.supabase
+      .from('tickets_soporte')
+      .select('*')
+      .order('creado_en', { ascending: false });
+  }
+
+  async actualizarEstadoSolicitudSoporte(id: string, estado: string) {
+    return this.supabase
+      .from('tickets_soporte')
+      .update({ estado })
+      .eq('id', id);
+  }
+
+  // MENSAJERÍA TICKETS
+
+  async enviarMensajeTicket(mensaje: { ticket_id: string; remitente_id: string; rol_remitente: string; mensaje: string }) {
+    return this.supabase
+      .from('mensajes_ticket')
+      .insert([mensaje])
+      .select()
+      .single();
+  }
+
+  async obtenerMensajesPorTicket(ticketId: string) {
+    return this.supabase
+      .from('mensajes_ticket')
+      .select('*')
+      .eq('ticket_id', ticketId)
+      .order('creado_en', { ascending: true });
+  }
+
+  async obtenerMensajesNoLeidosUsuario(usuarioId: string) {
+    // Busca los tickets del usuario
+    const { data: tickets } = await this.supabase
+      .from('tickets_soporte')
+      .select('id')
+      .eq('usuario_id', usuarioId);
+
+    if (!tickets || tickets.length === 0) return { data: [], error: null };
+
+    const ticketIds = tickets.map(t => t.id);
+
+    // Busca mensajes no leídos del admin para esos tickets
+    return this.supabase
+      .from('mensajes_ticket')
+      .select('*')
+      .in('ticket_id', ticketIds)
+      .eq('rol_remitente', 'admin')
+      .eq('leido', false);
+  }
+
+  async marcarMensajesComoLeidos(ticketId: string) {
+    return this.supabase
+      .from('mensajes_ticket')
+      .update({ leido: true })
+      .eq('ticket_id', ticketId)
+      .eq('rol_remitente', 'admin')
+      .eq('leido', false);
+  }
 }

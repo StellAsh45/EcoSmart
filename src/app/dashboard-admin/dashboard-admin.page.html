@@ -319,6 +319,113 @@
           </div>
         </div>
       </section>
+
+      <!-- Sección de Soporte -->
+      <section class="bg-white/5 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 relative overflow-hidden group mt-10">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-400 border border-amber-500/20">
+              <ion-icon name="chatbubbles-outline" class="text-xl"></ion-icon>
+            </div>
+            <div>
+              <h3 class="text-2xl font-black text-white font-heading">Solicitudes de Soporte</h3>
+              <p class="text-sm text-primary-50">Gestiona las dudas y problemas de los estudiantes.</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-4">
+            <button (click)="toggleVistaSoporte()"
+              class="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-6 rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-2">
+              <ion-icon [name]="mostrandoSoporte ? 'eye-off-outline' : 'eye-outline'" class="text-lg"></ion-icon>
+              {{ mostrandoSoporte ? 'Ocultar soporte' : 'Ver solicitudes' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="mostrandoSoporte" class="space-y-6">
+          <div class="bg-slate-950/30 rounded-[2rem] border border-white/10 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-white/10 bg-white/[0.06]">
+                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Estudiante</th>
+                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest">Problema</th>
+                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest text-center">Estado</th>
+                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest text-center">Fecha</th>
+                    <th class="px-6 py-4 text-xs font-black text-primary-400 uppercase tracking-widest text-right">Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody class="divide-y divide-white/5">
+                  <tr *ngIf="cargandoSoporte">
+                    <td colspan="5" class="px-6 py-16 text-center">
+                      <div class="flex flex-col items-center gap-4">
+                        <div class="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
+                        <p class="text-primary-50 font-bold animate-pulse">Cargando solicitudes...</p>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="!cargandoSoporte && solicitudesSoporte.length === 0">
+                    <td colspan="5" class="px-6 py-16 text-center">
+                      <p class="text-primary-50 font-bold italic">No hay solicitudes de soporte.</p>
+                    </td>
+                  </tr>
+
+                  <ng-container *ngIf="!cargandoSoporte">
+                    <tr *ngFor="let solicitud of solicitudesSoporte" class="hover:bg-white/[0.02] transition-colors">
+                      <td class="px-6 py-5">
+                        <div class="flex items-center gap-2 text-slate-200">
+                          <ion-icon name="mail-outline" class="text-primary-400"></ion-icon>
+                          <span class="font-bold">{{ solicitud.correo_usuario }}</span>
+                        </div>
+                      </td>
+
+                      <td class="px-6 py-5 max-w-[300px]">
+                        <p class="text-sm text-slate-300 truncate" [title]="solicitud.contenido">
+                          {{ solicitud.contenido }}
+                        </p>
+                      </td>
+
+                      <td class="px-6 py-5 text-center">
+                        <span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border"
+                          [ngClass]="solicitud.estado === 'resuelto' 
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'">
+                          {{ solicitud.estado }}
+                        </span>
+                      </td>
+
+                      <td class="px-6 py-5 text-center">
+                        <span class="text-xs text-slate-400">
+                          {{ solicitud.creado_en | date:'dd/MM/yyyy' }}
+                        </span>
+                      </td>
+
+                      <td class="px-6 py-5">
+                        <div class="flex items-center justify-end gap-2">
+                          <button (click)="responderSoporte(solicitud)"
+                            class="px-3 py-1.5 rounded-lg bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/20 transition-all text-xs font-bold flex items-center gap-1 cursor-pointer">
+                            <ion-icon name="mail-outline"></ion-icon>
+                            Responder
+                          </button>
+                          
+                          <button *ngIf="solicitud.estado !== 'resuelto'" (click)="marcarSolicitudResuelta(solicitud)"
+                            class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all text-xs font-bold flex items-center gap-1 cursor-pointer"
+                            title="Marcar como Resuelto">
+                            <ion-icon name="checkmark-circle-outline"></ion-icon>
+                            Resuelto
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Overlay de Confirmación-->

@@ -1,11 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, ViewWillEnter, ModalController } from '@ionic/angular/standalone';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
 import { OverlayConfirmacionComponent } from '../components/overlay-confirmacion/overlay-confirmacion.component';
+import { RespuestaAdminModalComponent } from '../components/respuesta-admin-modal/respuesta-admin-modal.component';
 import { addIcons } from 'ionicons';
 import {
   peopleOutline,
@@ -30,7 +31,8 @@ import {
   syncOutline,
   closeCircleOutline,
   personRemoveOutline,
-  rocketOutline
+  rocketOutline,
+  chatbubblesOutline
 } from 'ionicons/icons';
 import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
 
@@ -100,10 +102,14 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
 
   cursos: CursoAdmin[] = [];
   usuarios: UsuarioAdmin[] = [];
+  solicitudesSoporte: any[] = [];
+  cargandoSoporte: boolean = true;
+  mostrandoSoporte: boolean = true;
 
   constructor(
     private supabaseSvc: SupabaseService,
-    private router: Router
+    private router: Router,
+    private modalCtrl: ModalController
   ) {
     addIcons({
       'people-outline': peopleOutline,
@@ -128,7 +134,8 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       'help-circle-outline': helpCircleOutline,
       'close-circle-outline': closeCircleOutline,
       'person-remove-outline': personRemoveOutline,
-      'rocket-outline': rocketOutline
+      'rocket-outline': rocketOutline,
+      'chatbubbles-outline': chatbubblesOutline
     });
   }
 
@@ -196,7 +203,10 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       this.estadisticas.totalCursos = this.cursos.length;
       this.estadisticas.cursosPublicados = this.cursos.filter(c => c.estado === 'publicado').length;
 
-      await this.cargarUsuarios();
+      await Promise.all([
+        this.cargarUsuarios(),
+        this.cargarSoporte()
+      ]);
     } catch (error) {
       console.error('Error al cargar datos admin:', error);
     } finally {
@@ -246,6 +256,19 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       console.error('Error al cargar usuarios:', error);
     } finally {
       this.cargandoUsuarios = false;
+    }
+  }
+
+  async cargarSoporte() {
+    this.cargandoSoporte = true;
+    try {
+      const { data, error } = await this.supabaseSvc.obtenerTodasSolicitudesSoporte();
+      if (error) throw error;
+      this.solicitudesSoporte = data || [];
+    } catch (error) {
+      console.error('Error al cargar soporte:', error);
+    } finally {
+      this.cargandoSoporte = false;
     }
   }
 
@@ -369,7 +392,60 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
   // Alterna la vista de usuarios
   async toggleVistaUsuarios() {
     this.mostrandoUsuarios = !this.mostrandoUsuarios;
-    if (this.mostrandoUsuarios) await this.cargarUsuarios();
+    if (this.mostrandoUsuarios && this.usuarios.length === 0) await this.cargarUsuarios();
+  }
+
+  // Alterna la vista de soporte
+  async toggleVistaSoporte() {
+    this.mostrandoSoporte = !this.mostrandoSoporte;
+    if (this.mostrandoSoporte && this.solicitudesSoporte.length === 0) await this.cargarSoporte();
+  }
+
+  // Marcar solicitud como resuelta
+  async marcarSolicitudResuelta(solicitud: any) {
+    this.abrirConfirmacion(
+      'Marcar como Resuelto',
+      `¿Deseas marcar la solicitud de "${solicitud.correo_usuario}" como resuelta?`,
+      'Marcar Resuelto',
+      'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/40',
+      'checkmark-circle-outline',
+      async () => {
+        try {
+          const { error } = await this.supabaseSvc.actualizarEstadoSolicitudSoporte(solicitud.id, 'resuelto');
+          if (error) throw error;
+          
+          // Actualizar estado localmente
+          const index = this.solicitudesSoporte.findIndex(s => s.id === solicitud.id);
+          if (index !== -1) {
+            this.solicitudesSoporte[index].estado = 'resuelto';
+          }
+        } catch (error) {
+          console.error('Error al actualizar soporte:', error);
+        }
+      }
+    );
+  }
+
+  // Responder a soporte vía modal
+  async responderSoporte(solicitud: any) {
+    const modal = await this.modalCtrl.create({
+      component: RespuestaAdminModalComponent,
+      componentProps: {
+        ticketId: solicitud.id,
+        adminId: this.usuarioActualId,
+        correoEstudiante: solicitud.correo_usuario,
+        problema: solicitud.contenido
+      },
+      cssClass: 'soporte-modal'
+    });
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+
+    // Si se envió la respuesta correctamente, opcionalmente marcamos como resuelto
+    if (data === true) {
+      this.marcarSolicitudResuelta(solicitud);
+    }
   }
 
   // Resuelve el estado del usuario
