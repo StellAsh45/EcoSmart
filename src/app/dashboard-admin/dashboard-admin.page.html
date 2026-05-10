@@ -221,11 +221,52 @@
         </div>
 
         <div *ngIf="mostrandoUsuarios" class="space-y-6">
-          <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <app-tarjeta-estadistica titulo="Estudiantes Activos" [valor]="usuariosActivos"
               icono="checkmark-circle-outline" variante="esmeralda" [cargando]="cargandoUsuarios" [retraso]="0">
             </app-tarjeta-estadistica>
+
+            <app-tarjeta-estadistica titulo="Estudiantes Inactivos" [valor]="usuariosInactivos"
+              icono="close-circle-outline" variante="rojo" [cargando]="cargandoUsuarios" [retraso]="3">
+            </app-tarjeta-estadistica>
           </section>
+
+          <!-- Barra de Filtros y Búsqueda -->
+          <div
+            class="flex flex-col md:flex-row md:items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 animate-[fadeIn_0.3s_ease-out]">
+            <!-- Buscador -->
+            <div class="flex-1 relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <ion-icon name="search-outline" class="text-primary-400 text-lg"></ion-icon>
+              </div>
+              <input type="text" placeholder="Buscar por nombre o correo" (input)="actualizarFiltroNombre($event)"
+                class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder-slate-400 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium text-sm">
+            </div>
+
+            <!-- Filtro por estado y actualizar -->
+            <div class="flex items-center gap-2">
+              <div class="relative min-w-[130px] flex-1 md:flex-none">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <ion-icon name="filter-outline" class="text-primary-400"></ion-icon>
+                </div>
+                <select (change)="actualizarFiltroEstado($event)"
+                  class="w-full appearance-none bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-10 pr-10 text-white focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-bold text-sm cursor-pointer">
+                  <option value="Todos" class="bg-slate-900 text-white">Todos</option>
+                  <option value="Activo" class="bg-slate-900 text-emerald-400">Activos</option>
+                  <option value="Inactivo" class="bg-slate-900 text-red-400">Inactivos</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <ion-icon name="chevron-down-outline" class="text-slate-400"></ion-icon>
+                </div>
+              </div>
+
+              <!-- Botón Refrescar -->
+              <button (click)="cargarUsuarios()" [disabled]="cargandoUsuarios" title="Refrescar lista"
+                class="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center text-primary-400 transition-all active:scale-95 disabled:opacity-50 cursor-pointer flex-shrink-0">
+                <ion-icon name="refresh-outline" class="text-xl" [class.animate-spin]="cargandoUsuarios"></ion-icon>
+              </button>
+            </div>
+          </div>
 
           <div class="bg-slate-950/30 rounded-[2rem] border border-white/10 overflow-hidden">
             <div class="overflow-x-auto">
@@ -252,14 +293,14 @@
                     </td>
                   </tr>
 
-                  <tr *ngIf="!cargandoUsuarios && usuarios.length === 0">
+                  <tr *ngIf="!cargandoUsuarios && usuariosFiltrados.length === 0">
                     <td colspan="4" class="px-6 py-16 text-center">
-                      <p class="text-primary-50 font-bold italic">No se encontraron estudiantes.</p>
+                      <p class="text-primary-50 font-bold italic">No se encontraron estudiantes con esos filtros.</p>
                     </td>
                   </tr>
 
                   <ng-container *ngIf="!cargandoUsuarios">
-                    <tr *ngFor="let usuario of usuarios; trackBy: rastrearUsuarioPorId"
+                    <tr *ngFor="let usuario of usuariosFiltrados; trackBy: rastrearUsuarioPorId"
                       class="hover:bg-white/[0.02] transition-colors">
                       <td class="px-6 py-5">
                         <div class="flex items-center gap-3">

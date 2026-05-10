@@ -5,7 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { SupabaseService } from '../services/supabase';
-import { mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
+import { mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { CampoEntradaComponent } from '../components/campo-entrada/campo-entrada.component';
 import { ContenedorAutenticacionComponent } from '../components/contenedor-autenticacion/contenedor-autenticacion.component';
 
@@ -42,7 +42,7 @@ export class RegistroPage implements OnInit {
     private supabase: SupabaseService,
     private router: Router
   ) {
-    addIcons({ mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline, eyeOutline, eyeOffOutline });
+    addIcons({ mailOutline, lockClosedOutline, personOutline, arrowForwardOutline, syncOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline });
 
     this.formularioRegistro = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(3)]],

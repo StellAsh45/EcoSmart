@@ -3,8 +3,7 @@
 
         <!-- Vista de Registro -->
         <app-contenedor-autenticacion *ngIf="!registroExitoso" titulo="Crea tu cuenta"
-            subtitulo="Únete a la nueva era de la educación ambiental." varianteFondo="misty"
-            [mostrarVolver]="true">
+            subtitulo="Únete a la nueva era de la educación ambiental." varianteFondo="misty" [mostrarVolver]="true">
 
             <!-- Mensaje de Error -->
             <div *ngIf="errorMensaje"
@@ -30,7 +29,7 @@
                 <app-campo-entrada etiqueta="Contraseña" [icono]="iconos.contrasena" placeholder="••••••••"
                     tipo="password" [control]="$any(formularioRegistro.get('contrasena'))"
                     [tieneErroresPersonalizados]="true">
-                    
+
                     <div errores class="space-y-1">
                         <p class="font-bold mb-1">La contraseña debe contener:</p>
                         <ul class="space-y-0.5 opacity-90">
@@ -89,7 +88,7 @@
         <!-- Vista de Éxito (Fuera del contenedor para este caso específico de diseño) -->
         <app-contenedor-autenticacion *ngIf="registroExitoso" titulo="¡Cuenta creada con éxito!"
             subtitulo="Hemos enviado un enlace de activación a tu correo." varianteFondo="deep">
-            
+
             <div class="relative py-4 flex flex-col items-center text-center">
                 <div
                     class="w-24 h-24 bg-primary-400/20 rounded-full flex items-center justify-center mb-8 border border-primary-400/30 animate-bounce">
@@ -110,13 +109,13 @@
                     <div class="flex-1">
                         <p class="text-primary-500 text-xs font-bold uppercase tracking-widest mb-1">Tu correo
                         </p>
-                        <p class="text-white font-bold">{{formularioRegistro.get('correo')?.value}}</p>
+                        <p class="text-white font-bold break-all">{{formularioRegistro.get('correo')?.value}}</p>
                     </div>
                 </div>
 
                 <a routerLink="/ingreso"
                     class="w-full bg-primary-500 text-slate-950 py-4 rounded-2xl font-black hover:bg-primary-400 transition-all flex items-center justify-center gap-2 group shadow-xl shadow-primary-500/20 active:scale-95 text-lg no-underline">
-                    Ir al Inicio de Sesión
+                    Ir al inicio de sesión
                     <ion-icon name="arrow-forward-outline"
                         class="w-5 h-5 group-hover:translate-x-1 transition-transform"></ion-icon>
                 </a>

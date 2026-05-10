@@ -93,9 +93,13 @@ export class IngresoPage implements OnInit {
       }
     } catch (error: any) {
       console.error('Error en el ingreso:', error);
-      this.errorMensaje = error.message === 'Invalid login credentials'
-        ? 'Correo o contraseña incorrectos.'
-        : 'Ocurrió un error al intentar iniciar sesión.';
+      if (error.message === 'Invalid login credentials') {
+        this.errorMensaje = 'Correo o contraseña incorrectos.';
+      } else if (error.message === 'Email not confirmed') {
+        this.errorMensaje = 'Por favor, verifica tu correo electrónico para activar tu cuenta antes de iniciar sesión.';
+      } else {
+        this.errorMensaje = 'Ocurrió un error al intentar iniciar sesión.';
+      }
     } finally {
       this.cargando = false;
     }

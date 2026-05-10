@@ -30,11 +30,13 @@ import {
   syncOutline,
   closeCircleOutline,
   personRemoveOutline,
-  rocketOutline
+  rocketOutline,
+  searchOutline,
+  filterOutline,
+  chevronDownOutline,
+  refreshOutline
 } from 'ionicons/icons';
 import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
-
-type EstadoColumna = 'estado' | 'status' | 'activo';
 
 interface CursoAdmin {
   id: string;
@@ -53,7 +55,6 @@ interface UsuarioAdmin {
   estado: 'Activo' | 'Inactivo';
   cursosInscritos: { id: string; titulo: string }[];
   totalCursos: number;
-  columnasEstadoDisponibles: EstadoColumna[];
 }
 
 @Component({
@@ -78,10 +79,13 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
   nombreUsuario: string = '';
   usuarioActualId: string = '';
   cargando: boolean = true;
-  cargandoUsuarios: boolean = true;
-  mostrandoUsuarios: boolean = true;
+  cargandoUsuarios: boolean = false;
+  mostrandoUsuarios: boolean = false;
   accesoVerificado: boolean = false;
   inicializandoDashboard: boolean = false;
+
+  filtroNombre: string = '';
+  filtroEstado: 'Todos' | 'Activo' | 'Inactivo' = 'Todos';
 
   // Estado Overlay Confirmación Premium
   mostrarOverlayConfirmacion = false;
@@ -128,7 +132,11 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       'help-circle-outline': helpCircleOutline,
       'close-circle-outline': closeCircleOutline,
       'person-remove-outline': personRemoveOutline,
-      'rocket-outline': rocketOutline
+      'rocket-outline': rocketOutline,
+      'search-outline': searchOutline,
+      'filter-outline': filterOutline,
+      'chevron-down-outline': chevronDownOutline,
+      'refresh-outline': refreshOutline
     });
   }
 
@@ -196,7 +204,13 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       this.estadisticas.totalCursos = this.cursos.length;
       this.estadisticas.cursosPublicados = this.cursos.filter(c => c.estado === 'publicado').length;
 
-      await this.cargarUsuarios();
+      const { count } = await this.supabaseSvc.cliente
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('rol', 'estudiante');
+
+      this.estadisticas.totalUsuarios = count || 0;
+
     } catch (error) {
       console.error('Error al cargar datos admin:', error);
     } finally {
@@ -211,11 +225,9 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       if (error) throw error;
 
       const estudiantes = (perfiles || []).filter((perfil: any) => {
-        const rol = String(perfil?.rol ?? perfil?.role ?? '').trim().toLowerCase();
-        return ['estudiante', 'student', 'usuario', 'user'].includes(rol) || (!rol && perfil.id !== this.usuarioActualId);
+        const rol = String(perfil?.rol ?? '').trim().toLowerCase();
+        return rol === 'estudiante' || (!rol && perfil.id !== this.usuarioActualId);
       });
-
-      this.estadisticas.totalUsuarios = estudiantes.length;
 
       const inscripciones = await this.obtenerInscripciones();
       const mapaCursos = new Map<string, string>(this.cursos.map(curso => [String(curso.id), curso.titulo]));
@@ -230,7 +242,7 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       }
 
       this.usuarios = estudiantes.map((perfil: any) => {
-        const { estado, columnasEstadoDisponibles } = this.resolverEstadoUsuario(perfil);
+        const { estado } = this.resolverEstadoUsuario(perfil);
         const cursosInscritos = cursosPorUsuario.get(String(perfil.id)) || [];
         return {
           id: String(perfil.id),
@@ -238,8 +250,7 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
           correo: perfil.email || perfil.correo || 'Sin correo',
           estado,
           cursosInscritos,
-          totalCursos: cursosInscritos.length,
-          columnasEstadoDisponibles
+          totalCursos: cursosInscritos.length
         };
       });
     } catch (error) {
@@ -277,7 +288,7 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
     this.abrirConfirmacion(
       '¿Cambiar estado?',
       `¿Quieres ${accionStr} el curso "${curso.titulo}"?`,
-      nuevoEstado === 'publicado' ? 'Publicar Curso' : 'Mover a Borrador',
+      nuevoEstado === 'publicado' ? 'Publicar curso' : 'Mover a borrador',
       nuevoEstado === 'publicado' ? 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/40' : 'bg-primary-500 hover:bg-primary-400 shadow-primary-500/40',
       nuevoEstado === 'publicado' ? 'rocket-outline' : 'document-text-outline',
       async () => {
@@ -294,9 +305,9 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
 
   async eliminarCurso(curso: CursoAdmin) {
     this.abrirConfirmacion(
-      'Eliminar Curso',
-      `¿Deseas eliminar "${curso.titulo}"? Esta acción borrará TODO el contenido asociado y no se puede deshacer.`,
-      'Eliminar Definitivamente',
+      'Eliminar curso',
+      `¿Deseas eliminar "${curso.titulo}"? Esta acción borrará todo el contenido asociado y no se puede deshacer.`,
+      'Eliminar definitivamente',
       'bg-red-500 hover:bg-red-400 shadow-red-500/40',
       'trash-outline',
       async () => {
@@ -325,23 +336,28 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       : `¿Deseas activar a "${usuario.nombre}"? Podrá acceder nuevamente a sus cursos.`;
 
     this.abrirConfirmacion(
-      'Estado del Estudiante',
+      'Estado del estudiante',
       mensaje,
-      nuevoEstado === 'Inactivo' ? 'Desactivar Estudiante' : 'Activar Estudiante',
+      nuevoEstado === 'Inactivo' ? 'Desactivar estudiante' : 'Activar estudiante',
       nuevoEstado === 'Inactivo' ? 'bg-red-500 hover:bg-red-400 shadow-red-500/40' : 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/40',
       nuevoEstado === 'Inactivo' ? 'close-circle-outline' : 'checkmark-circle-outline',
       async () => {
-        const payloads = this.construirPayloadsCambioEstado(usuario, nuevoEstado);
+        const estadoBool = nuevoEstado === 'Activo';
         let actualizado = false;
 
-        for (const payload of payloads) {
-          try {
-            const { data, error } = await this.supabaseSvc.cliente.from('profiles').update(payload).eq('id', usuario.id).select('id').maybeSingle();
-            if (!error && data?.id) {
-              actualizado = true;
-              break;
-            }
-          } catch (err) { console.error(err); }
+        try {
+          const { data, error } = await this.supabaseSvc.cliente
+            .from('profiles')
+            .update({ activo: estadoBool })
+            .eq('id', usuario.id)
+            .select('id')
+            .maybeSingle();
+
+          if (!error && data?.id) {
+            actualizado = true;
+          }
+        } catch (err) {
+          console.error(err);
         }
 
         if (actualizado) {
@@ -373,32 +389,8 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
   }
 
   // Resuelve el estado del usuario
-  private resolverEstadoUsuario(perfil: any): { estado: 'Activo' | 'Inactivo', columnasEstadoDisponibles: EstadoColumna[] } {
-    const columnas: EstadoColumna[] = [];
-    if (perfil.hasOwnProperty('estado')) columnas.push('estado');
-    if (perfil.hasOwnProperty('status')) columnas.push('status');
-    if (perfil.hasOwnProperty('activo')) columnas.push('activo');
-
-    if (columnas.includes('activo')) {
-      const valor = typeof perfil.activo === 'boolean' ? perfil.activo : ['true', '1', 'activo'].includes(String(perfil.activo).toLowerCase());
-      return { estado: valor ? 'Activo' : 'Inactivo', columnasEstadoDisponibles: columnas };
-    }
-
-    const valorPrincipal = String(perfil.estado || perfil.status || '').toLowerCase();
-    const esInactivo = ['inactivo', 'inactive', 'false', '0', 'bloqueado'].includes(valorPrincipal);
-    return { estado: esInactivo ? 'Inactivo' : 'Activo', columnasEstadoDisponibles: columnas };
-  }
-
-  // Construye los payloads para cambiar el estado de un usuario
-  private construirPayloadsCambioEstado(usuario: UsuarioAdmin, nuevoEstado: 'Activo' | 'Inactivo'): any[] {
-    const esActivo = nuevoEstado === 'Activo';
-    const cols = usuario.columnasEstadoDisponibles.length ? usuario.columnasEstadoDisponibles : ['estado'];
-    const p: any = {};
-    if (cols.includes('estado')) p.estado = nuevoEstado;
-    if (cols.includes('status')) p.status = nuevoEstado;
-    if (cols.includes('activo')) p.activo = esActivo;
-
-    return [p, { estado: nuevoEstado }, { status: nuevoEstado }, { activo: esActivo }];
+  private resolverEstadoUsuario(perfil: any): { estado: 'Activo' | 'Inactivo' } {
+    return { estado: perfil.activo === false ? 'Inactivo' : 'Activo' };
   }
 
   // Obtiene las inscripciones de los usuarios
@@ -422,4 +414,26 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
   rastrearUsuarioPorId(index: number, usuario: UsuarioAdmin): string { return usuario.id; }
   // Obtiene el número de usuarios activos
   get usuariosActivos(): number { return this.usuarios.filter(u => u.estado === 'Activo').length; }
+  // Obtiene el número de usuarios inactivos
+  get usuariosInactivos(): number { return this.usuarios.filter(u => u.estado === 'Inactivo').length; }
+
+  // --- MÉTODOS DE FILTRADO ---
+  actualizarFiltroNombre(event: any) {
+    this.filtroNombre = event.target.value;
+  }
+
+  actualizarFiltroEstado(event: any) {
+    this.filtroEstado = event.target.value;
+  }
+
+  get usuariosFiltrados(): UsuarioAdmin[] {
+    return this.usuarios.filter(u => {
+      const termino = this.filtroNombre.toLowerCase().trim();
+      const cumpleNombre = !termino ||
+        u.nombre.toLowerCase().includes(termino) ||
+        u.correo.toLowerCase().includes(termino);
+      const cumpleEstado = this.filtroEstado === 'Todos' || u.estado === this.filtroEstado;
+      return cumpleNombre && cumpleEstado;
+    });
+  }
 }

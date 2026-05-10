@@ -6,7 +6,8 @@ import {
   bookOutline,
   checkmarkCircleOutline,
   peopleOutline,
-  statsChartOutline
+  statsChartOutline,
+  closeCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -85,13 +86,20 @@ import {
       animation: pulso-tarjeta 6s ease-in-out infinite;
       .icono-pulso, .texto-pulso { animation: pulso-contenido 6s ease-in-out infinite; }
     }
+
+    .tarjeta-pulso-rojo {
+      --color-pulso: #ef4444;
+      --color-sombra: rgba(239, 68, 68, 0.15);
+      animation: pulso-tarjeta 6s ease-in-out infinite;
+      .icono-pulso, .texto-pulso { animation: pulso-contenido 6s ease-in-out infinite; }
+    }
   `]
 })
 export class TarjetaEstadisticaComponent {
   @Input() titulo: string = '';
   @Input() valor: string | number = 0;
   @Input() icono: string = '';
-  @Input() variante: 'primario' | 'azul' | 'esmeralda' = 'primario';
+  @Input() variante: 'primario' | 'azul' | 'esmeralda' | 'rojo' = 'primario';
   @Input() cargando: boolean = false;
   @Input() retraso: number = 0;
 
@@ -100,7 +108,8 @@ export class TarjetaEstadisticaComponent {
       'book-outline': bookOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,
       'people-outline': peopleOutline,
-      'stats-chart-outline': statsChartOutline
+      'stats-chart-outline': statsChartOutline,
+      'close-circle-outline': closeCircleOutline
     });
   }
 }
