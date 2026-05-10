@@ -1,0 +1,80 @@
+:host {
+  --ion-background-color: #020617;
+}
+ion-content::part(background) {
+  background: radial-gradient(circle at bottom left, #0f172a, #020617);
+}
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+ion-segment {
+  --background: rgba(255, 255, 255, 0.05);
+  margin: 0;
+  border-radius: 14px !important;
+  position: relative;
+  z-index: 999 !important;
+  pointer-events: auto !important;
+  
+  ion-segment-button {
+    --color: rgba(255, 255, 255, 0.5);
+    --color-checked: #ffffff;
+    --border-radius: 12px;
+    margin: 2px;
+    min-height: 40px;
+    transition: all 0.3s ease;
+  }
+
+  &.segmento-rojo {
+    ion-segment-button.segment-button-checked::part(indicator-background) {
+      background: #ef4444 !important;
+    }
+    ion-segment-button.segment-button-checked {
+      --color-checked: #ffffff !important;
+    }
+  }
+
+  &.segmento-verde {
+    ion-segment-button.segment-button-checked::part(indicator-background) {
+      background: #10f981 !important;
+    }
+    ion-segment-button.segment-button-checked {
+      --color-checked: #0f172a !important;
+    }
+  }
+}
+
+.card-shimmer {
+  position: absolute;
+  top: -150%;
+  left: -150%;
+  width: 500%;
+  height: 500%;
+  background: linear-gradient(45deg,
+      transparent 45%,
+      rgba(16, 249, 129, 0.15) 50%,
+      transparent 55%);
+  animation: shimmer-swipe 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-shimmer-red {
+  background: linear-gradient(45deg,
+      transparent 45%,
+      rgba(239, 68, 68, 0.25) 50%,
+      transparent 55%) !important;
+}
+
+@keyframes shimmer-swipe {
+  0% { transform: translate(-30%, 30%); }
+  100% { transform: translate(30%, -30%); }
+}
+

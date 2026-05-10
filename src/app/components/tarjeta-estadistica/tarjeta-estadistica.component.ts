@@ -7,7 +7,9 @@ import {
   checkmarkCircleOutline,
   peopleOutline,
   statsChartOutline,
-  closeCircleOutline
+  closeCircleOutline,
+  chatbubblesOutline,
+  alertCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -93,13 +95,20 @@ import {
       animation: pulso-tarjeta 6s ease-in-out infinite;
       .icono-pulso, .texto-pulso { animation: pulso-contenido 6s ease-in-out infinite; }
     }
+
+    .tarjeta-pulso-dorado {
+      --color-pulso: #fde047;
+      --color-sombra: rgba(253, 224, 71, 0.15);
+      animation: pulso-tarjeta 6s ease-in-out infinite;
+      .icono-pulso, .texto-pulso { animation: pulso-contenido 6s ease-in-out infinite; }
+    }
   `]
 })
 export class TarjetaEstadisticaComponent {
   @Input() titulo: string = '';
   @Input() valor: string | number = 0;
   @Input() icono: string = '';
-  @Input() variante: 'primario' | 'azul' | 'esmeralda' | 'rojo' = 'primario';
+  @Input() variante: 'primario' | 'azul' | 'esmeralda' | 'rojo' | 'dorado' = 'primario';
   @Input() cargando: boolean = false;
   @Input() retraso: number = 0;
 
@@ -109,7 +118,9 @@ export class TarjetaEstadisticaComponent {
       'checkmark-circle-outline': checkmarkCircleOutline,
       'people-outline': peopleOutline,
       'stats-chart-outline': statsChartOutline,
-      'close-circle-outline': closeCircleOutline
+      'close-circle-outline': closeCircleOutline,
+      'chatbubbles-outline': chatbubblesOutline,
+      'alert-circle-outline': alertCircleOutline
     });
   }
 }

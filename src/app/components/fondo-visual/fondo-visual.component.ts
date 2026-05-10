@@ -79,7 +79,7 @@ const VARIANTS = {
       to { transform: scale(1); }
     }
     .animate-fade-in-slow {
-      animation: fadeInSlow 1.5s ease-in-out forwards;
+      animation: fadeInSlow 0.3s ease-in-out forwards;
     }
     .animate-scale-down-slow {
       animation: scaleDownSlow 10s linear forwards;

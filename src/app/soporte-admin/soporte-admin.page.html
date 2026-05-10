@@ -1,0 +1,298 @@
+<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+  <div
+    class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
+    <app-fondo-visual variante="admin"></app-fondo-visual>
+
+    <!-- Navbar -->
+    <header
+      class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3 group">
+        <div class="relative">
+          <div class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity">
+          </div>
+          <app-eco-smart-logo
+            clasePersonalizada="w-12 h-12 relative group-hover:scale-110 transition-all duration-500 ease-out"></app-eco-smart-logo>
+        </div>
+        <div class="flex flex-col">
+          <span
+            class="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-sm font-heading leading-none">
+            Soporte
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
+
+        <div class="flex items-center gap-4 relative">
+          <button (click)="volverAlDashboard()"
+            class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all bg-transparent border-none cursor-pointer">
+            <ion-icon name="arrow-back-outline" class="text-white text-2xl"></ion-icon>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main
+      class="flex-1 pt-32 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
+
+      <!-- Tarjetas de Estadísticas -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <app-tarjeta-estadistica titulo="Total solicitudes" [valor]="tickets.length" icono="chatbubbles-outline"
+          variante="dorado" [cargando]="cargando" [retraso]="0">
+        </app-tarjeta-estadistica>
+
+        <app-tarjeta-estadistica titulo="Tickets pendientes" [valor]="totalNoLeidos" icono="alert-circle-outline"
+          variante="rojo" [cargando]="cargando" [retraso]="2">
+        </app-tarjeta-estadistica>
+
+        <app-tarjeta-estadistica titulo="Tickets Cerrados" [valor]="totalCerrados" icono="checkmark-circle-outline"
+          variante="primario" [cargando]="cargando" [retraso]="4">
+        </app-tarjeta-estadistica>
+      </section>
+
+      <!-- Sección de Lista de solicitudes -->
+      <div class="space-y-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div class="flex items-center gap-4">
+            <div class="w-1.5 h-8 bg-primary-500 rounded-full shadow-[0_0_15px_rgba(16,249,129,0.5)]"></div>
+            <h2 class="text-2xl font-black text-white font-heading tracking-tight">Historial de Solicitudes</h2>
+          </div>
+
+          <div class="w-full md:w-auto relative z-[60]">
+            <ion-segment [(ngModel)]="filtroEstado" (ionChange)="filtrarTickets()" (click)="$event.stopPropagation()"
+              mode="ios" [ngClass]="filtroEstado === 'Abierto' ? 'segmento-rojo' : 'segmento-verde'"
+              class="bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md transition-all duration-500">
+              <ion-segment-button value="Abierto">
+                <ion-label class="font-bold">Abiertos</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="Cerrado">
+                <ion-label class="font-bold">Cerrados</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+        </div>
+
+        <!-- Grid de solicitudes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+          <!-- Estado de carga -->
+          <div *ngIf="cargando" class="col-span-full py-32 flex flex-col items-center gap-4">
+            <div class="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+            <p class="text-primary-50/50 font-black italic animate-pulse tracking-widest uppercase text-xs">
+              Sincronizando solicitudes...</p>
+          </div>
+
+          <div *ngIf="ticketsFiltrados.length === 0 && !cargando"
+            class="col-span-full text-center py-32 bg-white/5 rounded-[3rem] border border-dashed border-white/10">
+            <ion-icon name="chatbubbles-outline" class="text-7xl text-white/50 mb-4 animate-pulse"></ion-icon>
+            <p class="text-white/50 font-bold italic text-lg">No hay tickets {{ filtroEstado === 'Abierto' ? 'abiertos'
+              : 'cerrados' }} en este momento.</p>
+          </div>
+
+          <div *ngFor="let ticket of ticketsFiltrados; let i = index" (click)="abrirChat(ticket)"
+            class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 transition-all cursor-pointer group shadow-2xl relative overflow-hidden flex flex-col h-full hover:-translate-y-2 duration-500 animate-[slideUp_0.5s_ease-out_both]"
+            [style.animation-delay]="(i * 0.1) + 's'"
+            [ngClass]="{
+              'border-primary-500/30 ring-1 ring-primary-500/20': ticket.no_leidos > 0,
+              'hover:border-primary-500/40 hover:shadow-primary-500/10': ticket.estado === 'Abierto',
+              'hover:border-red-500/40 hover:shadow-red-500/10': ticket.estado === 'Cerrado'
+            }">
+
+            <!-- Solicitudes -->
+            <div class="card-shimmer" [ngClass]="{'card-shimmer-red': ticket.estado === 'Cerrado'}"></div>
+            
+            <div class="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[60px] transition-all duration-700"
+              [ngClass]="ticket.estado === 'Abierto' ? 'bg-primary-500/10 group-hover:bg-primary-500/20' : 'bg-red-500/10 group-hover:bg-red-500/20'">
+            </div>
+
+            <div class="flex justify-between items-start mb-6 relative z-10">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary-400 group-hover:bg-primary-500/10 group-hover:border-primary-500/20 transition-all">
+                  <ion-icon name="person-outline" class="text-xl"></ion-icon>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-white font-black text-sm tracking-tight truncate max-w-[120px]">{{
+                    ticket.nombre_usuario }}</span>
+                  <span
+                    class="text-[8px] text-primary-400/80 font-bold uppercase tracking-tighter truncate max-w-[120px] group-hover:text-primary-400/50 transition-colors">{{
+                    ticket.correo_usuario }}</span>
+                </div>
+              </div>
+            </div>
+
+            <h4
+              class="text-lg font-black text-primary-400 group-hover:text-primary-400 transition-colors mb-3 leading-tight relative z-10">
+              {{ ticket.titulo }}</h4>
+            <p class="text-primary-50 line-clamp-2 text-xs mb-6 flex-1 leading-relaxed relative z-10">{{
+              ticket.contenido }}</p>
+
+            <div class="flex justify-between items-center pt-4 border-t border-white/5 mt-auto relative z-10">
+              <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                [ngClass]="ticket.estado === 'Abierto' ? 'text-emerald-400' : 'text-red-400'">
+                <span class="w-2 h-2 rounded-full"
+                  [ngClass]="ticket.estado === 'Abierto' ? 'bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]'"></span>
+                {{ ticket.estado }}
+              </span>
+
+              <div class="flex flex-col items-end gap-2">
+                <span
+                  class="text-[10px] font-bold text-white uppercase tracking-widest px-2.5 py- group-hover:text-primary-400/40 group-hover:border-primary-400/20 transition-all">
+                  {{ ticket.creado_en | date:'dd MMM' }}
+                </span>
+                <div *ngIf="ticket.no_leidos > 0"
+                  class="bg-primary-500 text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-full animate-bounce shadow-xl shadow-primary-500/40">
+                  {{ ticket.no_leidos }} PENDIENTES
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Chat Overlay -->
+  <div *ngIf="ticketSeleccionado"
+    class="fixed inset-0 z-[100] flex flex-col bg-slate-950 animate-[slideInUp_0.4s_cubic-bezier(0.16,1,0.3,1)]">
+
+    <header
+      class="bg-slate-900/95 backdrop-blur-3xl border-b border-white/5 px-6 py-4 flex justify-between items-center relative z-[110]">
+      <div class="flex items-center gap-5">
+        <button (click)="cerrarChat()"
+          class="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all border border-white/10 active:scale-90 shadow-lg">
+          <ion-icon name="arrow-back-outline" class="text-2xl"></ion-icon>
+        </button>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="text-white font-black text-xl tracking-tight uppercase">Chat</span>
+          </div>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="text-[9px] uppercase font-bold text-primary-50 tracking-widest">Estado:</span>
+            <span class="text-[9px] uppercase font-black tracking-widest"
+              [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'text-primary-400' : 'text-red-500'">
+              {{ ticketSeleccionado.estado }}
+            </span>
+            <div class="w-1 h-1 rounded-full ml-1"
+              [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
+        <app-eco-smart-logo
+          clasePersonalizada="w-10 h-10 drop-shadow-[0_0_10px_rgba(16,249,129,0.3)]"></app-eco-smart-logo>
+      </div>
+    </header>
+
+    <ion-content #chatContent class="[--background:transparent] ion-padding relative z-10">
+      <app-fondo-visual variante="admin"></app-fondo-visual>
+
+      <div class="sticky top-0 z-[60] flex justify-center pt-0 pointer-events-none">
+        <div class="pointer-events-auto animate-[slideDown_0.4s_ease-out]">
+          <button *ngIf="ticketSeleccionado.estado === 'Abierto'" (click)="cambiarEstado('Cerrado')"
+            class="px-6 py-2.5 bg-red-500 text-white rounded-full font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(239,68,68,0.4)] hover:bg-red-600 transition-all active:scale-95 flex items-center gap-2.5 border-none cursor-pointer">
+            Finalizar Ticket
+            <ion-icon name="close-circle-outline" class="text-lg"></ion-icon>
+          </button>
+          <button *ngIf="ticketSeleccionado.estado === 'Cerrado'" (click)="cambiarEstado('Abierto')"
+            class="px-6 py-2.5 bg-emerald-500 text-white rounded-full font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(16,249,129,0.4)] hover:bg-emerald-600 transition-all active:scale-95 flex items-center gap-2.5 border-none cursor-pointer">
+            Reabrir Ticket
+            <ion-icon name="checkmark-circle-outline" class="text-lg"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto space-y-5 py-5 relative z-10">
+
+        <!-- Info del Estudiante y Problema -->
+        <div class="space-y-4 animate-[fadeIn_0.6s_ease-out]">
+          <div
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 p-6 rounded-[2.5rem] flex items-center justify-between shadow-2xl">
+            <div class="flex items-center gap-4">
+              <div
+                class="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-400 border border-primary-500/20">
+                <ion-icon name="person-outline" class="text-2xl"></ion-icon>
+              </div>
+              <div>
+                <div class="flex flex-col">
+                  <span
+                    class="text-[8px] font-black text-primary-500 uppercase tracking-[0.3em] mb-0.5">Estudiante</span>
+                  <span class="text-white font-black text-lg leading-tight">{{ ticketSeleccionado.nombre_usuario
+                    }}</span>
+                  <span class="text-primary-400/80 font-bold text-[10px] tracking-tight">{{
+                    ticketSeleccionado.correo_usuario }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right hidden sm:block px-6 border-l border-white/10">
+              <p class="text-[8px] font-black text-white/30 uppercase tracking-widest mb-0.5">Iniciado el</p>
+              <p class="text-white font-bold text-xs">{{ ticketSeleccionado.creado_en | date:'MMM d, HH:mm' }}</p>
+            </div>
+          </div>
+
+          <!-- Descripción del Ticket -->
+          <div
+            class="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-[2.5rem] rounded-tl-none text-white shadow-2xl relative overflow-hidden">
+            <div class="card-shimmer" [ngClass]="{'card-shimmer-red': ticketSeleccionado.estado === 'Cerrado'}"></div>
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-primary-500 shadow-[0_0_20px_rgba(16,249,129,0.4)]">
+            </div>
+            <div class="mb-4">
+              <p class="text-[9px] font-black text-primary-400 uppercase tracking-[0.3em] mb-2">Asunto: {{
+                ticketSeleccionado.titulo }}</p>
+              <div class="h-px w-full bg-gradient-to-r from-primary-500/30 to-transparent"></div>
+            </div>
+            <p class="text-lg leading-relaxed font-black italic tracking-tight text-primary-50">{{
+              ticketSeleccionado.contenido }}</p>
+          </div>
+        </div>
+
+        <!-- Separador Estilo Estudiante -->
+        <div class="w-full flex items-center gap-4 py-2">
+          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+          <span class="text-[9px] font-black text-primary-500 uppercase tracking-[0.4em]">Chat</span>
+          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+        </div>
+
+        <!-- Mensajes -->
+        <div *ngFor="let msg of mensajes" class="flex flex-col animate-[slideUp_0.4s_ease-out_both]"
+          [ngClass]="{'items-end': msg.rol_remitente === 'admin', 'items-start': msg.rol_remitente === 'estudiante'}">
+
+          <div class="max-w-[85%] p-5 rounded-[1.8rem] shadow-2xl text-sm leading-relaxed relative group/msg" [ngClass]="{
+              'bg-rose-950/60 backdrop-blur-xl text-white rounded-tr-none border border-rose-500/20 shadow-rose-950/20': msg.rol_remitente === 'admin',
+              'bg-gradient-to-br from-primary-600/80 to-primary-700/80 text-white rounded-tl-none border border-primary-400/30 shadow-primary-500/10': msg.rol_remitente === 'estudiante'
+            }" [style.font-weight]="900">
+
+            <div *ngIf="msg.rol_remitente === 'estudiante'"
+              class="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-1.5 opacity-80 flex items-center gap-2">
+              <div class="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
+              Estudiante
+            </div>
+
+            {{ msg.mensaje }}
+          </div>
+          <span class="text-[9px] text-primary-500 font-bold mt-2 mx-4 uppercase tracking-widest">{{ msg.creado_en |
+            date:'HH:mm' }}</span>
+        </div>
+      </div>
+    </ion-content>
+
+    <!-- Footer del Chat-->
+    <ion-footer *ngIf="ticketSeleccionado.estado === 'Abierto'"
+      class="ion-no-border bg-slate-900 border-t border-white/5 p-6 relative z-[110]">
+      <div class="max-w-4xl mx-auto flex gap-4 items-end">
+        <div class="flex-1 relative">
+          <textarea [(ngModel)]="nuevoMensaje" (input)="ajustarAltura($event)" placeholder="Escribe una respuesta"
+            rows="1"
+            class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] text-white font-medium placeholder:text-white/20 px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white/10 transition-all shadow-inner min-h-[56px] max-h-[120px] resize-none overflow-y-hidden block"></textarea>
+        </div>
+        <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje || cargando"
+          class="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-slate-950 shadow-[0_10px_20px_rgba(16,249,129,0.2)] hover:scale-105 hover:bg-primary-400 active:scale-95 transition-all disabled:opacity-30 group mb-1">
+          <ion-icon name="send-outline" class="text-xl group-hover:translate-x-1 transition-transform"></ion-icon>
+        </button>
+      </div>
+    </ion-footer>
+  </div>
+</ion-content>

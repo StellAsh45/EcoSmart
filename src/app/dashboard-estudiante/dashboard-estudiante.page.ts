@@ -6,7 +6,6 @@ import { SupabaseService } from '../services/supabase';
 import { GeneradorCertificadosService } from '../services/generador-certificados.service';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
-import { BuzonBotonComponent } from '../components/buzon-boton/buzon-boton.component';
 import { addIcons } from 'ionicons';
 import {
   atOutline,
@@ -30,7 +29,7 @@ import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/t
   templateUrl: './dashboard-estudiante.page.html',
   styleUrls: ['./dashboard-estudiante.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent, TarjetaEstadisticaComponent, BuzonBotonComponent]
+  imports: [CommonModule, IonContent, IonIcon, RouterLink, FondoVisualComponent, EcoSmartLogoComponent, TarjetaEstadisticaComponent]
 })
 export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   @ViewChild(IonContent) content!: IonContent;

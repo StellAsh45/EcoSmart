@@ -34,7 +34,9 @@ import {
   searchOutline,
   filterOutline,
   chevronDownOutline,
-  refreshOutline
+  refreshOutline,
+  arrowForwardOutline,
+  chatbubblesOutline
 } from 'ionicons/icons';
 import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
 
@@ -99,7 +101,8 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
   estadisticas = {
     totalUsuarios: 0,
     totalCursos: 0,
-    cursosPublicados: 0
+    cursosPublicados: 0,
+    ticketsPendientes: 0
   };
 
   cursos: CursoAdmin[] = [];
@@ -136,7 +139,9 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
       'search-outline': searchOutline,
       'filter-outline': filterOutline,
       'chevron-down-outline': chevronDownOutline,
-      'refresh-outline': refreshOutline
+      'refresh-outline': refreshOutline,
+      'arrow-forward-outline': arrowForwardOutline,
+      'chatbubbles-outline': chatbubblesOutline
     });
   }
 
@@ -210,6 +215,15 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
         .eq('rol', 'estudiante');
 
       this.estadisticas.totalUsuarios = count || 0;
+
+      // Cargar mensajes de soporte pendientes
+      const { count: ticketsCount } = await this.supabaseSvc.cliente
+        .from('mensajes_ticket')
+        .select('*', { count: 'exact', head: true })
+        .eq('rol_remitente', 'estudiante')
+        .eq('leido', false);
+
+      this.estadisticas.ticketsPendientes = ticketsCount || 0;
 
     } catch (error) {
       console.error('Error al cargar datos admin:', error);
