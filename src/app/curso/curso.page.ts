@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
+import { IonContent, IonIcon, IonModal, ViewWillEnter } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
 import { EcoSmartLogoComponent } from '../components/eco-smart-logo/eco-smart-logo.component';
@@ -70,7 +70,7 @@ export interface BloqueContenido {
   templateUrl: './curso.page.html',
   styleUrls: ['./curso.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonContent, IonIcon, FondoVisualComponent, EcoSmartLogoComponent]
+  imports: [CommonModule, IonContent, IonIcon, IonModal, FondoVisualComponent, EcoSmartLogoComponent]
 
 })
 export class CursoPage implements OnInit, ViewWillEnter {
