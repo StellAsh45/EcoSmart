@@ -1,11 +1,11 @@
-<ion-content [fullscreen]="true" [scrollY]="false" class="bg-slate-950 [--background:transparent]">
+<app-fondo-visual variante="estudiante" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></app-fondo-visual>
+<ion-content [fullscreen]="true" class="bg-transparent [--background:transparent] custom-scrollbar relative z-10">
     <div
-        class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-hidden">
-        <app-fondo-visual variante="estudiante"></app-fondo-visual>
+        class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white pt-20">
 
         <!-- Cabecera Premium -->
-        <header
-            class="fixed top-0 w-full z-[100] bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center h-20 transition-all">
+        <header slot="fixed"
+            class="absolute top-0 left-0 w-full z-[100] bg-white/5 backdrop-blur-2xl border-b border-primary-800/90 px-6 sm:px-10 py-4 flex justify-between items-center h-20 transition-all">
             <div class="flex items-center gap-4">
                 <button (click)="toggleSidebar()"
                     class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl border-none text-white cursor-pointer transition-all">
@@ -56,10 +56,10 @@
             </div>
         </header>
 
-        <div class="flex-1 flex pt-20 h-screen relative overflow-hidden">
+        <div class="flex-1 flex relative min-h-screen">
             <!-- Menu desplegable -->
-            <aside
-                class="fixed top-20 bottom-0 left-0 z-[90] w-80 bg-slate-950/95 border-r border-white/10 flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform"
+            <aside slot="fixed"
+                class="absolute top-20 bottom-0 left-0 z-[90] w-80 bg-slate-950/95 border-r border-white/10 flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform"
                 [class.translate-x-0]="sidebarAbierto" [class.-translate-x-full]="!sidebarAbierto && !cargando">
 
                 <div class="p-8 border-b border-white/5 flex items-center gap-3">
@@ -120,14 +120,14 @@
             </aside>
 
             <!-- Overlay en movil -->
-            <div (click)="toggleSidebar()"
-                class="fixed inset-0 bg-black/60 z-[85] lg:hidden transition-all duration-300"
+            <div slot="fixed" (click)="toggleSidebar()"
+                class="absolute inset-0 bg-black/60 z-[85] lg:hidden transition-all duration-300"
                 [class.opacity-0]="!sidebarAbierto" [class.pointer-events-none]="!sidebarAbierto"
                 [class.opacity-100]="sidebarAbierto"></div>
 
             <!-- Contenido Principal -->
             <main id="main-scroll-container" [class.leccion-fade-out]="transicionando"
-                class="flex-1 flex flex-col relative z-10 overflow-y-auto custom-scrollbar p-6 lg:p-12 space-y-10 scroll-smooth">
+                class="flex-1 flex flex-col relative z-10 p-6 lg:p-12 space-y-10">
 
                 <!-- VISTA DE LECCION -->
                 <div *ngIf="leccionActiva" class="max-w-4xl mx-auto w-full space-y-8">
@@ -385,8 +385,8 @@
     </div>
 
     <!-- Overlay de Error-->
-    <div *ngIf="mostrarOverlayError"
-        class="fixed inset-0 z-[2000] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
+    <div slot="fixed" *ngIf="mostrarOverlayError"
+        class="absolute inset-0 z-[2000] flex items-center justify-center p-6 animate-[fadeIn_0.3s_all]">
         <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-2xl"></div>
         <div class="relative flex flex-col items-center text-center space-y-6 max-w-md">
             <div
@@ -406,8 +406,8 @@
     </div>
 
     <!-- Pantalla de carga-->
-    <div *ngIf="cargando"
-        class="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-2xl animate-[fadeIn_0.5s_ease-out]">
+    <div slot="fixed" *ngIf="cargando"
+        class="absolute inset-0 z-[300] flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-2xl animate-[fadeIn_0.5s_ease-out]">
         <div class="relative mb-8">
             <div class="absolute inset-0 bg-primary-500 blur-3xl opacity-20 animate-pulse"></div>
             <app-eco-smart-logo clasePersonalizada="w-24 h-24 relative animate-[pulse_2s_infinite_ease-in-out]">
@@ -427,8 +427,8 @@
     </div>
 
     <!-- Barra de progreso del examen -->
-    <div *ngIf="examenActivo && !examenFinalizado"
-        class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] w-[280px] sm:w-[320px] animate-[slideUp_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_both]">
+    <div slot="fixed" *ngIf="examenActivo && !examenFinalizado"
+        class="absolute bottom-10 left-1/2 -translate-x-1/2 z-[150] w-[280px] sm:w-[320px] animate-[slideUp_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_both]">
 
         <div
             class="bg-slate-900/60 backdrop-blur-2xl border border-primary-500/30 rounded-full px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-2">
