@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { SupabaseService } from '../../services/supabase';
 import { Subscription } from 'rxjs';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-soporte-flotante',
@@ -89,6 +90,13 @@ export class SoporteFlotanteComponent implements OnInit, OnDestroy {
       this.usuarioId = user.id;
       await this.cargarNotificaciones();
       this.suscribirseARealtime();
+
+      // Solicitar permisos de notificación en Android/iOS
+      try {
+        await LocalNotifications.requestPermissions();
+      } catch (e) {
+        console.error('Error solicitando permisos de notificaciones locales', e);
+      }
     }
   }
 
@@ -137,8 +145,26 @@ export class SoporteFlotanteComponent implements OnInit, OnDestroy {
           schema: 'public',
           table: 'mensajes_ticket'
         },
-        (payload) => {
+        (payload: any) => {
           this.cargarNotificaciones();
+          
+          if (payload.new && payload.new['remitente_id'] !== this.usuarioId) {
+            try {
+              LocalNotifications.schedule({
+                notifications: [
+                  {
+                    title: 'Soporte EcoSmart',
+                    body: 'El administrador ha respondido a tu consulta.',
+                    id: new Date().getTime(),
+                    schedule: { at: new Date(Date.now() + 100) },
+                    smallIcon: 'ic_stat_icon_config_sample',
+                  }
+                ]
+              });
+            } catch (e) {
+              console.error('Error enviando notificación local', e);
+            }
+          }
         }
       )
       .on(

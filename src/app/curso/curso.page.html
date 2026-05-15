@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" class="bg-slate-950 [--background:transparent]">
+<ion-content [fullscreen]="true" [scrollY]="false" class="bg-slate-950 [--background:transparent]">
     <div
         class="min-h-screen relative flex flex-col font-sans selection:bg-primary-500/30 selection:text-white overflow-hidden">
         <app-fondo-visual variante="estudiante"></app-fondo-visual>
@@ -174,10 +174,14 @@
                             </div>
 
                             <div *ngSwitchCase="'imagen'"
-                                class="my-10 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group relative bg-slate-900/50 min-h-[100px]">
+                                class="my-10 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group relative bg-slate-900/50 min-h-[100px] cursor-pointer"
+                                (click)="abrirImagen(bloque.valor)">
                                 <img [src]="bloque.valor"
                                     class="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-[2s]"
                                     style="max-height: 800px; object-fit: contain;" alt="Imagen de la lección">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <ion-icon name="expand-outline" class="text-white text-4xl drop-shadow-lg"></ion-icon>
+                                </div>
                             </div>
 
                             <div *ngSwitchCase="'video'"
@@ -446,5 +450,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para imagen ampliada -->
+    <ion-modal [isOpen]="imagenAmpliada !== null" (didDismiss)="cerrarImagen()" class="modal-imagen-curso">
+        <ng-template>
+            <ion-content class="bg-slate-950 [--background:transparent]">
+                <div class="w-full h-full relative flex items-center justify-center bg-slate-950/95 backdrop-blur-3xl p-4">
+                    <button (click)="cerrarImagen()"
+                        class="absolute top-6 right-6 z-50 p-4 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white cursor-pointer transition-all active:scale-95 shadow-2xl backdrop-blur-xl">
+                        <ion-icon name="close-outline" class="text-2xl block"></ion-icon>
+                    </button>
+                    <div class="w-full h-full max-w-6xl max-h-screen flex items-center justify-center p-2 sm:p-8 animate-[scaleIn_0.3s_ease-out]">
+                        <img *ngIf="imagenAmpliada" [src]="imagenAmpliada" class="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/10">
+                    </div>
+                </div>
+            </ion-content>
+        </ng-template>
+    </ion-modal>
 
 </ion-content>

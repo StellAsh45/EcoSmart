@@ -97,9 +97,18 @@ export class CursoPage implements OnInit, ViewWillEnter {
   mensajeErrorOverlay = '';
   fechaExpedicion = '';
   generandoCertificado = false;
+  imagenAmpliada: string | null = null;
 
   get preguntasRespondidas(): number {
     return this.respuestasUsuario.filter(r => r !== -1).length;
+  }
+
+  abrirImagen(url: string) {
+    this.imagenAmpliada = url;
+  }
+
+  cerrarImagen() {
+    this.imagenAmpliada = null;
   }
 
   examenesPasados = new Set<string>(); // IDs de exámenes con >= 70%
