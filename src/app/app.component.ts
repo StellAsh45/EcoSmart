@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { SupabaseService } from './services/supabase';
@@ -24,17 +24,37 @@ export class AppComponent implements OnInit {
     this.initializeApp();
   }
 
+  private timeoutId: any;
+
   ngOnInit() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      const url = event.urlAfterRedirects || event.url;
-      this.validarVisibilidadSoporte(url);
+    this.router.events.subscribe((event: any) => {
+      if (event instanceof NavigationStart) {
+        // Si vamos hacia una ruta oculta, escondemos el botón INMEDIATAMENTE
+        // para que no se quede rezagado durante la transición
+        if (this.esRutaOculta(event.url)) {
+          clearTimeout(this.timeoutId);
+          this.mostrarBotonSoporte = false;
+        }
+      } else if (event instanceof NavigationEnd) {
+        const url = event.urlAfterRedirects || event.url;
+        
+        clearTimeout(this.timeoutId);
+        
+        if (this.esRutaOculta(url)) {
+          this.mostrarBotonSoporte = false;
+        } else {
+          // Si vamos a una ruta donde sí se muestra (ej. dashboard),
+          // esperamos 400ms a que termine la animación de transición de Ionic
+          // para que el botón no aparezca flotando en medio de la pantalla antigua.
+          this.timeoutId = setTimeout(() => {
+            this.mostrarBotonSoporte = true;
+          }, 400);
+        }
+      }
     });
   }
 
-  validarVisibilidadSoporte(url: string) {
-    // Rutas donde NO se debe mostrar
+  esRutaOculta(url: string): boolean {
     const rutasOcultas = [
       '/home',
       '/ingreso',
@@ -46,9 +66,7 @@ export class AppComponent implements OnInit {
       '/soporte-admin',
       '/soporte-estudiante'
     ];
-
-    // Si la URL empieza con alguna de las rutas ocultas, no lo mostramos
-    this.mostrarBotonSoporte = !rutasOcultas.some(ruta => url.startsWith(ruta)) && url !== '/';
+    return rutasOcultas.some(ruta => url.startsWith(ruta)) || url === '/';
   }
 
   initializeApp() {

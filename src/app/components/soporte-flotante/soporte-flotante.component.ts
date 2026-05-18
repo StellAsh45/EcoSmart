@@ -10,71 +10,24 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [IonicModule, CommonModule],
   template: `
-    <div class="soporte-fab-container" (click)="abrirSoporte()">
-      <div class="soporte-fab">
-        <ion-icon name="chatbubbles-outline"></ion-icon>
+    <div class="fixed bottom-6 right-6 z-[9999] cursor-pointer group animate-[slideUp_0.5s_ease-out_both]" (click)="abrirSoporte()">
+      
+      <!-- Glow trasero animado -->
+      <div class="absolute inset-0 bg-primary-500 rounded-full blur-xl opacity-30 group-hover:opacity-70 group-hover:scale-125 transition-all duration-500 animate-pulse"></div>
+
+      <!-- Botón principal -->
+      <div class="relative w-[60px] h-[60px] rounded-[2rem] bg-slate-900/90 backdrop-blur-xl border border-primary-500/30 shadow-[0_10px_30px_rgba(16,249,129,0.3)] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:bg-primary-500/20 group-active:scale-95 group-hover:border-primary-400 group-hover:rounded-2xl">
+        <ion-icon name="chatbubbles-outline" class="text-3xl text-primary-400 group-hover:text-primary-300 drop-shadow-[0_0_8px_rgba(16,249,129,0.5)] transition-colors duration-300"></ion-icon>
       </div>
-      <div class="soporte-badge" *ngIf="notificacionesPendientes > 0">
-        {{ notificacionesPendientes }}
+
+      <!-- Badge de Notificaciones -->
+      <div *ngIf="notificacionesPendientes > 0" 
+           class="absolute -top-2 -right-2 bg-red-500 text-white text-[11px] font-black min-w-[24px] h-[24px] px-1.5 flex items-center justify-center rounded-full border-2 border-slate-900 shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-bounce z-10">
+        {{ notificacionesPendientes > 9 ? '+9' : notificacionesPendientes }}
       </div>
     </div>
   `,
-  styles: [`
-    .soporte-fab-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9999;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .soporte-fab-container:hover {
-      transform: scale(1.1);
-    }
-    .soporte-fab-container:active {
-      transform: scale(0.95);
-    }
-    .soporte-fab {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--ion-color-primary, #3880ff), var(--ion-color-secondary, #3dc2ff));
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .soporte-fab ion-icon {
-      color: white;
-      font-size: 32px;
-    }
-    .soporte-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background-color: var(--ion-color-danger, #eb445a);
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-      border-radius: 50%;
-      min-width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid white;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(235, 68, 90, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(235, 68, 90, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(235, 68, 90, 0); }
-    }
-  `]
+  styles: []
 })
 export class SoporteFlotanteComponent implements OnInit, OnDestroy {
   notificacionesPendientes: number = 0;

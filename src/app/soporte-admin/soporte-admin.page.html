@@ -90,209 +90,268 @@
               : 'cerrados' }} en este momento.</p>
           </div>
 
-          <div *ngFor="let ticket of ticketsFiltrados; let i = index" (click)="abrirChat(ticket)"
-            class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 transition-all cursor-pointer group shadow-2xl relative overflow-hidden flex flex-col h-full hover:-translate-y-2 duration-500 animate-[slideUp_0.5s_ease-out_both]"
-            [style.animation-delay]="(i * 0.1) + 's'"
-            [ngClass]="{
-              'border-primary-500/30 ring-1 ring-primary-500/20': ticket.no_leidos > 0,
-              'hover:border-primary-500/40 hover:shadow-primary-500/10': ticket.estado === 'Abierto',
-              'hover:border-red-500/40 hover:shadow-red-500/10': ticket.estado === 'Cerrado'
-            }">
+          <ng-container *ngIf="!cargando">
+            <div *ngFor="let ticket of ticketsFiltrados; let i = index" (click)="abrirChat(ticket)"
+              class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 transition-all cursor-pointer group shadow-2xl relative overflow-hidden flex flex-col h-full hover:-translate-y-2 duration-500 animate-[slideUp_0.5s_ease-out_both]"
+              [style.animation-delay]="(i * 0.1) + 's'" [ngClass]="{
+                'border-primary-500/30 ring-1 ring-primary-500/20': ticket.no_leidos > 0,
+                'hover:border-primary-500/40 hover:shadow-primary-500/10': ticket.estado === 'Abierto',
+                'hover:border-red-500/40 hover:shadow-red-500/10': ticket.estado === 'Cerrado'
+              }">
 
-            <!-- Solicitudes -->
-            <div class="card-shimmer" [ngClass]="{'card-shimmer-red': ticket.estado === 'Cerrado'}"></div>
-            
-            <div class="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[60px] transition-all duration-700"
-              [ngClass]="ticket.estado === 'Abierto' ? 'bg-primary-500/10 group-hover:bg-primary-500/20' : 'bg-red-500/10 group-hover:bg-red-500/20'">
-            </div>
+              <!-- Solicitudes -->
+              <div class="card-shimmer" [ngClass]="{'card-shimmer-red': ticket.estado === 'Cerrado'}"></div>
 
-            <div class="flex justify-between items-start mb-6 relative z-10">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary-400 group-hover:bg-primary-500/10 group-hover:border-primary-500/20 transition-all">
-                  <ion-icon name="person-outline" class="text-xl"></ion-icon>
-                </div>
-                <div class="flex flex-col">
-                  <span class="text-white font-black text-sm tracking-tight truncate max-w-[120px]">{{
-                    ticket.nombre_usuario }}</span>
-                  <span
-                    class="text-[8px] text-primary-400/80 font-bold uppercase tracking-tighter truncate max-w-[120px] group-hover:text-primary-400/50 transition-colors">{{
-                    ticket.correo_usuario }}</span>
+              <div class="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[60px] transition-all duration-700"
+                [ngClass]="ticket.estado === 'Abierto' ? 'bg-primary-500/10 group-hover:bg-primary-500/20' : 'bg-red-500/10 group-hover:bg-red-500/20'">
+              </div>
+
+              <div class="flex justify-between items-start mb-6 relative z-10">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary-400 group-hover:bg-primary-500/10 group-hover:border-primary-500/20 transition-all">
+                    <ion-icon name="person-outline" class="text-xl"></ion-icon>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-white font-black text-sm tracking-tight truncate max-w-[120px]">{{
+                      ticket.nombre_usuario }}</span>
+                    <span
+                      class="text-[8px] text-primary-400/80 font-bold uppercase tracking-tighter truncate max-w-[120px] group-hover:text-primary-400/50 transition-colors">{{
+                      ticket.correo_usuario }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <h4
-              class="text-lg font-black text-primary-400 group-hover:text-primary-400 transition-colors mb-3 leading-tight relative z-10">
-              {{ ticket.titulo }}</h4>
-            <p class="text-primary-50 line-clamp-2 text-xs mb-6 flex-1 leading-relaxed relative z-10">{{
-              ticket.contenido }}</p>
+              <h4
+                class="text-lg font-black text-primary-400 group-hover:text-primary-400 transition-colors mb-3 leading-tight relative z-10">
+                {{ ticket.titulo }}</h4>
+              <p class="text-primary-50 line-clamp-2 text-xs mb-6 flex-1 leading-relaxed relative z-10">{{
+                ticket.contenido }}</p>
 
-            <div class="flex justify-between items-center pt-4 border-t border-white/5 mt-auto relative z-10">
-              <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
-                [ngClass]="ticket.estado === 'Abierto' ? 'text-emerald-400' : 'text-red-400'">
-                <span class="w-2 h-2 rounded-full"
-                  [ngClass]="ticket.estado === 'Abierto' ? 'bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]'"></span>
-                {{ ticket.estado }}
-              </span>
-
-              <div class="flex flex-col items-end gap-2">
-                <span
-                  class="text-[10px] font-bold text-white uppercase tracking-widest px-2.5 py- group-hover:text-primary-400/40 group-hover:border-primary-400/20 transition-all">
-                  {{ ticket.creado_en | date:'dd MMM' }}
+              <div class="flex justify-between items-center pt-4 border-t border-white/5 mt-auto relative z-10">
+                <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                  [ngClass]="ticket.estado === 'Abierto' ? 'text-emerald-400' : 'text-red-400'">
+                  <span class="w-2 h-2 rounded-full"
+                    [ngClass]="ticket.estado === 'Abierto' ? 'bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]'"></span>
+                  {{ ticket.estado }}
                 </span>
-                <div *ngIf="ticket.no_leidos > 0"
-                  class="bg-primary-500 text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-full animate-bounce shadow-xl shadow-primary-500/40">
-                  {{ ticket.no_leidos }} PENDIENTES
+
+                <div class="flex flex-col items-end gap-2">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="text-[10px] font-bold text-white uppercase tracking-widest px-2.5 py-0 group-hover:text-primary-400/40 transition-all">
+                      {{ ticket.creado_en | date:'dd MMM' }}
+                    </span>
+                    <!-- Botón Eliminar -->
+                    <button *ngIf="ticket.estado === 'Cerrado'" (click)="eliminarTicket(ticket, $event)"
+                      class="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all active:scale-95 z-20 cursor-pointer shadow-lg shadow-red-500/10">
+                      <ion-icon name="trash-outline" class="text-xs"></ion-icon>
+                      Eliminar
+                    </button>
+                  </div>
+                  <div *ngIf="ticket.no_leidos > 0"
+                    class="bg-primary-500 text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-full animate-bounce shadow-xl shadow-primary-500/40">
+                    {{ ticket.no_leidos }} PENDIENTES
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Chat Overlay -->
-  <div *ngIf="ticketSeleccionado"
-    class="fixed inset-0 z-[100] flex flex-col bg-slate-950 animate-[slideInUp_0.4s_cubic-bezier(0.16,1,0.3,1)]">
-
-    <header
-      class="bg-slate-900/95 backdrop-blur-3xl border-b border-white/5 px-6 py-4 flex justify-between items-center relative z-[110]">
-      <div class="flex items-center gap-5">
-        <button (click)="cerrarChat()"
-          class="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all border border-white/10 active:scale-90 shadow-lg">
-          <ion-icon name="arrow-back-outline" class="text-2xl"></ion-icon>
-        </button>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2">
-            <span class="text-white font-black text-xl tracking-tight uppercase">Chat</span>
-          </div>
-          <div class="flex items-center gap-1.5 mt-0.5">
-            <span class="text-[9px] uppercase font-bold text-primary-50 tracking-widest">Estado:</span>
-            <span class="text-[9px] uppercase font-black tracking-widest"
-              [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'text-primary-400' : 'text-red-500'">
-              {{ ticketSeleccionado.estado }}
-            </span>
-            <div class="w-1 h-1 rounded-full ml-1"
-              [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'">
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
-        <app-eco-smart-logo
-          clasePersonalizada="w-10 h-10 drop-shadow-[0_0_10px_rgba(16,249,129,0.3)]"></app-eco-smart-logo>
-      </div>
-    </header>
-
-    <ion-content #chatContent class="[--background:transparent] ion-padding relative z-10">
-      <app-fondo-visual variante="admin"></app-fondo-visual>
-
-      <div class="sticky top-0 z-[60] flex justify-center pt-0 pointer-events-none">
-        <div class="pointer-events-auto animate-[slideDown_0.4s_ease-out]">
-          <button *ngIf="ticketSeleccionado.estado === 'Abierto'" (click)="cambiarEstado('Cerrado')"
-            class="px-6 py-2.5 bg-red-500 text-white rounded-full font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(239,68,68,0.4)] hover:bg-red-600 transition-all active:scale-95 flex items-center gap-2.5 border-none cursor-pointer">
-            Finalizar Ticket
-            <ion-icon name="close-circle-outline" class="text-lg"></ion-icon>
-          </button>
-          <button *ngIf="ticketSeleccionado.estado === 'Cerrado'" (click)="cambiarEstado('Abierto')"
-            class="px-6 py-2.5 bg-emerald-500 text-white rounded-full font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(16,249,129,0.4)] hover:bg-emerald-600 transition-all active:scale-95 flex items-center gap-2.5 border-none cursor-pointer">
-            Reabrir Ticket
-            <ion-icon name="checkmark-circle-outline" class="text-lg"></ion-icon>
-          </button>
-        </div>
-      </div>
-
-      <div class="max-w-3xl mx-auto space-y-5 py-5 relative z-10">
-
-        <!-- Info del Estudiante y Problema -->
-        <div class="space-y-4 animate-[fadeIn_0.6s_ease-out]">
-          <div
-            class="bg-white/5 backdrop-blur-2xl border border-white/10 p-6 rounded-[2.5rem] flex items-center justify-between shadow-2xl">
-            <div class="flex items-center gap-4">
-              <div
-                class="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-400 border border-primary-500/20">
-                <ion-icon name="person-outline" class="text-2xl"></ion-icon>
+  <!-- Chat Overlay (Nativo) -->
+  <ion-modal [isOpen]="chatAbierto" (didDismiss)="onChatDismissed()"
+    style="--width: 100%; --height: 100%; --max-width: 100%; --max-height: 100%; --border-radius: 0;">
+    <ng-template>
+      <div *ngIf="ticketSeleccionado" class="flex flex-col h-full w-full bg-slate-950">
+        <header
+          class="w-full bg-slate-900/95 border-b border-white/5 px-6 py-4 flex justify-between items-center relative z-[110] shrink-0">
+          <div class="flex items-center gap-5">
+            <button (click)="cerrarChat()"
+              class="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all border border-white/10 active:scale-90 shadow-lg">
+              <ion-icon name="arrow-back-outline" class="text-2xl"></ion-icon>
+            </button>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="text-white font-black text-xl tracking-tight uppercase">Chat</span>
               </div>
-              <div>
-                <div class="flex flex-col">
-                  <span
-                    class="text-[8px] font-black text-primary-500 uppercase tracking-[0.3em] mb-0.5">Estudiante</span>
-                  <span class="text-white font-black text-lg leading-tight">{{ ticketSeleccionado.nombre_usuario
-                    }}</span>
-                  <span class="text-primary-400/80 font-bold text-[10px] tracking-tight">{{
-                    ticketSeleccionado.correo_usuario }}</span>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="text-[9px] uppercase font-bold text-primary-50 tracking-widest">Estado:</span>
+                <span class="text-[9px] uppercase font-black tracking-widest"
+                  [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'text-primary-400' : 'text-red-500'">
+                  {{ ticketSeleccionado.estado }}
+                </span>
+                <div class="w-1 h-1 rounded-full ml-1"
+                  [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'">
                 </div>
               </div>
             </div>
-            <div class="text-right hidden sm:block px-6 border-l border-white/10">
-              <p class="text-[8px] font-black text-white/30 uppercase tracking-widest mb-0.5">Iniciado el</p>
-              <p class="text-white font-bold text-xs">{{ ticketSeleccionado.creado_en | date:'MMM d, HH:mm' }}</p>
+          </div>
+          <div class="flex items-center gap-3 group">
+            <div class="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
+            <div class="relative">
+              <div
+                class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity duration-500">
+              </div>
+              <app-eco-smart-logo
+                clasePersonalizada="w-10 h-10 relative group-hover:scale-110 transition-transform duration-500 ease-out"></app-eco-smart-logo>
+            </div>
+          </div>
+        </header>
+
+        <ion-content #chatContent class="[--background:transparent] ion-padding relative z-10 flex-1">
+          <app-fondo-visual variante="admin"></app-fondo-visual>
+
+          <div class="sticky top-0 z-[60] flex justify-center pt-0 pointer-events-none">
+            <div class="pointer-events-auto animate-[slideDown_0.4s_ease-out]">
+              <button *ngIf="ticketSeleccionado.estado === 'Abierto'" (click)="cambiarEstado('Cerrado')"
+                class="px-6 py-2.5 bg-red-500 text-white rounded-full font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(239,68,68,0.4)] hover:bg-red-600 transition-all active:scale-95 flex items-center gap-2.5 border-none cursor-pointer">
+                Finalizar Ticket
+                <ion-icon name="close-circle-outline" class="text-lg"></ion-icon>
+              </button>
+              <button *ngIf="ticketSeleccionado.estado === 'Cerrado'" (click)="cambiarEstado('Abierto')"
+                class="px-6 py-2.5 bg-emerald-500 text-white rounded-full font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(16,249,129,0.4)] hover:bg-emerald-600 transition-all active:scale-95 flex items-center gap-2.5 border-none cursor-pointer">
+                Reabrir Ticket
+                <ion-icon name="checkmark-circle-outline" class="text-lg"></ion-icon>
+              </button>
             </div>
           </div>
 
-          <!-- Descripción del Ticket -->
-          <div
-            class="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-[2.5rem] rounded-tl-none text-white shadow-2xl relative overflow-hidden">
-            <div class="card-shimmer" [ngClass]="{'card-shimmer-red': ticketSeleccionado.estado === 'Cerrado'}"></div>
-            <div class="absolute top-0 left-0 w-1.5 h-full bg-primary-500 shadow-[0_0_20px_rgba(16,249,129,0.4)]">
+          <div class="max-w-3xl mx-auto space-y-5 py-5 relative z-10">
+
+            <!-- Info del Estudiante y Problema -->
+            <div class="space-y-4 animate-[fadeIn_0.6s_ease-out]">
+              <div
+                class="bg-slate-900/80 border border-white/10 p-6 rounded-[2.5rem] flex items-center justify-between shadow-2xl">
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-400 border border-primary-500/20">
+                    <ion-icon name="person-outline" class="text-2xl"></ion-icon>
+                  </div>
+                  <div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-[8px] font-black text-primary-500 uppercase tracking-[0.3em] mb-0.5">Estudiante</span>
+                      <span class="text-white font-black text-lg leading-tight">{{ ticketSeleccionado.nombre_usuario
+                        }}</span>
+                      <span class="text-primary-400/80 font-bold text-[10px] tracking-tight">{{
+                        ticketSeleccionado.correo_usuario }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right hidden sm:block px-6 border-l border-white/10">
+                  <p class="text-[8px] font-black text-primary-500 uppercase tracking-widest mb-0.5">Iniciado el</p>
+                  <p class="text-white font-bold text-xs">{{ ticketSeleccionado.creado_en | date:'MMM d, HH:mm' }}</p>
+                </div>
+              </div>
+
+              <!-- Descripción del Ticket -->
+              <div
+                class="bg-slate-900/80 border border-white/20 p-8 rounded-[2.5rem] rounded-tl-none text-white shadow-2xl relative overflow-hidden">
+                <div class="card-shimmer" [ngClass]="{'card-shimmer-red': ticketSeleccionado.estado === 'Cerrado'}">
+                </div>
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-primary-500 shadow-[0_0_20px_rgba(16,249,129,0.4)]">
+                </div>
+                <div class="mb-4">
+                  <p class="text-[9px] font-black text-primary-400 uppercase tracking-[0.3em] mb-2">Asunto: {{
+                    ticketSeleccionado.titulo }}</p>
+                  <div class="h-px w-full bg-gradient-to-r from-primary-500/30 to-transparent"></div>
+                </div>
+                <p class="text-lg leading-relaxed font-black italic tracking-tight text-primary-50">{{
+                  ticketSeleccionado.contenido }}</p>
+              </div>
             </div>
-            <div class="mb-4">
-              <p class="text-[9px] font-black text-primary-400 uppercase tracking-[0.3em] mb-2">Asunto: {{
-                ticketSeleccionado.titulo }}</p>
-              <div class="h-px w-full bg-gradient-to-r from-primary-500/30 to-transparent"></div>
+
+            <!-- Separador Estilo Estudiante -->
+            <div class="w-full flex items-center gap-4 py-2">
+              <div class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+              <span class="text-[9px] font-black text-primary-500 uppercase tracking-[0.4em]">Chat</span>
+              <div class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
             </div>
-            <p class="text-lg leading-relaxed font-black italic tracking-tight text-primary-50">{{
-              ticketSeleccionado.contenido }}</p>
+
+            <!-- Mensajes -->
+            <ng-container *ngFor="let msg of mensajes; let i = index">
+              <!-- Separador de Fecha -->
+              <div *ngIf="i === 0 || esNuevoDia(mensajes[i-1].creado_en, msg.creado_en)"
+                class="w-full flex justify-center py-2 my-2 animate-[fadeIn_0.5s_ease-out]">
+                <div
+                  class="bg-slate-900/90 border border-accent-gold/40 px-5 py-1.5 rounded-2xl shadow-[0_0_15px_rgba(253,224,71,0.2)]">
+                  <span class="text-[10px] font-black uppercase tracking-widest text-accent-gold drop-shadow-md">
+                    {{ obtenerEtiquetaDia(msg.creado_en) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex flex-col animate-[slideUp_0.4s_ease-out_both] mb-4"
+                [ngClass]="{'items-end': msg.rol_remitente === 'admin', 'items-start': msg.rol_remitente === 'estudiante'}">
+
+                <div class="max-w-[85%] p-5 rounded-[1.8rem] shadow-2xl text-sm leading-relaxed relative group/msg"
+                  [ngClass]="{
+                'bg-rose-950 !text-white rounded-tr-none border border-rose-500/20 shadow-rose-950/20': msg.rol_remitente === 'admin',
+                'bg-gradient-to-br from-primary-600/80 to-primary-700/80 !text-white rounded-tl-none border border-primary-400 shadow-primary-500/20': msg.rol_remitente === 'estudiante'
+              }" [style.font-weight]="900" [style.color]="'#ffffff'">
+
+                  <div *ngIf="msg.rol_remitente === 'estudiante'"
+                    class="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-1.5 opacity-80 flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
+                    Estudiante
+                  </div>
+
+                  {{ msg.mensaje }}
+                </div>
+                <span class="text-[9px] text-primary-500/80 font-bold mt-2 mx-4 uppercase tracking-widest">{{
+                  msg.creado_en |
+                  date:'HH:mm' }}</span>
+              </div>
+            </ng-container>
+
+            <!-- Mensaje de Cierre -->
+            <div *ngIf="ticketSeleccionado?.estado === 'Cerrado'"
+              class="w-full flex justify-center py-6 mt-4 mb-8 animate-[fadeIn_0.5s_ease-out]">
+              <div
+                class="bg-red-950/40 border border-red-500/30 px-6 py-4 rounded-3xl shadow-[0_0_20px_rgba(239,68,68,0.15)] flex flex-col items-center text-center max-w-[85%]">
+                <ion-icon name="close-circle-outline"
+                  class="text-red-400 text-3xl mb-2 drop-shadow-[0_0_10px_rgba(248,113,113,0.5)]"></ion-icon>
+                <span class="text-[11px] font-bold text-red-100 uppercase tracking-[0.15em] leading-relaxed">
+                  El administrador ha cerrado el chat<br>
+                  el <strong class="text-red-400 font-black">{{ ticketSeleccionado.actualizado_en | date:'dd MMM yyyy'
+                    }}</strong> a las <strong class="text-red-400 font-black">{{ ticketSeleccionado.actualizado_en |
+                    date:'HH:mm' }}</strong>
+                </span>
+              </div>
+            </div>
+
           </div>
-        </div>
+        </ion-content>
 
-        <!-- Separador Estilo Estudiante -->
-        <div class="w-full flex items-center gap-4 py-2">
-          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
-          <span class="text-[9px] font-black text-primary-500 uppercase tracking-[0.4em]">Chat</span>
-          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
-        </div>
-
-        <!-- Mensajes -->
-        <div *ngFor="let msg of mensajes" class="flex flex-col animate-[slideUp_0.4s_ease-out_both]"
-          [ngClass]="{'items-end': msg.rol_remitente === 'admin', 'items-start': msg.rol_remitente === 'estudiante'}">
-
-          <div class="max-w-[85%] p-5 rounded-[1.8rem] shadow-2xl text-sm leading-relaxed relative group/msg" [ngClass]="{
-              'bg-rose-950/60 backdrop-blur-xl text-white rounded-tr-none border border-rose-500/20 shadow-rose-950/20': msg.rol_remitente === 'admin',
-              'bg-gradient-to-br from-primary-600/80 to-primary-700/80 text-white rounded-tl-none border border-primary-400/30 shadow-primary-500/10': msg.rol_remitente === 'estudiante'
-            }" [style.font-weight]="900">
-
-            <div *ngIf="msg.rol_remitente === 'estudiante'"
-              class="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-1.5 opacity-80 flex items-center gap-2">
-              <div class="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
-              Estudiante
+        <!-- Footer del Chat-->
+        <footer *ngIf="ticketSeleccionado?.estado === 'Abierto'"
+          class="w-full bg-slate-900 border-t border-white/5 p-6 relative z-[110] shrink-0">
+          <div class="max-w-4xl mx-auto flex gap-4 items-end">
+            <div class="flex-1 flex flex-col items-end">
+              <textarea [(ngModel)]="nuevoMensaje" (input)="ajustarAltura($event)" placeholder="Escribe una respuesta"
+                rows="1" maxlength="1000"
+                class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] text-white font-medium placeholder:text-white/20 px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white/10 transition-all shadow-inner min-h-[56px] max-h-[120px] resize-none overflow-y-hidden block"></textarea>
+              <span class="text-[9px] font-bold mt-1.5 mr-4 tracking-widest transition-colors"
+                [ngClass]="nuevoMensaje.length > 900 ? 'text-red-400' : 'text-white/30'">{{ nuevoMensaje.length }}/1000</span>
             </div>
-
-            {{ msg.mensaje }}
+            <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje || cargando"
+              class="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-slate-950 shadow-[0_10px_20px_rgba(16,249,129,0.2)] hover:scale-105 hover:bg-primary-400 active:scale-95 transition-all disabled:opacity-30 group mb-1">
+              <ion-icon name="send-outline" class="text-xl group-hover:translate-x-1 transition-transform"></ion-icon>
+            </button>
           </div>
-          <span class="text-[9px] text-primary-500 font-bold mt-2 mx-4 uppercase tracking-widest">{{ msg.creado_en |
-            date:'HH:mm' }}</span>
-        </div>
+        </footer>
       </div>
-    </ion-content>
+    </ng-template>
+  </ion-modal>
 
-    <!-- Footer del Chat-->
-    <ion-footer *ngIf="ticketSeleccionado.estado === 'Abierto'"
-      class="ion-no-border bg-slate-900 border-t border-white/5 p-6 relative z-[110]">
-      <div class="max-w-4xl mx-auto flex gap-4 items-end">
-        <div class="flex-1 relative">
-          <textarea [(ngModel)]="nuevoMensaje" (input)="ajustarAltura($event)" placeholder="Escribe una respuesta"
-            rows="1"
-            class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] text-white font-medium placeholder:text-white/20 px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white/10 transition-all shadow-inner min-h-[56px] max-h-[120px] resize-none overflow-y-hidden block"></textarea>
-        </div>
-        <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje || cargando"
-          class="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-slate-950 shadow-[0_10px_20px_rgba(16,249,129,0.2)] hover:scale-105 hover:bg-primary-400 active:scale-95 transition-all disabled:opacity-30 group mb-1">
-          <ion-icon name="send-outline" class="text-xl group-hover:translate-x-1 transition-transform"></ion-icon>
-        </button>
-      </div>
-    </ion-footer>
-  </div>
+  <!-- Overlay Eliminar Ticket -->
+  <app-overlay-confirmacion [mostrar]="mostrarOverlayEliminar" titulo="¿Eliminar Ticket?"
+    mensaje="Esta acción borrará la solicitud y todo su historial de chat de forma permanente. No se puede deshacer."
+    icono="trash-outline" claseConfirmar="bg-red-500 shadow-[0_10px_30px_rgba(239,68,68,0.4)]" textoConfirmar="ELIMINAR"
+    textoCancelar="CANCELAR" (confirmar)="confirmarEliminarTicket()" (cancelar)="cancelarEliminarTicket()">
+  </app-overlay-confirmacion>
 </ion-content>

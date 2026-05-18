@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  IonContent, IonLabel, IonIcon, IonSegment, IonSegmentButton, IonSpinner, IonFooter,
-  IonInput, IonTextarea
+  IonContent, IonLabel, IonIcon, IonSegment, IonSegmentButton, IonSpinner,
+  IonInput, IonTextarea, IonModal
 } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { addIcons } from 'ionicons';
@@ -26,7 +26,7 @@ import { OverlayConfirmacionComponent } from '../components/overlay-confirmacion
   standalone: true,
   imports: [
     IonContent, IonIcon, IonLabel, IonInput, IonTextarea,
-    IonSegment, IonSegmentButton, IonSpinner, IonFooter, CommonModule, FormsModule,
+    IonSegment, IonSegmentButton, IonSpinner, IonModal, CommonModule, FormsModule,
     FondoVisualComponent, EcoSmartLogoComponent, OverlayConfirmacionComponent
   ]
 })
@@ -41,6 +41,7 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   tickets: any[] = [];
   mensajes: any[] = [];
   ticketSeleccionado: any = null;
+  chatAbierto: boolean = false;
 
   nuevoTicket = { titulo: '', contenido: '' };
   nuevoMensaje: string = '';
@@ -58,6 +59,7 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
 
   private realtimeChannel: any;
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(private supabase: SupabaseService) {
     addIcons({
@@ -183,12 +185,17 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
 
   async abrirChat(ticket: any) {
     this.ticketSeleccionado = ticket;
+    this.chatAbierto = true;
     await this.cargarMensajes();
     await this.marcarComoLeidos();
     this.scrollChatToBottom();
   }
 
   cerrarChat() {
+    this.chatAbierto = false;
+  }
+
+  onChatDismissed() {
     this.ticketSeleccionado = null;
     this.mensajes = [];
     this.cargarTickets(); // Recargar para limpiar notificaciones
@@ -222,21 +229,38 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   async enviarMensaje() {
     if (!this.nuevoMensaje || !this.ticketSeleccionado) return;
 
+    const textoMensaje = this.nuevoMensaje;
+    this.nuevoMensaje = '';
+
+    const tempId = 'temp-' + Date.now();
     const msgData = {
       ticket_id: this.ticketSeleccionado.id,
       remitente_id: this.usuarioId,
       rol_remitente: 'estudiante',
-      mensaje: this.nuevoMensaje,
+      mensaje: textoMensaje,
       leido: false
     };
 
-    const { error } = await this.supabase.cliente
-      .from('mensajes_ticket')
-      .insert([msgData]);
+    const msgOptimista = {
+      ...msgData,
+      id: tempId,
+      creado_en: new Date().toISOString()
+    };
 
-    if (!error) {
-      this.nuevoMensaje = '';
-      this.scrollChatToBottom();
+    this.mensajes.push(msgOptimista);
+    this.scrollChatToBottom();
+
+    const { error, data } = await this.supabase.cliente
+      .from('mensajes_ticket')
+      .insert([msgData])
+      .select()
+      .single();
+
+    if (!error && data) {
+      const index = this.mensajes.findIndex(m => m.id === tempId);
+      if (index !== -1) {
+        this.mensajes[index] = data;
+      }
     }
   }
 
@@ -255,7 +279,7 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes_ticket' }, (payload) => {
         if (this.ticketSeleccionado && payload.new['ticket_id'] === this.ticketSeleccionado.id) {
           // Evitar duplicados
-          const existe = this.mensajes.some(m => m.id === payload.new['id']);
+          const existe = this.mensajes.some(m => m.id === payload.new['id'] || (m.mensaje === payload.new['mensaje'] && typeof m.id === 'string' && m.id.startsWith('temp-')));
           if (!existe) {
             this.mensajes.push(payload.new);
             if (payload.new['rol_remitente'] === 'admin') {
@@ -263,6 +287,7 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
             }
             this.scrollChatToBottom();
           }
+          this.cdr.detectChanges();
         } else {
           this.cargarTickets();
         }
@@ -270,6 +295,14 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets_soporte' }, (payload) => {
         if (this.ticketSeleccionado && payload.new['id'] === this.ticketSeleccionado.id) {
           this.ticketSeleccionado.estado = payload.new['estado'];
+          this.ticketSeleccionado.actualizado_en = payload.new['actualizado_en'];
+          this.cdr.detectChanges();
+        }
+        this.cargarTickets();
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'tickets_soporte' }, (payload) => {
+        if (this.ticketSeleccionado && payload.old['id'] === this.ticketSeleccionado.id) {
+          this.cerrarChat();
         }
         this.cargarTickets();
       })
@@ -284,10 +317,33 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
     }, 100);
   }
 
+  esNuevoDia(fechaAnterior: string | null, fechaActual: string): boolean {
+    if (!fechaAnterior) return true;
+    const anterior = new Date(fechaAnterior);
+    const actual = new Date(fechaActual);
+    return anterior.toDateString() !== actual.toDateString();
+  }
+
+  obtenerEtiquetaDia(fechaStr: string): string {
+    const fecha = new Date(fechaStr);
+    const hoy = new Date();
+    const ayer = new Date();
+    ayer.setDate(hoy.getDate() - 1);
+
+    if (fecha.toDateString() === hoy.toDateString()) {
+      return 'Hoy';
+    } else if (fecha.toDateString() === ayer.toDateString()) {
+      return 'Ayer';
+    } else {
+      const opciones: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+      return fecha.toLocaleDateString('es-ES', opciones);
+    }
+  }
+
   async cambiarVista(event: any) {
     const vista = event.detail.value;
     this.vistaActual = vista;
-    
+
     if (vista === 'lista') {
       this.cargando = true;
       try {
