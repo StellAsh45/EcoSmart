@@ -39,7 +39,7 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
   mensajes: any[] = [];
   ticketSeleccionado: any = null;
   chatAbierto: boolean = false;
-  
+
   mostrarOverlayEliminar: boolean = false;
   ticketAEliminar: any = null;
 
@@ -47,8 +47,10 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
   nombreUsuario: string = '';
   nuevoMensaje: string = '';
   cargando: boolean = true;
+  bloquearClicks: boolean = false;
 
   private realtimeChannel: any;
+  private limpiezaInterval: any;
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -72,20 +74,43 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.cargando = true;
     try {
       const { data: { user } } = await this.supabase.obtenerUsuario();
       if (user) {
         this.adminId = user.id;
         this.nombreUsuario = user.user_metadata?.['full_name'] || user.user_metadata?.['name'] || user.email || 'Admin';
-        await this.limpiarTicketsAntiguos();
-        await this.cargarTodosLosTickets();
-        this.suscribirseARealtime();
       }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async ionViewWillEnter() {
+    this.cargando = true;
+    try {
+      await this.limpiarTicketsAntiguos();
+      await this.cargarTodosLosTickets();
+      this.suscribirseARealtime();
+
+      // Comprobar y limpiar tickets antiguos en tiempo real cada 30 segundos
+      this.limpiezaInterval = setInterval(async () => {
+        await this.limpiarTicketsAntiguos();
+      }, 30000);
     } catch (e) {
       console.error(e);
     } finally {
       this.cargando = false;
+    }
+  }
+
+  ionViewDidLeave() {
+    if (this.realtimeChannel) {
+      this.supabase.cliente.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+    if (this.limpiezaInterval) {
+      clearInterval(this.limpiezaInterval);
+      this.limpiezaInterval = null;
     }
   }
 
@@ -110,6 +135,9 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
     if (this.realtimeChannel) {
       this.supabase.cliente.removeChannel(this.realtimeChannel);
     }
+    if (this.limpiezaInterval) {
+      clearInterval(this.limpiezaInterval);
+    }
   }
 
   async cargarTodosLosTickets() {
@@ -120,16 +148,25 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
 
     if (data) {
       this.tickets = data;
-      // Contar no leídos del estudiante (mensajes donde rol_remitente = 'estudiante' y leido = false)
-      for (let ticket of this.tickets) {
-        const { count } = await this.supabase.cliente
-          .from('mensajes_ticket')
-          .select('*', { count: 'exact', head: true })
-          .eq('ticket_id', ticket.id)
-          .eq('rol_remitente', 'estudiante')
-          .eq('leido', false);
-        ticket.no_leidos = count || 0;
+      
+      // Optimizador: Traer todos los no leídos de estudiantes con 1 sola consulta agrupada en memoria
+      const { data: noLeidosData } = await this.supabase.cliente
+        .from('mensajes_ticket')
+        .select('ticket_id')
+        .eq('rol_remitente', 'estudiante')
+        .eq('leido', false);
+
+      const counts: { [key: string]: number } = {};
+      if (noLeidosData) {
+        for (const msg of noLeidosData) {
+          counts[msg.ticket_id] = (counts[msg.ticket_id] || 0) + 1;
+        }
       }
+
+      for (let ticket of this.tickets) {
+        ticket.no_leidos = counts[ticket.id] || 0;
+      }
+
       this.filtrarTickets();
     }
   }
@@ -148,9 +185,16 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
 
   filtrarTickets() {
     this.ticketsFiltrados = this.tickets.filter(t => t.estado === this.filtroEstado);
+    
+    // Evitar click fantasma (bleed-through) y spam del deslizador (cooldown de 500ms)
+    this.bloquearClicks = true;
+    setTimeout(() => {
+      this.bloquearClicks = false;
+    }, 500);
   }
 
   async abrirChat(ticket: any) {
+    if (this.bloquearClicks) return;
     this.ticketSeleccionado = ticket;
     this.chatAbierto = true;
     await this.cargarMensajes();
@@ -163,6 +207,7 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
   }
 
   onChatDismissed() {
+    this.chatAbierto = false;
     this.ticketSeleccionado = null;
     this.mensajes = [];
     this.cargarTodosLosTickets();
@@ -176,7 +221,29 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
       .eq('ticket_id', this.ticketSeleccionado.id)
       .order('creado_en', { ascending: true });
 
-    if (data) this.mensajes = data;
+    if (data) {
+      this.mensajes = data;
+      this.procesarMensajes();
+    }
+  }
+
+  procesarMensajes() {
+    for (let i = 0; i < this.mensajes.length; i++) {
+      const msg = this.mensajes[i];
+      const prevMsg = i > 0 ? this.mensajes[i - 1] : null;
+      
+      if (!prevMsg) {
+        msg.mostrarFechaHeader = true;
+      } else {
+        const anterior = new Date(prevMsg.creado_en);
+        const actual = new Date(msg.creado_en);
+        msg.mostrarFechaHeader = anterior.toDateString() !== actual.toDateString();
+      }
+      
+      if (msg.mostrarFechaHeader) {
+        msg.etiquetaDia = this.obtenerEtiquetaDia(msg.creado_en);
+      }
+    }
   }
 
   async enviarMensaje() {
@@ -201,6 +268,7 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
     };
 
     this.mensajes.push(msgOptimista);
+    this.procesarMensajes();
     this.scrollChatToBottom();
 
     const { error, data } = await this.supabase.cliente
@@ -213,6 +281,7 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
       const index = this.mensajes.findIndex(m => m.id === tempId);
       if (index !== -1) {
         this.mensajes[index] = data;
+        this.procesarMensajes();
       }
     }
   }
@@ -243,12 +312,16 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
   }
 
   suscribirseARealtime() {
+    if (this.realtimeChannel) {
+      this.supabase.cliente.removeChannel(this.realtimeChannel);
+    }
     this.realtimeChannel = this.supabase.cliente.channel('chat-admin')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes_ticket' }, (payload) => {
         if (this.ticketSeleccionado && payload.new['ticket_id'] === this.ticketSeleccionado.id) {
           const existe = this.mensajes.some(m => m.id === payload.new['id'] || (m.mensaje === payload.new['mensaje'] && typeof m.id === 'string' && m.id.startsWith('temp-')));
           if (!existe) {
             this.mensajes.push(payload.new);
+            this.procesarMensajes();
             if (payload.new['rol_remitente'] === 'estudiante') {
               this.marcarComoLeidos();
             }
@@ -314,16 +387,35 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
     const tresDiasAtras = new Date();
     tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
 
-    const { data: ticketsViejos } = await this.supabase.cliente
+    const { data: ticketsViejos, error: errFiltro } = await this.supabase.cliente
       .from('tickets_soporte')
       .select('id')
       .eq('estado', 'Cerrado')
       .lt('actualizado_en', tresDiasAtras.toISOString());
 
+    if (errFiltro) {
+      console.error('Error al filtrar tickets viejos:', errFiltro);
+    }
+
     if (ticketsViejos && ticketsViejos.length > 0) {
       const ids = ticketsViejos.map(t => t.id);
-      await this.supabase.cliente.from('mensajes_ticket').delete().in('ticket_id', ids);
-      await this.supabase.cliente.from('tickets_soporte').delete().in('id', ids);
+      
+      const { error: errDelMsg } = await this.supabase.cliente
+        .from('mensajes_ticket')
+        .delete()
+        .in('ticket_id', ids);
+      if (errDelMsg) console.error('Error al eliminar mensajes:', errDelMsg);
+
+      const { error: errDelTicket } = await this.supabase.cliente
+        .from('tickets_soporte')
+        .delete()
+        .in('id', ids);
+      if (errDelTicket) console.error('Error al eliminar tickets:', errDelTicket);
+
+      // Eliminar del estado local para que desaparezcan en tiempo real de la pantalla
+      this.tickets = this.tickets.filter(t => !ids.includes(t.id));
+      this.filtrarTickets();
+      this.cdr.detectChanges();
     }
   }
 
@@ -336,23 +428,29 @@ export class SoporteAdminPage implements OnInit, OnDestroy {
   async confirmarEliminarTicket() {
     if (!this.ticketAEliminar) return;
     this.mostrarOverlayEliminar = false;
-    
-    // Eliminación Optimista en la Interfaz (sin saltos visuales)
+
     this.tickets = this.tickets.filter(t => t.id !== this.ticketAEliminar.id);
     this.filtrarTickets();
-    
-    // Eliminación en base de datos en segundo plano
+
     const ticketId = this.ticketAEliminar.id;
     this.ticketAEliminar = null;
-    
+
     await this.supabase.cliente.from('mensajes_ticket').delete().eq('ticket_id', ticketId);
     await this.supabase.cliente.from('tickets_soporte').delete().eq('id', ticketId);
-    
+
     await this.cargarTodosLosTickets();
   }
-  
+
   cancelarEliminarTicket() {
     this.mostrarOverlayEliminar = false;
     this.ticketAEliminar = null;
+  }
+
+  trackByTicketId(index: number, ticket: any): string {
+    return ticket.id;
+  }
+
+  trackByMessageId(index: number, msg: any): string {
+    return msg.id;
   }
 }
