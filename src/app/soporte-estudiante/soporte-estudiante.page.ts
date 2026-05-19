@@ -418,7 +418,6 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
       this.cargando = true;
       try {
         await this.cargarTickets();
-        // Delay artificial para que el usuario aprecie el feedback visual premium
         await new Promise(resolve => setTimeout(resolve, 800));
       } finally {
         this.cargando = false;

@@ -6,6 +6,7 @@ import { SupabaseService } from './services/supabase';
 import { SoporteFlotanteComponent } from './components/soporte-flotante/soporte-flotante.component';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { PushNotificationService } from './services/push-notification.service';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,8 @@ export class AppComponent implements OnInit {
   constructor(
     private router: Router,
     private zone: NgZone,
-    private supabase: SupabaseService
+    private supabase: SupabaseService,
+    private pushNotifications: PushNotificationService
   ) {
     this.initializeApp();
   }
@@ -77,6 +79,12 @@ export class AppComponent implements OnInit {
           // Guardar en sessionStorage que el usuario llegó desde el correo de recuperación
           sessionStorage.setItem('modo_recuperacion', 'true');
           this.router.navigate(['/restablecer-contrasena']);
+        } else if (event === 'SIGNED_IN') {
+          // Usuario inició sesión -> Inicializar permisos y registrar token FCM
+          this.pushNotifications.inicializar();
+        } else if (event === 'SIGNED_OUT') {
+          // Usuario cerró sesión -> Remover token FCM de la base de datos
+          this.pushNotifications.removerTokenFCMAlCerrarSesion();
         }
       });
     });
