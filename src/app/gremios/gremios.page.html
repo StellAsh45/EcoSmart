@@ -28,7 +28,7 @@
       </div>
 
       <div class="flex items-center gap-2.5 sm:gap-4">
-        <!-- Contador de hojas colectivas del gremio (Estilo clicker del header, rounded-xl) -->
+        <!-- Contador de hojas colectivas del gremio-->
         <div *ngIf="!cargando && gremio"
           class="flex items-center gap-2 bg-slate-900/40 px-3.5 py-1.5 rounded-xl border border-white/10 select-none shadow-inner shrink-0 scale-90 sm:scale-100 origin-right transition-all">
           <ion-icon name="leaf" class="text-emerald-400 text-lg shrink-0"></ion-icon>
@@ -43,7 +43,7 @@
           </div>
         </div>
 
-        <!-- EcoTokens Display (Mismo tamaño, misma forma rounded-xl y paddings para simetría perfecta!) -->
+        <!-- EcoTokens Display -->
         <div *ngIf="!cargando"
           class="flex items-center gap-2 bg-slate-900/40 px-3.5 py-1.5 rounded-xl border border-white/10 select-none shadow-inner shrink-0 scale-90 sm:scale-100 origin-right transition-all">
           <div
@@ -159,23 +159,26 @@
             <div class="space-y-2">
               <label class="text-[10px] font-black uppercase tracking-widest text-primary-400 ml-2">Nombre del
                 gremio</label>
-              <input type="text" [(ngModel)]="nuevoNombre" placeholder="Los guardianes del bosque" maxlength="25"
+              <input type="text" [(ngModel)]="nuevoNombre" placeholder="Los guardianes del bosque" maxlength="50"
                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 text-white font-bold h-16 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300">
               <div class="flex justify-between items-center px-4 mt-1">
                 <div>
-                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-500" *ngIf="nuevoNombre.trim().length === 0">
-                    Mínimo 5 letras, máx. 25
+                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-500"
+                    *ngIf="nuevoNombre.trim().length === 0">
+                    Mínimo 5 letras, máx. 50
                   </span>
-                  <span class="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-1" *ngIf="nuevoNombre.trim().length > 0 && nuevoNombre.trim().length < 5">
+                  <span class="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-1"
+                    *ngIf="nuevoNombre.trim().length > 0 && nuevoNombre.trim().length < 5">
                     <ion-icon name="alert-circle-outline" class="text-xs"></ion-icon> Muy corto (mín. 5)
                   </span>
-                  <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1" *ngIf="nuevoNombre.trim().length >= 5">
+                  <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1"
+                    *ngIf="nuevoNombre.trim().length >= 5">
                     <ion-icon name="checkmark-circle-outline" class="text-xs"></ion-icon> ¡Nombre perfecto!
                   </span>
                 </div>
                 <span class="text-[9px] font-bold tracking-widest transition-colors"
-                  [ngClass]="nuevoNombre.length > 22 ? 'text-red-400' : 'text-primary-400/50'">
-                  {{ nuevoNombre.length }}/25
+                  [ngClass]="nuevoNombre.length > 45 ? 'text-red-400' : 'text-primary-400/50'">
+                  {{ nuevoNombre.length }}/50
                 </span>
               </div>
             </div>
@@ -184,23 +187,26 @@
               <label class="text-[10px] font-black uppercase tracking-widest text-primary-400 ml-2">Manifiesto
                 ecológico</label>
               <textarea [(ngModel)]="nuevaDescripcion" placeholder="Describe el propósito del gremio y sus reglas"
-                maxlength="120" rows="3"
+                maxlength="200" rows="3"
                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 resize-none"></textarea>
               <div class="flex justify-between items-center px-4 mt-1">
                 <div>
-                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-500" *ngIf="nuevaDescripcion.trim().length === 0">
-                    Mínimo 20 letras, máx. 120
+                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-500"
+                    *ngIf="nuevaDescripcion.trim().length === 0">
+                    Mínimo 20 letras, máx. 200
                   </span>
-                  <span class="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-1" *ngIf="nuevaDescripcion.trim().length > 0 && nuevaDescripcion.trim().length < 20">
+                  <span class="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-1"
+                    *ngIf="nuevaDescripcion.trim().length > 0 && nuevaDescripcion.trim().length < 20">
                     <ion-icon name="alert-circle-outline" class="text-xs"></ion-icon> Muy corto (mín. 20)
                   </span>
-                  <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1" *ngIf="nuevaDescripcion.trim().length >= 20">
+                  <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1"
+                    *ngIf="nuevaDescripcion.trim().length >= 20">
                     <ion-icon name="checkmark-circle-outline" class="text-xs"></ion-icon> ¡Excelente manifiesto!
                   </span>
                 </div>
                 <span class="text-[9px] font-bold tracking-widest transition-colors"
-                  [ngClass]="nuevaDescripcion.length > 110 ? 'text-red-400' : 'text-primary-400/50'">
-                  {{ nuevaDescripcion.length }}/120
+                  [ngClass]="nuevaDescripcion.length > 180 ? 'text-red-400' : 'text-primary-400/50'">
+                  {{ nuevaDescripcion.length }}/200
                 </span>
               </div>
             </div>
@@ -218,7 +224,8 @@
               </div>
             </div>
 
-            <button (click)="crearGremio()" [disabled]="nuevoNombre.trim().length < 5 || nuevoNombre.trim().length > 25 || nuevaDescripcion.trim().length < 20 || nuevaDescripcion.trim().length > 120"
+            <button (click)="crearGremio()"
+              [disabled]="nuevoNombre.trim().length < 5 || nuevoNombre.trim().length > 50 || nuevaDescripcion.trim().length < 20 || nuevaDescripcion.trim().length > 200"
               class="w-full bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-6 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3 border-none cursor-pointer mt-6 text-lg disabled:opacity-50">
               <ion-icon name="create-outline" class="text-xl shrink-0"></ion-icon>
               <span>Crear Gremio</span>
@@ -306,7 +313,7 @@
                   <span>{{ formatearNumero(g.hojas_globales) }}</span>
                 </div>
 
-                <button [disabled]="g.miembrosCount >= 5 || !diaResto" (click)="unirseAGremio(g.id)"
+                <button [disabled]="g.miembrosCount >= 5" (click)="unirseAGremio(g.id)"
                   class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-2.5 px-6 rounded-xl transition-all shadow-lg active:scale-95 border-none cursor-pointer disabled:opacity-40 text-xs">
                   <span>{{ g.miembrosCount >= 5 ? 'Lleno' : 'Unirse' }}</span>
                 </button>
@@ -325,9 +332,105 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start animate-[fadeIn_0.6s_ease-out]"
           *ngIf="vistaActual === 'hub'">
 
+          <!-- Formulario Editar Gremio -->
+          <div
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden group space-y-6"
+            *ngIf="mostrarFormularioEdicion">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-500/5 rounded-full blur-[80px]"></div>
+
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-3xl font-black text-white font-heading m-0">Editar gremio</h3>
+              <button
+                class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-xl border-none cursor-pointer active:scale-90"
+                (click)="mostrarFormularioEdicion = false">
+                <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+              </button>
+            </div>
+
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <label class="text-[10px] font-black uppercase tracking-widest text-primary-400 ml-2">Nombre del
+                  gremio</label>
+                <input type="text" [(ngModel)]="editNombre" placeholder="Los guardianes del bosque" maxlength="50"
+                  class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 text-white font-bold h-16 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300">
+                <div class="flex justify-between items-center px-4 mt-1">
+                  <div>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-500"
+                      *ngIf="editNombre.trim().length === 0">
+                      Mínimo 5 letras, máx. 50
+                    </span>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-1"
+                      *ngIf="editNombre.trim().length > 0 && editNombre.trim().length < 5">
+                      <ion-icon name="alert-circle-outline" class="text-xs"></ion-icon> Muy corto (mín. 5)
+                    </span>
+                    <span
+                      class="text-[9px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1"
+                      *ngIf="editNombre.trim().length >= 5">
+                      <ion-icon name="checkmark-circle-outline" class="text-xs"></ion-icon> ¡Nombre perfecto!
+                    </span>
+                  </div>
+                  <span class="text-[9px] font-bold tracking-widest transition-colors"
+                    [ngClass]="editNombre.length > 45 ? 'text-red-400' : 'text-primary-400/50'">
+                    {{ editNombre.length }}/50
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label class="text-[10px] font-black uppercase tracking-widest text-primary-400 ml-2">Manifiesto
+                  ecológico</label>
+                <textarea [(ngModel)]="editDescripcion" placeholder="Describe el propósito del gremio y sus reglas"
+                  maxlength="200" rows="3"
+                  class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 resize-none"></textarea>
+                <div class="flex justify-between items-center px-4 mt-1">
+                  <div>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-500"
+                      *ngIf="editDescripcion.trim().length === 0">
+                      Mínimo 20 letras, máx. 200
+                    </span>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-1"
+                      *ngIf="editDescripcion.trim().length > 0 && editDescripcion.trim().length < 20">
+                      <ion-icon name="alert-circle-outline" class="text-xs"></ion-icon> Muy corto (mín. 20)
+                    </span>
+                    <span
+                      class="text-[9px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1"
+                      *ngIf="editDescripcion.trim().length >= 20">
+                      <ion-icon name="checkmark-circle-outline" class="text-xs"></ion-icon> ¡Excelente manifiesto!
+                    </span>
+                  </div>
+                  <span class="text-[9px] font-bold tracking-widest transition-colors"
+                    [ngClass]="editDescripcion.length > 180 ? 'text-red-400' : 'text-primary-400/50'">
+                    {{ editDescripcion.length }}/200
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <label class="text-[10px] font-black uppercase tracking-widest text-primary-400 ml-2">Icono
+                  Representativo</label>
+                <div class="grid grid-cols-4 gap-3">
+                  <button *ngFor="let icon of iconosDisponibles" type="button"
+                    class="h-16 rounded-2xl flex items-center justify-center text-3xl cursor-pointer transition-all active:scale-95 border-solid"
+                    [ngClass]="editIcono === icon.name ? [icon.bg, 'border-2', icon.borderSelected, icon.color, 'shadow-lg shadow-white/5 ring-1 ring-white/20 scale-105'] : [icon.bg, 'border-2', icon.border, icon.color, 'opacity-50 hover:opacity-100']"
+                    (click)="editIcono = icon.name">
+                    <ion-icon [name]="icon.name"></ion-icon>
+                  </button>
+                </div>
+              </div>
+
+              <button (click)="guardarEdicionGremio()"
+                [disabled]="editNombre.trim().length < 5 || editNombre.trim().length > 50 || editDescripcion.trim().length < 20 || editDescripcion.trim().length > 200"
+                class="w-full bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-6 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3 border-none cursor-pointer mt-6 text-lg disabled:opacity-50">
+                <ion-icon name="checkmark-circle-outline" class="text-xl shrink-0"></ion-icon>
+                <span>Guardar Cambios</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Ficha Gremio -->
           <div
-            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] pt-6 pb-8 px-6 sm:px-8 shadow-2xl relative overflow-hidden group space-y-6">
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] pt-6 pb-8 px-6 sm:px-8 shadow-2xl relative overflow-hidden group space-y-6"
+            *ngIf="!mostrarFormularioEdicion">
 
             <ng-container *ngIf="obtenerConfigIcono(gremio.icono) as iconConfig">
               <div
@@ -341,13 +444,21 @@
                   [ngClass]="[iconConfig.bg, iconConfig.border, iconConfig.color]">
                   <ion-icon [name]="iconConfig.name" class="text-3xl"></ion-icon>
                 </div>
-                <div class="min-w-0 flex-1">
+                <div class="min-w-0 flex-1" [ngClass]="{'sm:pr-28': miembroActual?.rol === 'lider'}">
                   <h2 class="text-xl sm:text-2xl font-black leading-tight break-words select-all m-0"
                     [ngClass]="iconConfig.color">
                     {{ gremio.nombre }}
                   </h2>
                 </div>
               </div>
+
+              <!-- Botón Editar flotante -->
+              <button *ngIf="miembroActual?.rol === 'lider'" (click)="abrirEditarGremio()"
+                class="absolute top-6 right-6 p-2.5 text-slate-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-xl border border-solid border-white/10 cursor-pointer active:scale-95 z-10 flex items-center gap-1.5"
+                title="Editar Gremio">
+                <ion-icon name="create-outline" class="text-lg"></ion-icon>
+                <span class="text-xs font-bold uppercase tracking-wider hidden sm:inline">Editar</span>
+              </button>
 
               <!-- Manifiesto del gremio -->
               <p class="text-primary-50 italic text-sm m-0 leading-relaxed break-words text-center sm:text-left">
@@ -362,7 +473,7 @@
                 <span class="text-xl font-black text-white">{{ formatearNumero(gremio.hojas_competencia) }}</span>
               </div>
               <div class="bg-white/5 border border-white/10 rounded-2xl p-5 text-white">
-                <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-1">Hojas
+                <span class="text-[8px] font-black uppercase tracking-widest text-emerald-400 block mb-1">Hojas
                   disponibles</span>
                 <span class="text-xl font-black text-white">{{ formatearNumero(hojasColectivas) }}</span>
               </div>
@@ -389,8 +500,7 @@
                   <!-- Iniciales del compañero o Tú flotante si el color está ocupado -->
                   <div *ngIf="obtenerMiembroPorColor(c.hex) as m"
                     class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full border flex items-center justify-center text-[9px] font-black uppercase shadow-2xl z-10"
-                    [style.background]="'#000000'"
-                    [class.border-emerald-500]="m.usuario_id === usuarioId"
+                    [style.background]="'#000000'" [class.border-emerald-500]="m.usuario_id === usuarioId"
                     [class.text-emerald-400]="m.usuario_id === usuarioId"
                     [class.border-white/30]="m.usuario_id !== usuarioId"
                     [class.text-slate-300]="m.usuario_id !== usuarioId">
@@ -415,45 +525,48 @@
             <h3 class="text-2xl font-black text-white font-heading">Miembros Activos ({{ miembros.length }} / 5)</h3>
             <div class="space-y-4">
               <div
-                class="bg-white/5 backdrop-blur-md p-5 sm:p-6 rounded-[2.5rem] border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 relative overflow-hidden group shadow-2xl"
+                class="bg-white/5 backdrop-blur-md p-4 sm:p-5 rounded-[2rem] border border-white/10 flex items-center justify-between gap-4 relative overflow-hidden group shadow-2xl"
                 *ngFor="let m of miembros">
 
-                <div class="flex items-center gap-4 w-full sm:w-auto">
+                <!-- Izquierda: Avatar e información del miembro -->
+                <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                  <!-- Avatar con color exclusivo del miembro -->
                   <div
-                    class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/5 border-2 flex items-center justify-center text-white text-lg sm:text-xl shrink-0"
-                    [style.border-color]="m.color_hoja">
+                    class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/5 border-2 flex items-center justify-center text-lg shrink-0 transition-colors"
+                    [style.border-color]="m.color_hoja" [style.color]="m.color_hoja"
+                    [style.box-shadow]="'0 0 15px ' + m.color_hoja + '30'">
                     <ion-icon name="person-outline"></ion-icon>
                   </div>
+
+                  <!-- Nombre y Rango -->
                   <div class="min-w-0 flex-1">
                     <h4
-                      class="text-base sm:text-lg font-black text-white flex items-center gap-2 m-0 leading-tight truncate">
+                      class="text-sm sm:text-base font-black text-white flex items-center gap-1.5 m-0 leading-tight truncate">
                       {{ m.profiles?.nombre || 'Estudiante' }}
                       <span
-                        class="text-[9px] font-black uppercase tracking-widest bg-primary-500/20 text-primary-400 px-2 py-0.5 rounded-md shrink-0"
+                        class="text-[8px] font-black uppercase tracking-widest bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded shrink-0"
                         *ngIf="m.usuario_id === usuarioId">Tú</span>
                     </h4>
-                    <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider block mt-1 truncate"
+                    <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block mt-0.5 truncate"
                       [class.text-amber-400]="m.rol === 'lider'" [class.text-slate-400]="m.rol !== 'lider'">
                       {{ m.rol === 'lider' ? 'Líder' : 'Miembro Ecológico' }}
+                    </span>
+                    <span *ngIf="!esElegibleRecompensa(m)"
+                      class="text-[8px] font-black uppercase tracking-widest bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded mt-1 inline-block truncate max-w-full"
+                      title="Ingresó al gremio faltando menos de 24h para terminar la competencia. Elegible en el próximo ciclo.">
+                      Sin Recompensa
                     </span>
                   </div>
                 </div>
 
-                <div
-                  class="flex items-center gap-3 text-right sm:text-right shrink-0 w-full sm:w-auto justify-between sm:justify-end bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-2xl sm:rounded-none border border-white/5 sm:border-none">
-                  <div class="flex items-center gap-2">
-                    <div class="w-3.5 h-3.5 rounded-full shadow-lg" [style.background]="m.color_hoja"
-                      title="Color de hoja en clicker"></div>
-                    <span class="text-xs text-slate-400 font-bold block sm:hidden">Color de Hoja</span>
-                  </div>
-                  <div class="text-right">
-                    <span
-                      class="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Aporte
-                      Competencia</span>
-                    <span class="text-xs sm:text-sm font-black text-primary-400">
-                      {{ formatearNumero(m.hojas_aportadas) }} hojas
-                    </span>
-                  </div>
+                <!-- Derecha: Aporte en la competencia -->
+                <div class="text-right shrink-0 pl-2">
+                  <span
+                    class="block text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary-50 mb-0.5">Aporte</span>
+                  <span class="block text-sm sm:text-base font-black text-primary-400 leading-none">
+                    {{ formatearNumero(m.hojas_aportadas) }}
+                  </span>
+                  <span class="block text-[9px] text-primary-50 font-bold lowercase mt-0.5">hojas</span>
                 </div>
               </div>
             </div>
@@ -465,37 +578,30 @@
           class="flex flex-col items-center justify-center min-h-[55vh] max-w-2xl mx-auto animate-[fadeIn_0.6s_ease-out] relative select-none w-full"
           *ngIf="vistaActual === 'clicker' && !diaResto">
 
-          <!-- Hojas Animadas Flotantes (Idéntico a clicker.page.html) -->
+          <!-- Hojas animadas flotantes -->
           <div class="fixed inset-0 pointer-events-none z-[15] overflow-hidden">
             <div *ngFor="let h of hojasAnimadas" class="absolute hoja-cayendo flex items-center gap-2"
               [style.left.px]="h.x" [style.top.px]="h.y" [style.--rot]="h.rotacion + 'deg'" [style.--scale]="h.escala"
               [style.--drift]="h.drift + 'px'" [style.animation-duration.s]="h.duracion">
-              <ion-icon name="leaf" 
-                [class.text-purple-400]="h.esSuperCritico"
-                [class.drop-shadow-purple]="h.esSuperCritico"
-                [class.text-yellow-400]="h.esCritico && !h.esSuperCritico"
-                [class.drop-shadow-gold]="h.esCritico && !h.esSuperCritico"
-                class="text-4xl opacity-90" 
+              <ion-icon name="leaf" [class.text-purple-400]="h.esSuperCritico"
+                [class.drop-shadow-purple]="h.esSuperCritico" [class.text-yellow-400]="h.esCritico && !h.esSuperCritico"
+                [class.drop-shadow-gold]="h.esCritico && !h.esSuperCritico" class="text-4xl opacity-90"
                 [style.color]="h.esCritico ? null : h.color"
                 [style.filter]="h.esCritico ? null : 'drop-shadow(0 0 8px ' + h.color + ')'">
               </ion-icon>
-              <span class="font-black text-xl texto-plus pointer-events-none drop-shadow-lg" 
+              <span class="font-black text-xl texto-plus pointer-events-none drop-shadow-lg"
                 [style.color]="h.esSuperCritico ? '#d8b4fe' : (h.esCritico ? '#fef08a' : h.color)"
-                [style.--glow-color]="h.esSuperCritico ? '#a855f7' : (h.esCritico ? '#fbbf24' : h.color)">{{ h.valor }}</span>
+                [style.--glow-color]="h.esSuperCritico ? '#a855f7' : (h.esCritico ? '#fbbf24' : h.color)">{{ h.valor
+                }}</span>
             </div>
           </div>
 
-          <!-- El Árbol (Tal cual como en clicker.page.html) -->
           <div
             class="relative z-10 cursor-pointer group contenedor-arbol-juego active:scale-95 transition-transform duration-100"
             [class.anim-shake]="animacionArbol" (click)="hacerClickArbol($event)">
-
-            <!-- Glow verde original de fondo -->
             <div
               class="absolute w-64 h-64 bg-primary-500/30 blur-[80px] rounded-full group-hover:bg-primary-400/40 transition-colors duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             </div>
-
-            <!-- Árbol con el color dinámico del usuario y drop shadow original del clicker -->
             <app-eco-smart-logo
               clasePersonalizada="w-64 h-48 sm:w-80 sm:h-60 object-cover object-top drop-shadow-[0_0_40px_rgba(34,197,94,0.8)] transition-transform duration-200 group-hover:scale-105 active:scale-95"
               [style.color]="miembroActual?.color_hoja || '#10b981'">
@@ -508,114 +614,117 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start animate-[fadeIn_0.6s_ease-out]"
           *ngIf="vistaActual === 'competencia'">
 
-          <!-- Global ranking -->
+          <!-- Ranking interno -->
           <div
-            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden group space-y-6">
-            <div class="absolute -top-24 -left-24 w-64 h-64 bg-amber-500/5 rounded-full blur-[80px]"></div>
-
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-5 sm:p-8 shadow-2xl relative overflow-hidden space-y-5">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-500/5 rounded-full blur-[80px]"></div>
             <div class="flex items-center gap-3">
-              <ion-icon name="trophy-outline"
-                class="text-amber-400 text-3xl drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]"></ion-icon>
-              <h3 class="text-2xl font-black text-white font-heading m-0">Clasificación Global</h3>
+              <ion-icon name="people-outline" class="text-primary-400 text-2xl sm:text-3xl shrink-0"></ion-icon>
+              <h3 class="text-xl sm:text-2xl font-black text-white font-heading m-0 leading-tight">Clasificación Interna
+              </h3>
             </div>
-            <p class="text-primary-50/70 font-medium text-sm m-0 font-sans">Posición competitiva de todos los gremios en
-              EcoSmart. ¡Liderad el podio!</p>
+            <p class="text-primary-50 font-medium text-xs sm:text-sm m-0">Aportaciones de cada miembro del gremio en la
+              competencia activa.</p>
 
-            <div class="space-y-3 pt-2">
-              <div
-                class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all duration-300"
-                *ngFor="let g of leaderboardGlobal; let i = index" [class.border-amber-500/20]="i === 0"
-                [class.bg-amber-500/5]="i === 0" [class.border-slate-500/20]="i === 1" [class.bg-slate-500/5]="i === 1"
-                [class.border-amber-700/20]="i === 2" [class.bg-amber-700/5]="i === 2"
-                [class.ring-1]="g.id === gremio.id" [class.ring-primary-500]="g.id === gremio.id">
+            <div class="space-y-2">
+              <div class="rounded-2xl px-3 py-3 flex items-center gap-3 transition-all duration-300 border"
+                [class.podio-oro]="i === 0" [class.podio-plata]="i === 1" [class.podio-bronce]="i === 2"
+                [class.podio-verde]="i >= 3" [class.ring-1]="m.usuario_id === usuarioId"
+                [class.ring-primary-500]="m.usuario_id === usuarioId"
+                *ngFor="let m of leaderboardInterno; let i = index">
 
-                <div class="flex items-center gap-4">
-                  <!-- Medalla Premium de Puesto -->
-                  <span
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shadow-md border shrink-0"
-                    [class.bg-gradient-to-br]="i < 3" [class.from-amber-400]="i === 0" [class.to-amber-600]="i === 0"
-                    [class.text-slate-950]="i === 0" [class.border-amber-300]="i === 0" [class.from-slate-300]="i === 1"
-                    [class.to-slate-500]="i === 1" [class.text-slate-950]="i === 1" [class.border-slate-200]="i === 1"
-                    [class.from-amber-700]="i === 2" [class.to-amber-900]="i === 2" [class.text-white]="i === 2"
-                    [class.border-amber-600]="i === 2" [class.bg-slate-800]="i >= 3" [class.text-slate-400]="i >= 3"
-                    [class.border-white/5]="i >= 3">
-                    {{ i + 1 }}
+                <!-- Posición -->
+                <span
+                  class="w-7 h-7 text-xs rounded-full flex items-center justify-center font-black shadow border shrink-0"
+                  [class.bg-gradient-to-br]="i < 3" [class.from-amber-400]="i === 0" [class.to-amber-600]="i === 0"
+                  [class.text-slate-950]="i <= 1" [class.border-amber-300]="i === 0" [class.from-slate-300]="i === 1"
+                  [class.to-slate-500]="i === 1" [class.border-slate-200]="i === 1" [class.from-amber-700]="i === 2"
+                  [class.to-amber-900]="i === 2" [class.text-white]="i === 2" [class.border-amber-600]="i === 2"
+                  [class.bg-slate-800]="i >= 3" [class.text-slate-400]="i >= 3" [class.border-white/10]="i >= 3">
+                  {{ i + 1 }}
+                </span>
+
+                <!-- Avatar (color hoja) -->
+                <div class="w-7 h-7 rounded-full border-2 shrink-0" [style.background]="m.color_hoja"
+                  [style.border-color]="m.color_hoja"></div>
+
+                <!-- Nombre + meta -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-baseline gap-1.5">
+                    <span class="text-sm font-black text-white leading-tight">{{ m.profiles?.nombre || 'Miembro'
+                      }}</span>
+                  </div>
+                  <span class="text-[10px] font-bold mt-0.5 block" [class.text-amber-400]="m.rol === 'lider'"
+                    [class.text-slate-500]="m.rol !== 'lider'">
+                    {{ m.rol === 'lider' ? 'Líder' : 'Miembro' }}
                   </span>
-
-                  <div
-                    class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 text-lg shrink-0"
-                    [class.!border-amber-500/30]="i === 0" [class.!border-slate-500/30]="i === 1"
-                    [class.!border-amber-700/30]="i === 2">
-                    <ion-icon [name]="g.icono || 'leaf'"></ion-icon>
-                  </div>
-
-                  <div>
-                    <h4 class="text-md font-black text-white m-0 flex flex-wrap items-center gap-2">
-                      {{ g.nombre }}
-                      <span
-                        class="text-[8px] font-black uppercase tracking-widest bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded-md"
-                        *ngIf="g.id === gremio.id">Mi Gremio</span>
-                    </h4>
-                    <span class="text-[10px] text-slate-400 font-bold block mt-0.5">{{ g.miembrosCount }}
-                      miembros</span>
-                  </div>
                 </div>
 
-                <span class="text-md font-black text-primary-400 shrink-0 self-start sm:self-center sm:ml-auto">{{ formatearNumero(g.hojas_competencia) }} hojas</span>
+                <!-- Puntaje -->
+                <div class="text-right shrink-0 ml-1">
+                  <span class="block text-sm font-black text-primary-400">{{ formatearNumero(m.hojas_aportadas)
+                    }}</span>
+                  <span class="block text-[8px] text-primary-50 font-black uppercase tracking-widest">Hojas</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Internal ranking -->
+          <!-- Ranking global -->
           <div
-            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden group space-y-6">
-            <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-500/5 rounded-full blur-[80px]"></div>
-
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-5 sm:p-8 shadow-2xl relative overflow-hidden space-y-5">
+            <div class="absolute -top-24 -left-24 w-64 h-64 bg-amber-500/5 rounded-full blur-[80px]"></div>
             <div class="flex items-center gap-3">
-              <ion-icon name="people-outline" class="text-primary-400 text-3xl"></ion-icon>
-              <h3 class="text-2xl font-black text-white font-heading m-0">Clasificación Interna</h3>
+              <ion-icon name="trophy-outline"
+                class="text-amber-400 text-2xl sm:text-3xl drop-shadow-[0_0_10px_rgba(245,158,11,0.3)] shrink-0"></ion-icon>
+              <h3 class="text-xl sm:text-2xl font-black text-white font-heading m-0 leading-tight">Clasificación Global
+              </h3>
             </div>
-            <p class="text-primary-50/70 font-medium text-sm m-0 font-sans">Aportaciones de cada miembro del gremio a la
-              competencia activa actual.</p>
+            <p class="text-primary-50 font-medium text-xs sm:text-sm m-0">Posición de todos los gremios en EcoSmart.
+              ¡Liderad el podio!</p>
 
-            <div class="space-y-3 pt-2">
-              <div
-                class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all duration-300"
-                *ngFor="let m of leaderboardInterno; let i = index" [class.ring-1]="m.usuario_id === usuarioId"
-                [class.ring-primary-500]="m.usuario_id === usuarioId"
-                [class.bg-primary-500/5]="m.usuario_id === usuarioId">
+            <div class="space-y-2">
+              <div class="rounded-2xl px-3 py-3 flex items-center gap-3 transition-all duration-300 border"
+                [class.podio-oro]="i === 0" [class.podio-plata]="i === 1" [class.podio-bronce]="i === 2"
+                [class.podio-verde]="i >= 3" [class.ring-1]="g.id === gremio.id"
+                [class.ring-primary-500]="g.id === gremio.id" *ngFor="let g of leaderboardGlobal; let i = index">
 
-                <div class="flex items-center gap-4">
-                  <!-- Medalla Premium de Puesto -->
-                  <span
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shadow-md border shrink-0"
+                <!-- Columna izquierda: posición + ícono apilados -->
+                <div class="flex flex-col items-center gap-1 shrink-0 w-9">
+                  <span class="w-7 h-7 text-xs rounded-full flex items-center justify-center font-black shadow border"
                     [class.bg-gradient-to-br]="i < 3" [class.from-amber-400]="i === 0" [class.to-amber-600]="i === 0"
-                    [class.text-slate-950]="i === 0" [class.border-amber-300]="i === 0" [class.from-slate-300]="i === 1"
-                    [class.to-slate-500]="i === 1" [class.text-slate-950]="i === 1" [class.border-slate-200]="i === 1"
-                    [class.from-amber-700]="i === 2" [class.to-amber-900]="i === 2" [class.text-white]="i === 2"
-                    [class.border-amber-600]="i === 2" [class.bg-slate-800]="i >= 3" [class.text-slate-400]="i >= 3"
-                    [class.border-white/5]="i >= 3">
+                    [class.text-slate-950]="i <= 1" [class.border-amber-300]="i === 0" [class.from-slate-300]="i === 1"
+                    [class.to-slate-500]="i === 1" [class.border-slate-200]="i === 1" [class.from-amber-700]="i === 2"
+                    [class.to-amber-900]="i === 2" [class.text-white]="i === 2" [class.border-amber-600]="i === 2"
+                    [class.bg-slate-800]="i >= 3" [class.text-slate-400]="i >= 3" [class.border-white/10]="i >= 3">
                     {{ i + 1 }}
                   </span>
-
-                  <div class="w-8 h-8 rounded-full shadow-md shrink-0 border border-white/10"
-                    [style.background]="m.color_hoja"></div>
-
-                  <div>
-                    <h4 class="text-md font-black text-white m-0 flex flex-wrap items-center gap-2">
-                      {{ m.profiles?.nombre || 'Miembro' }}
-                      <span
-                        class="text-[8px] font-black uppercase tracking-widest bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded-md"
-                        *ngIf="m.usuario_id === usuarioId">Tú</span>
-                    </h4>
-                    <span class="text-[10px] text-slate-400 font-bold block mt-0.5 font-sans"
-                      [class.text-amber-400]="m.rol === 'lider'">
-                      {{ m.rol === 'lider' ? 'Líder' : 'Miembro' }}
-                    </span>
-                  </div>
+                  <ion-icon [name]="g.icono ? obtenerConfigIcono(g.icono).name : 'leaf'" class="text-xl"
+                    [ngClass]="g.icono ? obtenerConfigIcono(g.icono).color : 'text-slate-500'">
+                  </ion-icon>
                 </div>
 
-                <span class="text-md font-black text-primary-400 shrink-0 self-start sm:self-center sm:ml-auto">{{ formatearNumero(m.hojas_aportadas) }} hojas</span>
+                <!-- Nombre + meta: ocupa todo el espacio central -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-sm font-black leading-tight break-words"
+                      [ngClass]="g.icono ? obtenerConfigIcono(g.icono).color : 'text-white'">
+                      {{ g.nombre }}
+                    </span>
+                    <span *ngIf="g.id === gremio.id"
+                      class="text-[7px] font-black uppercase tracking-widest bg-primary-500/20 text-primary-400 px-1 py-0.5 rounded shrink-0">
+                      Mi Gremio
+                    </span>
+                  </div>
+                  <span class="text-[9px] text-primary-50 font-bold mt-0.5 block">{{ g.miembrosCount }} miembros</span>
+                </div>
+
+                <!-- Score -->
+                <div class="text-right shrink-0 ml-1">
+                  <span class="block text-sm font-black text-primary-400">{{ formatearNumero(g.hojas_competencia)
+                    }}</span>
+                  <span class="block text-[8px] text-primary-50 font-black uppercase tracking-widest">Hojas</span>
+                </div>
               </div>
             </div>
           </div>
@@ -630,15 +739,16 @@
             class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-lg text-center shadow-2xl relative overflow-hidden group space-y-6"
             *ngIf="preguntaDiariaYaRespondida">
             <div class="w-18 h-18 rounded-full flex items-center justify-center text-4xl mx-auto shadow-lg"
-              [class.bg-primary-500/10]="preguntaResultado?.correcta"
-              [class.text-primary-400]="preguntaResultado?.correcta"
-              [class.bg-red-500/10]="!preguntaResultado?.correcta" [class.text-red-400]="!preguntaResultado?.correcta"
+              [class.bg-emerald-500/10]="preguntaResultado && preguntaResultado.correcta"
+              [class.text-emerald-400]="preguntaResultado && preguntaResultado.correcta"
+              [class.bg-red-500/10]="preguntaResultado && !preguntaResultado.correcta"
+              [class.text-red-400]="preguntaResultado && !preguntaResultado.correcta"
               [class.bg-amber-500/10]="!preguntaResultado" [class.text-amber-400]="!preguntaResultado">
               <ion-icon
-                [name]="preguntaResultado?.correcta ? 'checkmark-circle-outline' : preguntaResultado ? 'alert-circle-outline' : 'checkmark-circle-outline'"></ion-icon>
+                [name]="(preguntaResultado && preguntaResultado.correcta) ? 'checkmark-circle-outline' : (preguntaResultado && !preguntaResultado.correcta) ? 'close-outline' : 'alert-circle-outline'"></ion-icon>
             </div>
 
-            <h3 class="text-2xl font-black text-white font-heading m-0">Pregunta Diaria Completada</h3>
+            <h3 class="text-2xl font-black text-white font-heading m-0">Pregunta diaria completada</h3>
             <p class="text-primary-50 font-medium leading-relaxed m-0 font-sans" *ngIf="preguntaResultado">
               {{ preguntaResultado.mensaje }}
             </p>
@@ -646,6 +756,17 @@
               ¡Ya has respondido la pregunta del día de hoy! Vuelve mañana para un nuevo repaso de tus cursos y ganar
               más EcoTokens.
             </p>
+
+            <!-- Cronómetro para la siguiente pregunta -->
+            <div class="pt-4 flex flex-col items-center gap-2">
+              <span class="text-[10px] font-black uppercase tracking-widest text-primary-500">Siguiente pregunta
+                en</span>
+              <div
+                class="px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-amber-400 font-heading text-lg font-black tracking-wider shadow-inner">
+                <ion-icon name="time-outline" class="text-xl"></ion-icon>
+                <span>{{ tiempoRestantePregunta || '--h --m --s' }}</span>
+              </div>
+            </div>
           </div>
 
           <!-- Caso B: Pregunta Diaria Disponible -->
@@ -655,15 +776,16 @@
             <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-500/5 rounded-full blur-[80px]"></div>
 
             <div class="flex justify-between items-center gap-4 flex-wrap">
-              <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Pregunta Diaria Repaso</span>
+              <span class="text-[9px] font-black uppercase tracking-widest text-primary-50">Pregunta Diaria
+                Repaso</span>
               <div
                 class="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3.5 py-1.5 rounded-full text-xs font-black shrink-0">
-                <ion-icon name="sparkles-outline"></ion-icon>
                 <span>+5 EcoTokens</span>
               </div>
             </div>
 
-            <h3 class="text-2xl font-black text-white leading-snug font-heading m-0">{{ preguntaDiaria.enunciado }}</h3>
+            <h3 class="text-2xl font-black text-primary-400 leading-snug font-heading m-0">{{ preguntaDiaria.enunciado
+              }}</h3>
 
             <div class="flex flex-col gap-4">
               <button *ngFor="let opt of respuestasPregunta" [disabled]="preguntaCargando"
@@ -677,21 +799,6 @@
               <div class="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin">
               </div>
             </div>
-          </div>
-
-          <!-- Caso C: Sin Preguntas Repaso -->
-          <div
-            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-lg text-center shadow-2xl relative overflow-hidden group space-y-6"
-            *ngIf="!preguntaDiariaYaRespondida && !preguntaDiaria && !preguntaCargando">
-            <div
-              class="w-18 h-18 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-400 text-4xl mx-auto shadow-lg">
-              <ion-icon name="alert-circle-outline"></ion-icon>
-            </div>
-            <h3 class="text-2xl font-black text-white font-heading m-0 font-sans">Pregunta no disponible</h3>
-            <p class="text-primary-50 font-medium leading-relaxed m-0 font-sans">
-              No hemos podido encontrar preguntas cognitivas para ti el día de hoy. Esto sucede si los cursos que has
-              finalizado no tienen exámenes con preguntas configuradas.
-            </p>
           </div>
         </div>
 
@@ -729,10 +836,9 @@
             </div>
 
             <div class="grid grid-cols-1 gap-1">
-              <app-tarjeta-mejora *ngFor="let mejora of listaMejorasToque"
-                [nombre]="mejora.nombre" [descripcion]="mejora.desc" [icono]="mejora.icono"
-                [color]="mejora.color" [nivel]="mejorasColectivas[mejora.id] || 0"
-                [precio]="calcularPrecioMejora(mejora.id)"
+              <app-tarjeta-mejora *ngFor="let mejora of listaMejorasToque" [nombre]="mejora.nombre"
+                [descripcion]="mejora.desc" [icono]="mejora.icono" [color]="mejora.color"
+                [nivel]="mejorasColectivas[mejora.id] || 0" [precio]="calcularPrecioMejora(mejora.id)"
                 [efectoTexto]="obtenerEfectoTextoColectiva(mejora.id)"
                 [puedeComprar]="hojasColectivas >= calcularPrecioMejora(mejora.id)"
                 (comprar)="comprarMejoraColectiva(mejora.id)">
@@ -748,10 +854,9 @@
             </div>
 
             <div class="grid grid-cols-1 gap-1">
-              <app-tarjeta-mejora *ngFor="let mejora of listaMejorasPasivo"
-                [nombre]="mejora.nombre" [descripcion]="mejora.desc" [icono]="mejora.icono"
-                [color]="mejora.color" [nivel]="mejorasColectivas[mejora.id] || 0"
-                [precio]="calcularPrecioMejora(mejora.id)"
+              <app-tarjeta-mejora *ngFor="let mejora of listaMejorasPasivo" [nombre]="mejora.nombre"
+                [descripcion]="mejora.desc" [icono]="mejora.icono" [color]="mejora.color"
+                [nivel]="mejorasColectivas[mejora.id] || 0" [precio]="calcularPrecioMejora(mejora.id)"
                 [efectoTexto]="obtenerEfectoTextoColectiva(mejora.id)"
                 [puedeComprar]="hojasColectivas >= calcularPrecioMejora(mejora.id)"
                 (comprar)="comprarMejoraColectiva(mejora.id)">
@@ -786,78 +891,103 @@
             <div class="grid grid-cols-1 gap-4">
 
               <!-- Economía del Árbol Colectivo -->
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-[#3b82f6] font-bold">Producción pasiva (H/S)</span>
                 <span class="text-[#3b82f6] font-black">{{ formatearNumero(calcularLPSColectivo()) }}</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-emerald-400 font-bold">Valor por toque</span>
                 <span class="text-emerald-400 font-black">{{ formatearNumero(obtenerValorToqueBase()) }}</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-yellow-400 font-bold">Probabilidad de crítico</span>
                 <span class="text-yellow-400 font-black">{{ obtenerChanceCritico() | number:'1.0-1' }}%</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-red-400 font-bold">Multiplicador de críticos</span>
                 <span class="text-red-400 font-black">x{{ obtenerMultiplicadorCritico() | number:'1.1-1' }}</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-purple-400 font-bold">Probabilidad de supercríticos</span>
                 <span class="text-purple-400 font-black">{{ obtenerChanceSuperCritico() | number:'1.1-2' }}%</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-[#22d3ee] font-bold">Multiplicador de supercríticos</span>
-                <span class="text-[#22d3ee] font-black">x{{ obtenerMultiplicadorSuperCritico() | number:'1.1-1' }}</span>
+                <span class="text-[#22d3ee] font-black">x{{ obtenerMultiplicadorSuperCritico() | number:'1.1-1'
+                  }}</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Total mejoras compradas</span>
                 <span class="text-primary-50 font-black">{{ obtenerTotalNiveles() }}</span>
               </div>
 
               <!-- Divisor: Tu contribución -->
-              <div class="pt-4 pb-1 border-b border-white/10">
-                <h3 class="text-white/50 text-[10px] font-black uppercase tracking-widest">Tu contribución individual</h3>
+              <div class="pt-4 pb-1 border-b border-emerald-400/20">
+                <h3 class="text-emerald-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <ion-icon name="person-outline"></ion-icon>
+                  Tu contribución individual
+                </h3>
               </div>
 
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Hojas aportadas</span>
-                <span class="text-primary-400 font-black">{{ formatearNumero(miembroActual?.hojas_aportadas || 0) }}</span>
+                <span class="text-primary-400 font-black">{{ formatearNumero(miembroActual?.hojas_aportadas || 0)
+                  }}</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Tu Color de Hoja</span>
                 <div class="flex items-center gap-2">
-                  <div class="w-5 h-5 rounded-full shadow-md border border-white/20" [style.background]="miembroActual?.color_hoja"></div>
-                  <span class="text-xs font-black text-primary-400 uppercase tracking-widest">{{ obtenerNombreColor(miembroActual?.color_hoja) }}</span>
+                  <div class="w-5 h-5 rounded-full shadow-md border border-white/20"
+                    [style.background]="miembroActual?.color_hoja"></div>
+                  <span class="text-xs font-black text-primary-400 uppercase tracking-widest">{{
+                    obtenerNombreColor(miembroActual?.color_hoja) }}</span>
                 </div>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Rango</span>
-                <span class="text-xs font-black text-white uppercase tracking-widest px-3 py-1 rounded-full bg-slate-900 border border-white/10">
+                <span
+                  class="text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full bg-slate-900 border border-white/10"
+                  [class.text-amber-400]="miembroActual?.rol === 'lider'"
+                  [class.text-slate-300]="miembroActual?.rol !== 'lider'">
                   {{ miembroActual?.rol === 'lider' ? 'Líder' : 'Miembro Ecológico' }}
                 </span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Miembro desde</span>
-                <span class="text-sm font-bold text-slate-400">
+                <span class="text-sm font-bold text-primary-50">
                   {{ miembroActual?.joined_at ? (miembroActual.joined_at | date:'dd/MM/yyyy') : '—' }}
                 </span>
               </div>
 
               <!-- Divisor: Estadísticas del Gremio -->
-              <div class="pt-4 pb-1 border-b border-white/10">
-                <h3 class="text-white/50 text-[10px] font-black uppercase tracking-widest">Estadísticas del gremio</h3>
+              <div class="pt-4 pb-1 border-b border-amber-400/20">
+                <h3 class="text-amber-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <ion-icon name="trophy-outline"></ion-icon>
+                  Estadísticas del gremio
+                </h3>
               </div>
 
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Hojas en Total</span>
                 <span class="text-primary-400 font-black">{{ formatearNumero(gremio.hojas_competencia) }}</span>
               </div>
-              <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
                 <span class="text-primary-50 font-bold">Hojas disponibles</span>
                 <span class="text-primary-400 font-black">{{ formatearNumero(hojasColectivas) }}</span>
               </div>
-
             </div>
           </div>
         </div>
@@ -897,7 +1027,7 @@
             [class.active]="vistaActual === 'estadisticas'">
             <ion-icon name="stats-chart-outline" class="text-xl sm:text-2xl"></ion-icon>
             <span
-              class="text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-wider font-sans">Stats</span>
+              class="text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-wider font-sans">Estadísticas</span>
           </button>
 
           <button (click)="cambiarVista('pregunta')" class="nav-btn shrink-0 min-w-[55px] sm:min-w-0"
@@ -945,6 +1075,17 @@
         </button>
       </div>
     </div>
+
+    <!-- ÉXITO CREACIÓN -->
+    <app-overlay-confirmacion [mostrar]="mostrarExitoCreacion" titulo="¡Gremio Fundado!"
+      mensaje="Tu gremio ha sido creado con éxito." icono="checkmark-circle-outline" textoConfirmar="" textoCancelar="">
+    </app-overlay-confirmacion>
+
+    <!-- ÉXITO EDICIÓN -->
+    <app-overlay-confirmacion [mostrar]="mostrarExitoEdicion" titulo="¡Gremio Actualizado!"
+      mensaje="Los cambios han sido guardados con éxito." icono="checkmark-circle-outline"
+      claseConfirmar="bg-emerald-500" textoConfirmar="" textoCancelar="">
+    </app-overlay-confirmacion>
 
   </div>
 </ion-content>

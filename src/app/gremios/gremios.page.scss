@@ -265,3 +265,49 @@ ion-segment.segmento-primario {
     transform: scale(1) translateY(0);
   }
 }
+
+/* ============================================
+   PODIO: Tarjetas Temáticas por Posición
+   ============================================ */
+
+@keyframes shimmer-gold {
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(250%) skewX(-15deg); }
+}
+
+.podio-oro {
+  background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(251,191,36,0.10) 100%) !important;
+  border-color: rgba(245,158,11,0.55) !important;
+  box-shadow: 0 0 18px rgba(245,158,11,0.15), inset 0 1px 0 rgba(255,215,0,0.12);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.28), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+    animation: shimmer-gold 2.8s ease-in-out infinite;
+  }
+}
+
+.podio-plata {
+  background: linear-gradient(135deg, rgba(148,163,184,0.18) 0%, rgba(203,213,225,0.10) 100%) !important;
+  border-color: rgba(148,163,184,0.55) !important;
+  box-shadow: 0 0 14px rgba(148,163,184,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.podio-bronce {
+  background: linear-gradient(135deg, rgba(180,83,9,0.18) 0%, rgba(217,119,6,0.10) 100%) !important;
+  border-color: rgba(180,83,9,0.55) !important;
+  box-shadow: 0 0 14px rgba(180,83,9,0.12), inset 0 1px 0 rgba(251,146,60,0.08);
+}
+
+.podio-verde {
+  background: rgba(16,185,129,0.07) !important;
+  border-color: rgba(16,185,129,0.22) !important;
+}
