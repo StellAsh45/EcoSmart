@@ -19,7 +19,8 @@ import {
   documentTextOutline,
   leafOutline,
   sparklesOutline,
-  closeOutline
+  closeOutline,
+  peopleOutline
 } from 'ionicons/icons';
 
 import { TarjetaEstadisticaComponent } from '../components/tarjeta-estadistica/tarjeta-estadistica.component';
@@ -36,6 +37,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
 
   usuario: any = null;
   nombreUsuario: string = '';
+  ecoTokens: number = 0;
   cursosInscritos: any[] = [];
   cursosActivosCount = 0;
   cursosCompletadosCount = 0;
@@ -67,7 +69,8 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
       'document-text-outline': documentTextOutline,
       'leaf-outline': leafOutline,
       'sparkles-outline': sparklesOutline,
-      'close-outline': closeOutline
+      'close-outline': closeOutline,
+      'people-outline': peopleOutline
     });
   }
 
@@ -86,6 +89,7 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
       if (this.usuario) {
         const { data: perfil } = await this.supabaseSvc.obtenerPerfil(this.usuario.id);
         this.nombreUsuario = perfil?.nombre || this.usuario.user_metadata?.['full_name'] || this.usuario.email?.split('@')[0] || 'Estudiante';
+        this.ecoTokens = perfil?.eco_tokens || 0;
 
         await this.cargarInscripciones();
       }
@@ -195,28 +199,20 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
   }
 
   alHacerClickLogo(event?: any) {
-    if (this.mostrarCinematica || this.cinematicaIniciada || this.clicksLogo >= 5) return;
+    if (this.mostrarCinematica || this.cinematicaIniciada) return;
 
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
 
-    this.clicksLogo++;
-
+    // Activar sacudida física al hacer click
     this.animacionSacudida = true;
     setTimeout(() => {
       this.animacionSacudida = false;
-    }, 200);
+    }, 500);
 
-    clearTimeout(this.clickTimer);
-    this.clickTimer = setTimeout(() => {
-      this.clicksLogo = 0;
-    }, 2000);
-
-    if (this.clicksLogo >= 4) {
-      this.activarCinematica();
-    }
+    this.activarCinematica();
   }
 
   activarCinematica() {
@@ -224,16 +220,14 @@ export class DashboardEstudiantePage implements OnInit, ViewWillEnter {
     
     // Detenemos procesos para dar prioridad a la animación
     if (this.sacudidaOcasionalTimer) clearInterval(this.sacudidaOcasionalTimer);
-    clearTimeout(this.clickTimer);
 
     this.cinematicaIniciada = true;
-    this.clicksLogo = 0;
     this.mostrarCinematica = true;
     const subscription = this.platform.backButton.subscribeWithPriority(9999, () => {
     });
 
     setTimeout(() => {
-      this.router.navigate(['/clicker']).then(() => {
+      this.router.navigate(['/gremios']).then(() => {
         subscription.unsubscribe();
         this.mostrarCinematica = false;
         this.cinematicaIniciada = false;

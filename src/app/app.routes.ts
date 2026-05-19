@@ -80,17 +80,20 @@ export const routes: Routes = [
     path: 'clicker',
     canActivate: [AuthGuard],
     loadComponent: () => import('./clicker/clicker.page').then(m => m.ClickerPage)
-  },  {
+  },
+  {
+    path: 'gremios',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./gremios/gremios.page').then(m => m.GremiosPage)
+  },
+  {
     path: 'soporte-estudiante',
     canActivate: [AuthGuard],
-    loadComponent: () => import('./soporte-estudiante/soporte-estudiante.page').then( m => m.SoporteEstudiantePage)
+    loadComponent: () => import('./soporte-estudiante/soporte-estudiante.page').then(m => m.SoporteEstudiantePage)
   },
   {
     path: 'soporte-admin',
     canActivate: [AdminGuard],
-    loadComponent: () => import('./soporte-admin/soporte-admin.page').then( m => m.SoporteAdminPage)
+    loadComponent: () => import('./soporte-admin/soporte-admin.page').then(m => m.SoporteAdminPage)
   }
-
-
-
 ];

@@ -1,14 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonIcon } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { chatbubblesOutline } from 'ionicons/icons';
 import { SupabaseService } from '../../services/supabase';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-soporte-flotante',
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [IonIcon, CommonModule],
   template: `
     <div class="fixed bottom-6 right-6 z-[9999] cursor-pointer group animate-[slideUp_0.5s_ease-out_both]" (click)="abrirSoporte()">
       
@@ -34,7 +36,9 @@ export class SoporteFlotanteComponent implements OnInit, OnDestroy {
   private realtimeChannel: any;
   usuarioId: string | null = null;
 
-  constructor(private supabase: SupabaseService, private router: Router) {}
+  constructor(private supabase: SupabaseService, private router: Router) {
+    addIcons({ 'chatbubbles-outline': chatbubblesOutline });
+  }
 
   async ngOnInit() {
     const { data: { user } } = await this.supabase.obtenerUsuario();

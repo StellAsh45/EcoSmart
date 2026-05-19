@@ -102,6 +102,19 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   async ionViewWillEnter() {
     this.cargando = true;
     try {
+      // Garantizar que el usuario esté cargado antes de hacer consultas a Supabase
+      if (!this.usuarioId) {
+        const { data: { user } } = await this.supabase.obtenerUsuario();
+        if (user) {
+          this.usuarioId = user.id;
+          this.correoUsuario = user.email || '';
+          const { data: perfil } = await this.supabase.obtenerPerfil(user.id);
+          this.nombreUsuario = perfil?.nombre || user.user_metadata?.['full_name'] || 'Usuario';
+        }
+      }
+
+      if (!this.usuarioId) return;
+
       await this.limpiarTicketsAntiguos();
       await this.cargarTickets();
       this.suscribirseARealtime();

@@ -35,7 +35,11 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/tailwind.css", "src/global.scss", "src/theme/variables.scss"], 
+            "styles": [
+              "src/tailwind.css",
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ],
             "scripts": [],
             "browser": "src/main.ts"
           },
@@ -67,8 +71,7 @@
               "sourceMap": true,
               "namedChunks": true
             },
-            "ci": {
-            }
+            "ci": {}
           },
           "defaultConfiguration": "production"
         },
@@ -81,8 +84,7 @@
             "development": {
               "buildTarget": "app:build:development"
             },
-            "ci": {
-            }
+            "ci": {}
           },
           "defaultConfiguration": "development"
         },
@@ -107,7 +109,11 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/tailwind.css", "src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+              "src/tailwind.css",
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -119,7 +125,10 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         }
       }

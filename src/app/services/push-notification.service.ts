@@ -18,7 +18,6 @@ export class PushNotificationService {
   async inicializar() {
     // Las notificaciones push nativas solo aplican para Android e iOS
     if (!Capacitor.isNativePlatform()) {
-      console.log('EcoSmart Web: Las notificaciones push nativas se omiten en entorno web.');
       return;
     }
 

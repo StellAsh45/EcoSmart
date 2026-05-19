@@ -8,7 +8,7 @@ import { IonIcon } from '@ionic/angular/standalone';
   imports: [CommonModule, IonIcon],
   template: `
     <button (click)="onComprar()" [disabled]="!puedeComprar" [class.can-afford]="puedeComprar" [class.comprando]="comprando"
-      [style.color]="color" [style.--card-color]="color" class="upgrade-card group flex flex-col items-start p-3 pt-2 gap-2"
+      [style.color]="color" [style.--card-color]="color" class="upgrade-card group flex flex-col items-start p-3 pt-2 gap-2 backdrop-blur-md"
       [style.background-color]="puedeComprar ? (color + '15') : 'rgba(255,255,255,0.03)'">
       
       <div class="upgrade-shimmer"></div>
