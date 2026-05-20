@@ -63,7 +63,6 @@ export class AppComponent implements OnInit {
       '/registro',
       '/recuperacion',
       '/restablecer-contrasena',
-      '/clicker',
       '/gremios',
       '/dashboard-admin',
       '/soporte-admin',

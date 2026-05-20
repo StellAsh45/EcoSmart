@@ -446,24 +446,70 @@ export class SupabaseService {
     localStorage.setItem(key, JSON.stringify(resets));
   }
 
-  // CLICKER
+  // =========================
+  // GREMIO BOOSTS
+  // =========================
 
-  async obtenerPertenenciasClicker(usuarioId: string) {
-    return this.supabase
-      .from('clicker_pertenencias')
-      .select('*')
+  async verificarYOtorgarBoost(usuarioId: string, tipo: string, referenciaId: string, valorBoost: number) {
+    const ahora = new Date();
+    if (ahora.getDay() === 4) {
+      console.log('Día de descanso/reclutamiento detectado (jueves). No se otorgan boosts para el gremio.');
+      return;
+    }
+
+    // 1. Verificar si el usuario está en un gremio
+    const { data: miembro } = await this.supabase
+      .from('gremio_miembros')
+      .select('gremio_id')
       .eq('usuario_id', usuarioId)
       .maybeSingle();
-  }
 
-  async actualizarPertenenciasClicker(usuarioId: string, datos: { hojas?: number; nivel_arbol?: number; mejoras?: any; ultima_recoleccion?: string }) {
-    return this.supabase
-      .from('clicker_pertenencias')
-      .upsert({
+    if (!miembro) return; // No está en gremio
+
+    // 1b. Asegurar que referenciaId tenga un formato de UUID válido
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let refId = referenciaId;
+    if (!UUID_REGEX.test(referenciaId)) {
+      if (!isNaN(Number(referenciaId))) {
+        // Si es un número entero, rellenamos a formato UUID determinista
+        refId = `00000000-0000-4000-8000-${String(referenciaId).padStart(12, '0')}`;
+      } else {
+        // Si es cualquier otro texto, generamos un hash determinista a formato UUID
+        let hash = 0;
+        for (let i = 0; i < referenciaId.length; i++) {
+          hash = (hash << 5) - hash + referenciaId.charCodeAt(i);
+          hash |= 0;
+        }
+        const hex = Math.abs(hash).toString(16).padStart(12, '0');
+        refId = `00000000-0000-4000-8000-${hex}`;
+      }
+    }
+
+    // 2. Verificar si ya existe este boost para evitar abusos
+    const { data: existente } = await this.supabase
+      .from('gremio_boosts')
+      .select('id')
+      .eq('usuario_id', usuarioId)
+      .eq('tipo', tipo)
+      .eq('referencia_id', refId)
+      .maybeSingle();
+
+    if (existente) return; // Ya se le otorgó este boost
+
+    // 3. Insertar el boost
+    const { error } = await this.supabase
+      .from('gremio_boosts')
+      .insert({
+        gremio_id: miembro.gremio_id,
         usuario_id: usuarioId,
-        ...datos,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'usuario_id' });
+        tipo: tipo,
+        referencia_id: refId,
+        valor_boost: valorBoost
+      });
+
+    if (error) {
+      console.error('Error al insertar boost del gremio:', error);
+    }
   }
 
   // =========================

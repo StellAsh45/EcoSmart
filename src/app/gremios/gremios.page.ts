@@ -12,8 +12,8 @@ import {
   infiniteOutline, mapOutline, hammerOutline, gitBranchOutline, trophyOutline,
   lockClosedOutline, schoolOutline, checkmarkCircleOutline, alertCircleOutline,
   createOutline, peopleOutline, colorPaletteOutline, logOutOutline, playOutline,
-  personOutline, searchOutline, flaskOutline,
-  people, storefront, statsChart, trophy, school
+  personOutline, searchOutline, flaskOutline, trashOutline, alertOutline,
+  people, storefront, statsChart, trophy, school, bedOutline
 } from 'ionicons/icons';
 
 import { FondoVisualComponent } from '../components/fondo-visual/fondo-visual.component';
@@ -76,6 +76,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   ];
   mostrarFormularioCreacion = false;
   mostrarFormularioEdicion = false;
+  mostrarConfirmacionAbandono = false;
   mostrarExitoCreacion = false;
   mostrarExitoEdicion = false;
   editNombre = '';
@@ -83,7 +84,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   editIcono = 'leaf';
 
   // Pestaña activa del Dashboard
-  vistaActual: 'hub' | 'clicker' | 'competencia' | 'pregunta' | 'tienda' | 'estadisticas' = 'hub';
+  vistaActual: 'hub' | 'arbol' | 'competencia' | 'pregunta' | 'tienda' | 'estadisticas' = 'hub';
 
   // Configuración del Ciclo Competitivo
   competenciaActiva = false;
@@ -91,7 +92,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   diaResto = false; // Jueves (Reclutamiento/Rest)
   private timerInterval: any;
 
-  // Lógica del Clicker Colectivo
+  // Lógica del Árbol Cooperativo
   hojasColectivas = 0;
   mejorasColectivas: any = {
     fertilizante: 0, regadera: 0, ecosistema: 0, podaMaestra: 0,
@@ -101,6 +102,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   };
   hojasAportadasHoy = 0;
   hojasClicsNuevos = 0;
+  hojasEnTransito = 0;
   animacionArbol = false;
   hojasAnimadas: any[] = [];
   hojaIdCounter = 0;
@@ -118,8 +120,9 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   // Clasificaciones
   leaderboardGlobal: any[] = [];
   leaderboardInterno: any[] = [];
+  gremioBoostPorcentaje = 0;
 
-  // Lógica de Pregunta Diaria
+  // Lógica de Pregunta Diaria (cadencia: 12h)
   preguntaDiariaYaRespondida = false;
   preguntaDiaria: any = null;
   respuestasPregunta: string[] = [];
@@ -127,6 +130,8 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   respuestaSeleccionada: string | null = null;
   preguntaResultado: { correcta: boolean; mensaje: string } | null = null;
   tiempoRestantePregunta = '';
+  private proximaPreguntaEn: Date | null = null;   // Timestamp exacto en que se habilita la siguiente pregunta
+  private finVentanaActual: Date | null = null;    // Fin de la ventana actual para cambios en tiempo real si no responde
 
   // Upgrades
   readonly PRECIOS_BASE = {
@@ -164,10 +169,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   private visibilityHandler: any;
   private lastForegroundTime = 0;
   
-  // Variables para recolección Offline
-  hojasGanadasOffline: number = 0;
-  segundosOffline: number = 0;
-  mostrarAvisoOffline: boolean = false;
+
 
   // Audios
   private audioCtx: AudioContext | null = null;
@@ -221,7 +223,10 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       'log-out-outline': logOutOutline,
       'play-outline': playOutline,
       'person-outline': personOutline,
-      'search-outline': searchOutline
+      'search-outline': searchOutline,
+      'trash-outline': trashOutline,
+      'alert-outline': alertOutline,
+      'bed-outline': bedOutline
     });
   }
 
@@ -327,13 +332,27 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
   }
 
-  // ==========================================
   // LÓGICA DE CICLO COMPETITIVO (3 DÍAS)
-  // ==========================================
+
   calcularCiclo() {
     const pad = (n: number) => String(n).padStart(2, '0');
     const calcular = () => {
       const ahora = new Date();
+      // SIMULACIÓN: 20 segundos antes de empezar la competencia (Jueves 23:59:39)
+      /*if (!(this as any).simulacionInicioRealRest) {
+        (this as any).simulacionInicioRealRest = Date.now();
+      }
+      const msTranscurridos = Date.now() - (this as any).simulacionInicioRealRest!;
+      
+      const referencia = new Date();
+      const diaActual = referencia.getDay();
+      const diffDias = 4 - diaActual;
+      referencia.setDate(referencia.getDate() + diffDias);
+      referencia.setHours(23, 59, 39, 0);
+      
+      const timestampInicial = referencia.getTime();
+      const ahora = new Date(timestampInicial + msTranscurridos);*/
+      // FIN SIMULACION
       const diaSemana = ahora.getDay(); // 0 = Domingo, 1 = Lunes, ..., 4 = Jueves, ..., 6 = Sábado
       const horas = ahora.getHours();
       const minutos = ahora.getMinutes();
@@ -343,14 +362,24 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
       // Jueves es Día de Descanso/Reclutamiento
       if (diaSemana === 4) {
-        this.competenciaActiva = false;
-        this.diaResto = true;
-        this.vistaActual = 'hub'; // Bloquear vista en clicker
+        if (!this.diaResto) {
+          this.diaResto = true;
+          this.competenciaActiva = false;
+          this.cambiarVista('hub'); // Forzar vista hub
+          this.llamarFinalizarCompetencia(); // Ejecutar el RPC
+        }
         
         // Finaliza el Jueves a las 23:59:59 (inicia competencia el Viernes)
         proximoCambio.setHours(23, 59, 59, 999);
       } else {
         this.competenciaActiva = true;
+        if (this.diaResto) {
+          this.diaResto = false;
+          // Cargar de forma automática la pregunta de repaso y datos al iniciar la competencia
+          this.verificarPreguntaDiaria();
+          this.cargarExploradorGremios();
+          this.cargarTablasClasificacion();
+        }
         this.diaResto = false;
 
         if (diaSemana >= 1 && diaSemana <= 3) {
@@ -377,16 +406,42 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
       this.tiempoRestante = `${pad(diffHrs)}h ${pad(diffMins)}m ${pad(diffSecs)}s`;
 
-      // Calcular tiempo restante para el final del día actual (reinicio a medianoche)
-      const medianoche = new Date(ahora);
-      medianoche.setHours(23, 59, 59, 999);
-      const diffPreguntaMs = medianoche.getTime() - ahora.getTime();
+      // Calcular tiempo restante hasta la próxima ventana (00:00 o 12:00 local)
+      if (!this.diaResto) {
+        if (this.proximaPreguntaEn) {
+          const diffPreguntaMs = this.proximaPreguntaEn.getTime() - ahora.getTime();
 
-      const diffPregHrs = Math.floor(diffPreguntaMs / (1000 * 60 * 60));
-      const diffPregMins = Math.floor((diffPreguntaMs % (1000 * 60 * 60)) / (1000 * 60));
-      const diffPregSecs = Math.floor((diffPreguntaMs % (1000 * 60)) / 1000);
-
-      this.tiempoRestantePregunta = `${pad(diffPregHrs)}h ${pad(diffPregMins)}m ${pad(diffPregSecs)}s`;
+          if (diffPreguntaMs <= 0 && this.preguntaDiariaYaRespondida) {
+            // La ventana cambió — habilitar nueva pregunta en tiempo real
+            this.proximaPreguntaEn = null;
+            this.tiempoRestantePregunta = '';
+            this.preguntaDiariaYaRespondida = false;
+            this.preguntaResultado = null;
+            this.respuestaSeleccionada = null;
+            this.preguntaDiaria = null;
+            this.preguntaCargando = true;
+            this.verificarPreguntaDiaria();
+          } else {
+            const ms = Math.max(0, diffPreguntaMs);
+            const diffPregHrs = Math.floor(ms / (1000 * 60 * 60));
+            const diffPregMins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            const diffPregSecs = Math.floor((ms % (1000 * 60)) / 1000);
+            this.tiempoRestantePregunta = `${pad(diffPregHrs)}h ${pad(diffPregMins)}m ${pad(diffPregSecs)}s`;
+          }
+        } else if (!this.preguntaDiariaYaRespondida && this.finVentanaActual) {
+          const diffPreguntaMs = this.finVentanaActual.getTime() - ahora.getTime();
+          if (diffPreguntaMs <= 0) {
+            // La ventana activa expiró sin que respondiera — cargar la nueva pregunta de la siguiente ventana en tiempo real
+            this.finVentanaActual = null;
+            this.preguntaDiaria = null;
+            this.preguntaCargando = true;
+            this.verificarPreguntaDiaria();
+          }
+        }
+      } else {
+        this.tiempoRestantePregunta = '';
+        this.preguntaCargando = false;
+      }
     };
 
     calcular();
@@ -422,16 +477,32 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       this.miembros = todosMiembros || [];
       this.hojasColectivas = Number(this.gremio.hojas_globales || 0);
       this.mejorasColectivas = this.gremio.mejoras || this.mejorasColectivas;
+      await this.cargarBoostsGremio();
 
-      // Inicializar recolección offline local si no existe
-      const key = `gremio_ultima_recoleccion_${this.gremio.id}`;
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem(key, new Date().toISOString());
-      }
+
     } else {
       this.enGremio = false;
       this.gremio = null;
       this.miembros = [];
+    }
+  }
+
+  async cargarBoostsGremio() {
+    if (!this.gremio) {
+      this.gremioBoostPorcentaje = 0;
+      return;
+    }
+    try {
+      const { data: boosts, error } = await this.supabaseSvc.cliente
+        .from('gremio_boosts')
+        .select('valor_boost')
+        .eq('gremio_id', this.gremio.id);
+
+      if (error) throw error;
+
+      this.gremioBoostPorcentaje = (boosts || []).reduce((acc: number, curr: any) => acc + Number(curr.valor_boost || 0), 0);
+    } catch (e) {
+      console.error('Error al cargar boosts del gremio:', e);
     }
   }
 
@@ -497,6 +568,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       await this.cargarEstadoGremio();
       this.conectarRealtime();
       await this.cargarTablasClasificacion();
+      await this.verificarPreguntaDiaria();
     } catch (e: any) {
       alert(e.message || 'Error al crear el gremio. Intenta con otro nombre.');
     } finally {
@@ -507,32 +579,9 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   async unirseAGremio(gremioId: string) {
     if (!this.usuarioId) return;
 
-    let advertencia24h = false;
     if (this.competenciaActiva) {
-      const ahora = new Date();
-      const diaSemana = ahora.getDay();
-      let proximoCambio = new Date(ahora);
-      if (diaSemana >= 1 && diaSemana <= 3) {
-        const diasFaltantes = 3 - diaSemana;
-        proximoCambio.setDate(ahora.getDate() + diasFaltantes);
-        proximoCambio.setHours(23, 59, 59, 999);
-      } else {
-        let diasFaltantes = 0;
-        if (diaSemana === 5) diasFaltantes = 2;
-        else if (diaSemana === 6) diasFaltantes = 1;
-        else if (diaSemana === 0) diasFaltantes = 0;
-        proximoCambio.setDate(ahora.getDate() + diasFaltantes);
-        proximoCambio.setHours(23, 59, 59, 999);
-      }
-      const diffMs = proximoCambio.getTime() - ahora.getTime();
-      if (diffMs < 24 * 60 * 60 * 1000) {
-        advertencia24h = true;
-      }
-    }
-
-    if (advertencia24h) {
-      const confirmar = confirm('Advertencia: Te estás uniendo a un gremio faltando menos de 24 horas para finalizar la competencia actual. No recibirás recompensas de esta competencia, sino hasta la siguiente. ¿Deseas continuar?');
-      if (!confirmar) return;
+      alert('Actualmente hay una competencia en curso. Solo puedes unirte a un gremio en días de reclutamiento/descanso.');
+      return;
     }
 
     try {
@@ -561,6 +610,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       await this.cargarEstadoGremio();
       this.conectarRealtime();
       await this.cargarTablasClasificacion();
+      await this.verificarPreguntaDiaria();
     } catch (e: any) {
       alert(e.message || 'No pudiste unirte al gremio. Es posible que esté lleno.');
     } finally {
@@ -570,14 +620,11 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
   async abandonarGremio() {
     if (!this.usuarioId || !this.miembroActual) return;
-
-    if (this.diaResto === false) {
-      alert('No puedes abandonar el gremio mientras hay una competencia activa. Espera al jueves.');
+    if (this.competenciaActiva) {
+      alert('No puedes abandonar el gremio durante la competencia activa.');
       return;
     }
-
-    const confirmar = confirm('¿Estás seguro de que quieres abandonar tu gremio actual?');
-    if (!confirmar) return;
+    this.mostrarConfirmacionAbandono = false;
 
     try {
       this.cargando = true;
@@ -590,6 +637,14 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         .eq('usuario_id', this.usuarioId);
 
       if (error) throw error;
+
+      if (this.miembros.length <= 1) {
+        const { error: errG } = await this.supabaseSvc.cliente
+          .from('gremios')
+          .delete()
+          .eq('id', this.gremio?.id);
+        if (errG) console.error('Error al eliminar gremio vacío:', errG);
+      }
 
       // Resetear estados locales
       this.enGremio = false;
@@ -628,6 +683,45 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
   }
 
+  async expulsarMiembro(miembro: any) {
+    if (!this.gremio || this.miembroActual?.rol !== 'lider') return;
+    if (miembro.usuario_id === this.usuarioId) {
+      alert('No puedes expulsarte a ti mismo.');
+      return;
+    }
+
+    const confirmar = confirm(`¿Estás seguro de que quieres expulsar a ${miembro.profiles?.nombre || 'este estudiante'} del gremio?`);
+    if (!confirmar) return;
+
+    try {
+      this.cargando = true;
+      const { error } = await this.supabaseSvc.cliente
+        .from('gremio_miembros')
+        .delete()
+        .eq('usuario_id', miembro.usuario_id)
+        .eq('gremio_id', this.gremio.id);
+
+      if (error) throw error;
+
+      // Actualizar localmente la lista de miembros
+      this.miembros = this.miembros.filter(m => m.usuario_id !== miembro.usuario_id);
+      this.leaderboardInterno = this.leaderboardInterno.filter(m => m.usuario_id !== miembro.usuario_id);
+    } catch (e: any) {
+      alert(e.message || 'Error al expulsar al miembro.');
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  mergeMejoras(incomingMejoras: any): any {
+    if (!incomingMejoras) return this.mejorasColectivas;
+    const merged = { ...this.mejorasColectivas };
+    for (const key of Object.keys(incomingMejoras)) {
+      merged[key] = Math.max(Number(merged[key] || 0), Number(incomingMejoras[key] || 0));
+    }
+    return merged;
+  }
+
   // ==========================================
   // REALTIME SYNCHRONIZATION
   // ==========================================
@@ -640,7 +734,46 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       .channel(canalId)
       // Escuchar clics remotos via Broadcast
       .on('broadcast', { event: 'click-compartido' }, ({ payload }) => {
-        this.recibirClickCompanero(payload);
+        this.zone.run(() => {
+          this.recibirClickCompanero(payload);
+        });
+      })
+      // Escuchar actualización del gremio via Broadcast (compra de mejoras, finalización de sync, etc)
+      .on('broadcast', { event: 'gremio-actualizado' }, ({ payload }) => {
+        this.zone.run(() => {
+          if (payload.updated_at && this.gremio?.updated_at) {
+            const incomingTime = new Date(payload.updated_at).getTime();
+            const localTime = new Date(this.gremio.updated_at).getTime();
+            if (incomingTime <= localTime) {
+              // Si el broadcast es de un estado de DB más antiguo que el que ya tenemos, lo ignoramos
+              return;
+            }
+          }
+
+          const dbHojas = Number(payload.hojas_globales || 0);
+          const anteriorDbHojas = Number(this.gremio?.hojas_globales || 0);
+          
+          const nuevasMejoras = this.mergeMejoras(payload.mejoras);
+          const mejorasCambiaron = JSON.stringify(nuevasMejoras) !== JSON.stringify(this.mejorasColectivas);
+          const hojasBajaron = dbHojas < anteriorDbHojas;
+          
+          this.mejorasColectivas = nuevasMejoras;
+          if (this.gremio) {
+            this.gremio.mejoras = nuevasMejoras;
+            if (payload.hojas_competencia !== undefined) {
+              this.gremio.hojas_competencia = payload.hojas_competencia;
+            }
+            this.gremio.hojas_globales = dbHojas;
+            if (payload.updated_at) {
+              this.gremio.updated_at = payload.updated_at;
+            }
+          }
+          
+          const valorCalculado = dbHojas + this.hojasAportadasHoy + this.hojasEnTransito;
+          if (mejorasCambiaron || hojasBajaron || valorCalculado > this.hojasColectivas) {
+            this.hojasColectivas = valorCalculado;
+          }
+        });
       })
       // Escuchar cambios de mejoras o resets estacionales en la DB de nuestro gremio y del leaderboard global
       .on('postgres_changes', {
@@ -648,60 +781,133 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         schema: 'public',
         table: 'gremios'
       }, (payload: any) => {
-        const updatedGuild = payload.new || {};
-        
-        // 1. Si es nuestro gremio, actualizar
-        if (this.gremio && updatedGuild.id === this.gremio.id) {
-          this.hojasColectivas = Number(updatedGuild.hojas_globales || 0);
-          this.mejorasColectivas = updatedGuild.mejoras || this.mejorasColectivas;
+        this.zone.run(() => {
+          const updatedGuild = payload.new || {};
           
-          this.gremio.hojas_competencia = updatedGuild.hojas_competencia;
-          this.gremio.hojas_globales = updatedGuild.hojas_globales;
-          this.gremio.mejoras = updatedGuild.mejoras;
-        }
+          // 1. Si es nuestro gremio, actualizar
+          if (this.gremio && updatedGuild.id === this.gremio.id) {
+            if (updatedGuild.updated_at && this.gremio.updated_at) {
+              const incomingTime = new Date(updatedGuild.updated_at).getTime();
+              const localTime = new Date(this.gremio.updated_at).getTime();
+              if (incomingTime <= localTime) {
+                // Ignorar actualizaciones viejas/duplicadas para evitar flickering de hojas y mejoras
+                return;
+              }
+            }
 
-        // 2. Si está en el leaderboardGlobal, actualizar y reordenar
-        const guildL = this.leaderboardGlobal.find(g => g.id === updatedGuild.id);
-        if (guildL) {
-          guildL.hojas_competencia = updatedGuild.hojas_competencia;
-          guildL.hojas_globales = updatedGuild.hojas_globales;
-          this.leaderboardGlobal.sort((a, b) => (b.hojas_competencia || 0) - (a.hojas_competencia || 0));
-        }
+            const dbHojas = Number(updatedGuild.hojas_globales || 0);
+            const anteriorDbHojas = Number(this.gremio?.hojas_globales || 0);
+            
+            const nuevasMejoras = this.mergeMejoras(updatedGuild.mejoras);
+            const mejorasCambiaron = JSON.stringify(nuevasMejoras) !== JSON.stringify(this.mejorasColectivas);
+            const hojasBajaron = dbHojas < anteriorDbHojas;
+            
+            this.mejorasColectivas = nuevasMejoras;
+            this.gremio.mejoras = nuevasMejoras;
+            this.gremio.hojas_competencia = updatedGuild.hojas_competencia;
+            this.gremio.hojas_globales = dbHojas;
+            this.gremio.updated_at = updatedGuild.updated_at;
+            
+            const valorCalculado = dbHojas + this.hojasAportadasHoy + this.hojasEnTransito;
+            if (mejorasCambiaron || hojasBajaron || valorCalculado > this.hojasColectivas) {
+              this.hojasColectivas = valorCalculado;
+            }
+          }
+
+          // 2. Si está en el leaderboardGlobal, actualizar y reordenar
+          const guildL = this.leaderboardGlobal.find(g => g.id === updatedGuild.id);
+          if (guildL) {
+            guildL.hojas_competencia = updatedGuild.hojas_competencia;
+            guildL.hojas_globales = updatedGuild.hojas_globales;
+            this.leaderboardGlobal.sort((a, b) => (b.hojas_competencia || 0) - (a.hojas_competencia || 0));
+          }
+        });
       })
-      // Escuchar cambios en miembros del gremio (aportes de otros miembros)
+      // Escuchar cambios en miembros del gremio (aportes, entradas, salidas)
       .on('postgres_changes', {
-        event: 'UPDATE',
+        event: '*',
         schema: 'public',
         table: 'gremio_miembros',
         filter: `gremio_id=eq.${this.gremio.id}`
       }, (payload: any) => {
-        const updated = payload.new || {};
-        
-        // 1. Actualizar en la lista local de miembros (hub)
-        const miembro = this.miembros.find(m => m.usuario_id === updated.usuario_id);
-        if (miembro) {
-          miembro.hojas_aportadas = updated.hojas_aportadas;
-          miembro.color_hoja = updated.color_hoja;
-          miembro.rol = updated.rol;
-        }
+        this.zone.run(async () => {
+          const eventType = payload.eventType;
 
-        // 2. Si es el usuario actual, actualizar miembroActual
-        if (updated.usuario_id === this.usuarioId) {
-          if (this.miembroActual) {
-            this.miembroActual.hojas_aportadas = updated.hojas_aportadas;
-            this.miembroActual.color_hoja = updated.color_hoja;
-            this.miembroActual.rol = updated.rol;
+          if (eventType === 'DELETE') {
+            const oldRow = payload.old || {};
+            if (oldRow.usuario_id === this.usuarioId) {
+              this.desconectarRealtime();
+              if (this.passiveInterval) {
+                clearInterval(this.passiveInterval);
+                this.passiveInterval = null;
+              }
+              this.enGremio = false;
+              this.gremio = null;
+              this.miembros = [];
+              this.miembroActual = null;
+              this.vistaActual = 'hub';
+              alert('Has sido expulsado del gremio.');
+              await this.cargarExploradorGremios();
+            } else {
+              await this.cargarEstadoGremio();
+              await this.cargarTablasClasificacion();
+            }
+          } else if (eventType === 'INSERT') {
+            await this.cargarEstadoGremio();
+            await this.cargarTablasClasificacion();
+          } else if (eventType === 'UPDATE') {
+            const updated = payload.new || {};
+            
+            // 1. Actualizar en la lista local de miembros (hub)
+            const miembro = this.miembros.find(m => m.usuario_id === updated.usuario_id);
+            if (miembro) {
+              miembro.hojas_aportadas = updated.hojas_aportadas;
+              miembro.color_hoja = updated.color_hoja;
+              miembro.rol = updated.rol;
+            }
+
+            // 2. Si es el usuario actual, actualizar miembroActual
+            if (updated.usuario_id === this.usuarioId) {
+              if (this.miembroActual) {
+                this.miembroActual.hojas_aportadas = updated.hojas_aportadas;
+                this.miembroActual.color_hoja = updated.color_hoja;
+                this.miembroActual.rol = updated.rol;
+              }
+            }
+
+            // 3. Actualizar en leaderboardInterno y reordenar
+            const miembroL = this.leaderboardInterno.find(m => m.usuario_id === updated.usuario_id);
+            if (miembroL) {
+              miembroL.hojas_aportadas = updated.hojas_aportadas;
+              miembroL.color_hoja = updated.color_hoja;
+              miembroL.rol = updated.rol;
+              this.leaderboardInterno.sort((a, b) => (b.hojas_aportadas || 0) - (a.hojas_aportadas || 0));
+            }
           }
-        }
-
-        // 3. Actualizar en leaderboardInterno y reordenar
-        const miembroL = this.leaderboardInterno.find(m => m.usuario_id === updated.usuario_id);
-        if (miembroL) {
-          miembroL.hojas_aportadas = updated.hojas_aportadas;
-          miembroL.color_hoja = updated.color_hoja;
-          miembroL.rol = updated.rol;
-          this.leaderboardInterno.sort((a, b) => (b.hojas_aportadas || 0) - (a.hojas_aportadas || 0));
-        }
+        });
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${this.usuarioId}`
+      }, (payload: any) => {
+        this.zone.run(() => {
+          const updatedProfile = payload.new || {};
+          if (updatedProfile.eco_tokens !== undefined) {
+            this.ecoTokens = updatedProfile.eco_tokens;
+          }
+        });
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'gremio_boosts',
+        filter: `gremio_id=eq.${this.gremio.id}`
+      }, (payload: any) => {
+        this.zone.run(async () => {
+          await this.cargarBoostsGremio();
+        });
       })
       .subscribe();
   }
@@ -713,9 +919,8 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
   }
 
-  // ==========================================
-  // LÓGICA DEL CLICKER COOPERATIVO
-  // ==========================================
+  // LÓGICA DEL ÁRBOL COOPERATIVO
+  
   hacerClickArbol(event: any) {
     if (this.diaResto) return; // Bloqueado en jueves
     if (this.animacionArbol) return;
@@ -900,6 +1105,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
 
     try {
+      this.hojasEnTransito = totalAEnviar;
       this.hojasAportadasHoy = 0;
       this.hojasClicsNuevos = 0;
       this.limpiarPendientesLocalStorage();
@@ -920,16 +1126,47 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       if (soloGremio > 0) {
         const { error: err2 } = await this.supabaseSvc.cliente.rpc('sumar_hojas_gremio', {
           gremio_id_param: this.gremio.id,
-          usuario_id_param: '00000000-0000-0000-0000-000000000000', // Dummy UUID
+          usuario_id_param: '00000000-0000-0000-0000-000000000000',
           hojas_param: soloGremio
         });
         if (err2) throw err2;
+      }
+
+      this.hojasEnTransito = 0;
+
+      // Obtener el valor actualizado de la DB para difundirlo via broadcast e impedir desincronizaciones
+      const { data: updatedGuild } = await this.supabaseSvc.cliente
+        .from('gremios')
+        .select('hojas_globales, hojas_competencia, mejoras, updated_at')
+        .eq('id', this.gremio.id)
+        .single();
+
+      if (updatedGuild) {
+        this.gremio.hojas_globales = Number(updatedGuild.hojas_globales || 0);
+        this.gremio.hojas_competencia = Number(updatedGuild.hojas_competencia || 0);
+        this.gremio.mejoras = updatedGuild.mejoras || this.gremio.mejoras;
+        this.gremio.updated_at = updatedGuild.updated_at;
+        this.hojasColectivas = this.gremio.hojas_globales;
+
+        if (this.canalRealtime) {
+          this.canalRealtime.send({
+            type: 'broadcast',
+            event: 'gremio-actualizado',
+            payload: {
+              hojas_globales: updatedGuild.hojas_globales,
+              hojas_competencia: updatedGuild.hojas_competencia,
+              mejoras: updatedGuild.mejoras,
+              updated_at: updatedGuild.updated_at
+            }
+          });
+        }
       }
     } catch (err) {
       console.error('Error al sincronizar hojas colectivas:', err);
       // Restauramos los valores no enviados para reintentar más tarde o al recargar
       this.hojasAportadasHoy += totalAEnviar;
       this.hojasClicsNuevos += clicsAEnviar;
+      this.hojasEnTransito = 0;
       this.guardarPendientesLocalStorage();
     }
   }
@@ -944,7 +1181,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     let esCritico = false;
     let esSuperCritico = false;
 
-    // Probabilidades (mismas que clicker.page.ts)
+    // Probabilidades
     const chanceNormal = 0.01 + (podaMaestra * 0.01);
     const chanceSuper = potenciaEstelar * 0.001;
     const multiNormal = 2 + (abono * 0.2);
@@ -960,12 +1197,13 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       }
     }
 
+    // El boost ya está incorporado en obtenerValorToqueBase(), no re-aplicar
+
     return { incremento: Math.floor(incremento), esCritico, esSuperCritico };
   }
 
-  // ==========================================
-  // LEADERBOARDS & CLASIFICACIÓN DUAL
-  // ==========================================
+  // LEADERBOARDS
+
   async cargarTablasClasificacion() {
     try {
       // 1. Clasificación Global (Gremios ordenados por hojas_competencia)
@@ -995,37 +1233,62 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
   }
 
-  // ==========================================
-  // PREGUNTA DIARIA (ECOTOKENS)
-  // ==========================================
-  async verificarPreguntaDiaria() {
-    if (!this.usuarioId) return;
-
-    const fechaHoy = new Date().toISOString().split('T')[0];
-    const { data } = await this.supabaseSvc.cliente
-      .from('gremio_pregunta_diaria')
-      .select('*')
-      .eq('usuario_id', this.usuarioId)
-      .eq('fecha', fechaHoy)
-      .maybeSingle();
-
-    this.preguntaDiariaYaRespondida = !!data;
-    if (!this.preguntaDiariaYaRespondida) {
-      try {
-        await this.supabaseSvc.cliente
-          .from('gremio_pregunta_diaria')
-          .delete()
-          .eq('usuario_id', this.usuarioId)
-          .neq('fecha', fechaHoy);
-      } catch (err) {
-        console.error('Error al borrar registros antiguos de pregunta diaria:', err);
-      }
-      await this.cargarPreguntaDiaria();
+  // PREGUNTA CADA 12 HORAS (ECOTOKENS)
+  /** Devuelve el inicio y fin de la ventana actual (cada 12 horas) */
+  private ventanaPreguntaActual(): { inicio: Date; fin: Date } {
+    const ahora = new Date();
+    const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    if (ahora.getHours() < 12) {
+      // Ventana mañana: 00:00 – 11:59
+      const fin = new Date(hoy); fin.setHours(12, 0, 0, 0);
+      return { inicio: hoy, fin };
+    } else {
+      // Ventana tarde: 12:00 – 23:59
+      const inicio = new Date(hoy); inicio.setHours(12, 0, 0, 0);
+      const fin = new Date(hoy); fin.setDate(hoy.getDate() + 1); fin.setHours(0, 0, 0, 0);
+      return { inicio, fin };
     }
   }
 
+  async verificarPreguntaDiaria() {
+    if (!this.usuarioId) return;
+    if (this.diaResto) {
+      this.preguntaCargando = false;
+      this.preguntaDiaria = null;
+      return;
+    }
+
+    try {
+      const ventana = this.ventanaPreguntaActual();
+      this.finVentanaActual = ventana.fin;
+      const { data } = await this.supabaseSvc.cliente
+        .from('gremio_pregunta_diaria')
+        .select('created_at')
+        .eq('usuario_id', this.usuarioId)
+        .maybeSingle();
+
+      const yaRespondioEnVentana = data
+        ? new Date(data.created_at) >= ventana.inicio && new Date(data.created_at) < ventana.fin
+        : false;
+
+      if (yaRespondioEnVentana) {
+        // Ya respondió en esta ventana → esperar hasta el inicio de la próxima
+        this.proximaPreguntaEn = ventana.fin;
+        this.preguntaDiariaYaRespondida = true;
+      } else {
+        // No respondió en esta ventana → mostrar pregunta
+        this.proximaPreguntaEn = null;
+        this.preguntaDiariaYaRespondida = false;
+        await this.cargarPreguntaDiaria();
+      }
+    } catch (err) {
+      console.error('Error al verificar pregunta:', err);
+    }
+  }
+
+
   async cargarPreguntaDiaria() {
-    if (!this.usuarioId || this.preguntaDiariaYaRespondida) return;
+    if (!this.usuarioId || this.preguntaDiariaYaRespondida || this.diaResto) return;
     this.preguntaCargando = true;
     this.preguntaResultado = null;
 
@@ -1039,8 +1302,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       const cursoIds = certificados?.map(c => c.curso_id) || [];
 
       if (cursoIds.length === 0) {
-        await this.cargarPreguntaDiariaFallback();
-        return;
+        throw new Error('No hay cursos superados.');
       }
 
       // 2. Obtener módulos de esos cursos
@@ -1052,8 +1314,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       const moduloIds = modulos?.map(m => m.id) || [];
 
       if (moduloIds.length === 0) {
-        await this.cargarPreguntaDiariaFallback();
-        return;
+        throw new Error('No hay módulos superados.');
       }
 
       // 3. Obtener exámenes de esos módulos
@@ -1065,8 +1326,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       const examenIds = examenes?.map(e => e.id) || [];
 
       if (examenIds.length === 0) {
-        await this.cargarPreguntaDiariaFallback();
-        return;
+        throw new Error('No hay exámenes superados.');
       }
 
       // 4. Obtener preguntas de esos exámenes
@@ -1086,11 +1346,10 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         // Mezclar aleatoriamente
         this.respuestasPregunta = todas.sort(() => Math.random() - 0.5);
       } else {
-        await this.cargarPreguntaDiariaFallback();
+        throw new Error('No se encontraron preguntas en los exámenes superados.');
       }
     } catch (e) {
       console.error('Error cargando pregunta diaria:', e);
-      await this.cargarPreguntaDiariaFallback();
     } finally {
       this.preguntaCargando = false;
     }
@@ -1100,25 +1359,42 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     if (!this.usuarioId || !this.preguntaDiaria || this.preguntaDiariaYaRespondida) return;
     this.respuestaSeleccionada = opcion;
 
-    const correctIndex = this.preguntaDiaria.respuesta_correcta;
-    const correctText = this.preguntaDiaria.opciones?.[correctIndex] || '';
-    const esCorrecta = opcion === correctText;
-    const fechaHoy = new Date().toISOString().split('T')[0];
+    const correctIndex = Number(this.preguntaDiaria.respuesta_correcta);
+    let opcionesArray = this.preguntaDiaria.opciones || [];
+    if (typeof opcionesArray === 'string') {
+      try { opcionesArray = JSON.parse(opcionesArray); } catch (e) { }
+    }
+    const correctText = opcionesArray[correctIndex] || '';
+    const esCorrecta = String(opcion).trim() === String(correctText).trim();
 
     try {
       this.preguntaCargando = true;
 
-      // 1. Guardar respuesta en gremio_pregunta_diaria
-      const { error: insertErr } = await this.supabaseSvc.cliente
+      const ahoraISO = new Date().toISOString();
+      const fechaHoy = new Date().toISOString().split('T')[0];
+
+      // Eliminar cualquier respuesta anterior de este usuario (garantiza 1 sola fila siempre)
+      // Esto también evita problemas si Supabase tiene bloqueado el UPDATE por reglas de seguridad (RLS).
+      await this.supabaseSvc.cliente
+        .from('gremio_pregunta_diaria')
+        .delete()
+        .eq('usuario_id', this.usuarioId);
+
+      // Insertar la nueva respuesta con el valor correcto
+      const { error: dbError } = await this.supabaseSvc.cliente
         .from('gremio_pregunta_diaria')
         .insert({
           usuario_id: this.usuarioId,
           fecha: fechaHoy,
           correcta: esCorrecta,
-          pregunta_id: this.preguntaDiaria.id
+          pregunta_id: this.preguntaDiaria.id,
+          created_at: ahoraISO
         });
 
-      if (insertErr) throw insertErr;
+      if (dbError) throw dbError;
+
+      // Actualizar el countdown local hacia la próxima ventana (00:00 o 12:00)
+      this.proximaPreguntaEn = this.ventanaPreguntaActual().fin;
 
       // 2. Si es correcta, premiar con EcoTokens en la tabla profiles
       if (esCorrecta) {
@@ -1127,24 +1403,36 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         const tokensActuales = perfil?.eco_tokens || 0;
         
         await this.supabaseSvc.actualizarPerfil(this.usuarioId, {
-          eco_tokens: tokensActuales + 5 // Sumar 5 tokens
+          eco_tokens: tokensActuales + 3 // Sumar 3 tokens
         });
-        this.ecoTokens = tokensActuales + 5; // Actualizar localmente en tiempo real
+        this.ecoTokens = tokensActuales + 3; // Actualizar localmente en tiempo real
 
-        this.preguntaResultado = {
-          correcta: true,
-          mensaje: '¡Excelente respuesta! Has ganado +5 EcoTokens para tu cuenta.'
-        };
+        if (!this.diaResto) {
+          // Otorgar boost por responder correctamente la pregunta diaria (+5%)
+          await this.supabaseSvc.verificarYOtorgarBoost(this.usuarioId, 'pregunta_repaso', this.preguntaDiaria.id, 5);
+          await this.cargarBoostsGremio();
+
+          this.preguntaResultado = {
+            correcta: true,
+            mensaje: '¡Excelente respuesta! Has ganado +3 EcoTokens para tu cuenta. ¡Tu gremio ha ganado un boost del Árbol de +5%!'
+          };
+        } else {
+          this.preguntaResultado = {
+            correcta: true,
+            mensaje: '¡Excelente respuesta! Has ganado +3 EcoTokens para tu cuenta. (Los días de descanso no se otorgan boosts para la competencia).'
+          };
+        }
       } else {
         this.preguntaResultado = {
           correcta: false,
-          mensaje: `Incorrecto. La respuesta correcta era: "${correctText}". ¡Inténtalo mañana de nuevo!`
+          mensaje: `Incorrecto. La respuesta correcta era: "${correctText}". ¡Vuelve en 12 horas para intentarlo de nuevo!`
         };
       }
 
       this.preguntaDiariaYaRespondida = true;
     } catch (e) {
       console.error('Error al procesar respuesta diaria:', e);
+      console.error('Detalles del conflicto Supabase/PostgREST:', JSON.stringify(e));
     } finally {
       this.preguntaCargando = false;
     }
@@ -1180,6 +1468,18 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         this.gremio.hojas_globales = this.hojasColectivas;
       }
 
+      // Difundir la compra optimista de inmediato
+      if (this.canalRealtime) {
+        this.canalRealtime.send({
+          type: 'broadcast',
+          event: 'gremio-actualizado',
+          payload: {
+            hojas_globales: this.hojasColectivas,
+            mejoras: nuevasMejoras
+          }
+        });
+      }
+
       try {
         // Guardar cambios en Supabase en segundo plano
         const { error } = await this.supabaseSvc.cliente
@@ -1200,6 +1500,18 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         if (this.gremio) {
           this.gremio.mejoras = mejorasAnteriores;
           this.gremio.hojas_globales = hojasAnteriores;
+        }
+
+        // Difundir el rollback
+        if (this.canalRealtime) {
+          this.canalRealtime.send({
+            type: 'broadcast',
+            event: 'gremio-actualizado',
+            payload: {
+              hojas_globales: this.hojasColectivas,
+              mejoras: mejorasAnteriores
+            }
+          });
         }
         alert('Hubo un problema de conexión al comprar la mejora. Tu saldo ha sido restaurado.');
       }
@@ -1236,6 +1548,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   }
 
   calcularLPSColectivo(): number {
+    if (!this.mejorasColectivas) return 0;
     const fertilizante = this.mejorasColectivas.fertilizante || 0;
     const regadera = this.mejorasColectivas.regadera || 0;
     const ecosistema = this.mejorasColectivas.ecosistema || 0;
@@ -1261,7 +1574,10 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     const kM = ecoPulso * 0.02;
 
     const toquePotenciado = (baseToque + (kF * basePasivo)) * multiG;
-    return (basePasivo + (kM * toquePotenciado)) * multiI;
+    const baseLps = (basePasivo + (kM * toquePotenciado)) * multiI;
+    
+    const boostMultiplier = 1 + ((this.gremioBoostPorcentaje || 0) / 100);
+    return baseLps * boostMultiplier;
   }
 
   iniciarGeneracionPasivaGremio() {
@@ -1270,6 +1586,8 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       if (this.diaResto || !this.enGremio || !this.gremio) return;
       let lps = this.calcularLPSColectivo();
       if (lps <= 0) return;
+
+      // El boost ya está incorporado en calcularLPSColectivo(), no re-aplicar
 
       const podaMaestra = this.mejorasColectivas.podaMaestra || 0;
       const potenciaEstelar = this.mejorasColectivas.potenciaEstelar || 0;
@@ -1306,7 +1624,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       }
 
       // Mostrar visualmente la hoja pasiva
-      if (this.vistaActual === 'clicker') {
+      if (this.vistaActual === 'arbol') {
         const arbolElement = document.querySelector('.contenedor-arbol-juego');
         let xBase = window.innerWidth / 2;
         let yBase = window.innerHeight / 2;
@@ -1318,9 +1636,6 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         this.generarHojaFlotante(xBase, yBase, increment, this.miembroActual?.color_hoja || '#10b981', this.nombreUsuario, esCritico, esSuperCritico);
       }
 
-      // Guardar última recolección localmente para tracking offline
-      localStorage.setItem(`gremio_ultima_recoleccion_${this.gremio.id}`, new Date().toISOString());
-
       this.sincronizarHojasColectivas(0);
     }, 1000);
   }
@@ -1328,19 +1643,16 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   async procesarGananciasOfflineGremio() {
     if (!this.gremio || !this.enGremio || this.diaResto) return;
     
-    const key = `gremio_ultima_recoleccion_${this.gremio.id}`;
-    const ultimaStr = localStorage.getItem(key);
-    
-    // Al abrir, actualizamos para que no se duplique al recargar rápido
-    localStorage.setItem(key, new Date().toISOString());
+    // Recargar el estado del gremio para obtener el último updated_at real de la DB
+    await this.cargarEstadoGremio();
 
-    if (!ultimaStr) return;
+    if (!this.gremio || !this.gremio.updated_at) return;
 
-    const ultima = new Date(ultimaStr).getTime();
+    const ultima = new Date(this.gremio.updated_at).getTime();
     const ahora = new Date().getTime();
     const segundosTranscurridos = Math.floor((ahora - ultima) / 1000);
 
-    // Solo mostrar aviso si pasaron más de 5 segundos de inactividad
+    // Solo calcular si pasaron más de 5 segundos de inactividad
     if (segundosTranscurridos > 5) { 
       const lps = this.calcularLPSColectivo();
       if (lps <= 0) return;
@@ -1359,26 +1671,19 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       const ganadas = segundosTranscurridos * lps * factorPromedio;
 
       if (ganadas > 0) {
-        this.hojasGanadasOffline = Math.floor(ganadas);
-        this.segundosOffline = segundosTranscurridos;
+        const hojasGanadas = Math.floor(ganadas);
         
-        this.hojasColectivas += this.hojasGanadasOffline;
-        this.hojasAportadasHoy += this.hojasGanadasOffline;
+        this.hojasColectivas += hojasGanadas;
+        this.hojasAportadasHoy += hojasGanadas;
         this.guardarPendientesLocalStorage();
 
-        if (this.gremio) {
-          this.gremio.hojas_competencia = (this.gremio.hojas_competencia || 0) + this.hojasGanadasOffline;
-        }
+        this.gremio.hojas_competencia = (this.gremio.hojas_competencia || 0) + hojasGanadas;
+        this.gremio.hojas_globales = (this.gremio.hojas_globales || 0) + hojasGanadas;
 
-
-        this.mostrarAvisoOffline = true;
-        this.sincronizarHojasColectivas(0); // Guardar en base de datos al instante
+        // Guardar en base de datos al instante e internamente actualizar el updated_at
+        await this.forzarSincronizacionInmediata();
       }
     }
-  }
-
-  cerrarAvisoOffline() {
-    this.mostrarAvisoOffline = false;
   }
 
   formatearTiempo(segundos: number): string {
@@ -1411,41 +1716,17 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
   }
 
-  async cargarPreguntaDiariaFallback() {
-    try {
-      const { data: fallbackPreguntas } = await this.supabaseSvc.cliente
-        .from('preguntas')
-        .select('*')
-        .limit(50);
-
-      if (fallbackPreguntas && fallbackPreguntas.length > 0) {
-        const index = Math.floor(Math.random() * fallbackPreguntas.length);
-        this.preguntaDiaria = fallbackPreguntas[index];
-
-        const todas = [...(this.preguntaDiaria.opciones || [])];
-        this.respuestasPregunta = todas.sort(() => Math.random() - 0.5);
-      } else {
-        this.preguntaDiaria = null;
-      }
-    } catch (e) {
-      console.error('Error cargando pregunta diaria fallback:', e);
-      this.preguntaDiaria = null;
-    } finally {
-      this.preguntaCargando = false;
-    }
-  }
-
   // ==========================================
   // NAVEGACIÓN
   // ==========================================
-  async cambiarVista(vista: 'hub' | 'clicker' | 'competencia' | 'pregunta' | 'tienda' | 'estadisticas') {
-    if ((vista === 'clicker' || vista === 'tienda') && this.diaResto) {
-      alert('Esta sección cooperativa está cerrada los jueves de descanso/reclutamiento.');
+  async cambiarVista(vista: 'hub' | 'arbol' | 'competencia' | 'pregunta' | 'tienda' | 'estadisticas') {
+    if (this.diaResto && vista !== 'hub' && vista !== 'pregunta') {
+      alert('Esta sección está cerrada los jueves de descanso/reclutamiento.');
       return;
     }
 
-    // Si salimos del clicker o entramos a clasificaciones/estadísticas/hub, sincronizamos primero
-    if (this.vistaActual === 'clicker' || vista === 'competencia' || vista === 'estadisticas' || vista === 'hub') {
+    // Si salimos del árbol o entramos a clasificaciones/estadísticas/hub, sincronizamos primero
+    if (this.vistaActual === 'arbol' || vista === 'competencia' || vista === 'estadisticas' || vista === 'hub') {
       await this.forzarSincronizacionInmediata();
     }
 
@@ -1460,8 +1741,62 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
     
     // Al entrar al árbol cooperativo calculamos sus ganancias offline
-    if (vista === 'clicker') {
+    if (vista === 'arbol') {
       this.procesarGananciasOfflineGremio();
+    }
+  }
+
+  // ==========================================
+  // DISPARADOR DE FIN DE COMPETENCIA
+  // ==========================================
+  async llamarFinalizarCompetencia() {
+    try {
+      const { error } = await this.supabaseSvc.cliente.rpc('finalizar_competencia');
+      if (error) throw error;
+
+      // 1. Resetear estado LOCAL inmediatamente (sin esperar DB)
+      this.hojasColectivas = 0;
+      this.hojasPasivasAcumuladas = 0;
+      this.gremioBoostPorcentaje = 0;
+      this.mejorasColectivas = {
+        fertilizante: 0, regadera: 0, ecosistema: 0, podaMaestra: 0,
+        invernadero: 0, abono: 0, santuarios: 0, guantes: 0,
+        potenciaEstelar: 0, abonoGalactico: 0, reservaNatural: 0,
+        fotosintesis: 0, herramientasTitanio: 0, ecoPulso: 0
+      };
+      if (this.miembroActual) {
+        this.miembroActual.hojas_aportadas = 0;
+      }
+      this.miembros.forEach((m: any) => m.hojas_aportadas = 0);
+      this.leaderboardInterno.forEach((m: any) => m.hojas_aportadas = 0);
+      if (this.gremio) {
+        this.gremio.hojas_competencia = 0;
+        this.gremio.hojas_globales = 0;
+        this.gremio.mejoras = {};
+      }
+      this.leaderboardGlobal.forEach((g: any) => g.hojas_competencia = 0);
+
+      // 2. Recargar estado completo desde DB
+      await this.cargarEstadoGremio();
+
+      // 3. Forzar hojas a 0 después de recargar DB
+      //    (cargarEstadoGremio asigna hojas_globales que el SQL ya reseteó a 0)
+      this.hojasColectivas = 0;
+      this.hojasPasivasAcumuladas = 0;
+
+      // 4. Recargar EcoTokens para reflejar las recompensas de inmediato
+      if (this.usuarioId) {
+        const { data: perfil } = await this.supabaseSvc.obtenerPerfil(this.usuarioId);
+        if (perfil) {
+          this.ecoTokens = perfil.eco_tokens || 0;
+        }
+      }
+
+      // 5. Recargar la lista de gremios del explorador y las clasificaciones globales/internas
+      await this.cargarExploradorGremios();
+      await this.cargarTablasClasificacion();
+    } catch (e) {
+      console.error('Error al llamar a finalizar_competencia:', e);
     }
   }
 
@@ -1485,6 +1820,14 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     return this.iconosDisponibles.find(i => i.name === iconName) || this.iconosDisponibles[0];
   }
 
+  esRecienIngresado(fechaISO: string | null | undefined): boolean {
+    if (!fechaISO) return false;
+    const ingreso = new Date(fechaISO);
+    const ahora = new Date();
+    const diferenciaHoras = (ahora.getTime() - ingreso.getTime()) / (1000 * 60 * 60);
+    return diferenciaHoras < 24;
+  }
+
   volverAlPanel() {
     this.router.navigate(['/dashboard-estudiante']);
   }
@@ -1493,6 +1836,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   // ESTADÍSTICAS MATEMÁTICAS
   // ==========================================
   obtenerValorToqueBase(): number {
+    if (!this.mejorasColectivas) return 1;
     const fertilizante = this.mejorasColectivas?.fertilizante || 0;
     const guantes = this.mejorasColectivas?.guantes || 0;
     const titanio = this.mejorasColectivas?.herramientasTitanio || 0;
@@ -1514,7 +1858,10 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     const kM = ecoPulso * 0.02;
 
     const pasivoPotenciado = (basePasivo + (kM * baseToque)) * multiI;
-    return (baseToque + (kF * pasivoPotenciado)) * multiG;
+    const baseToqueValor = (baseToque + (kF * pasivoPotenciado)) * multiG;
+    
+    const boostMultiplier = 1 + ((this.gremioBoostPorcentaje || 0) / 100);
+    return baseToqueValor * boostMultiplier;
   }
 
   obtenerChanceCritico(): number {
@@ -1726,10 +2073,6 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
   manejadorSegundoPlano() {
     if (!this.gremio || !this.enGremio || this.diaResto) return;
-    
-    // Guardar la hora de inactividad de forma segura en LocalStorage
-    const key = `gremio_ultima_recoleccion_${this.gremio.id}`;
-    localStorage.setItem(key, new Date().toISOString());
 
     // Detener la generación pasiva local
     if (this.passiveInterval) {

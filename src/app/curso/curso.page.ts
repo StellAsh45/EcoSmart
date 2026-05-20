@@ -84,6 +84,7 @@ export class CursoPage implements OnInit, ViewWillEnter {
   usuario: any = null;
   nombreUsuario = '';
   progresoGeneral = 0;
+  cursoCompletadoPreviamente = false;
   bloquesActivos: BloqueContenido[] = [];
   inscripcionId: string | null = null;
 
@@ -264,7 +265,8 @@ export class CursoPage implements OnInit, ViewWillEnter {
       }
 
       this.progresoGeneral = totalActividades > 0 ? Math.round((totalCompletadas / totalActividades) * 100) : 0;
-      console.log(`Progreso integral: ${this.progresoGeneral}% (${totalCompletadas}/${totalActividades})`);
+      this.cursoCompletadoPreviamente = (this.progresoGeneral === 100);
+      console.log(`Progreso integral: ${this.progresoGeneral}% (${totalCompletadas}/${totalActividades}), completado previamente: ${this.cursoCompletadoPreviamente}`);
     } catch (error) {
       console.error('Error al cargar progreso:', error);
     }
@@ -493,6 +495,12 @@ export class CursoPage implements OnInit, ViewWillEnter {
           this.cursoId!,
           this.progresoGeneral
         );
+        if (porcentaje === 100 && !this.cursoCompletadoPreviamente) {
+          await this.supabaseSvc.verificarYOtorgarBoost(this.usuario.id, 'examen_100', this.examenActivo!.id, 25);
+        }
+        if (this.progresoGeneral === 100 && !this.cursoCompletadoPreviamente) {
+          await this.supabaseSvc.verificarYOtorgarBoost(this.usuario.id, 'curso_completado', this.cursoId!, 35);
+        }
       } else {
         // Aunque no apruebe, guardamos el intento para persistencia
         this.intentosExamenMap.set(this.examenActivo!.id, data);
@@ -560,6 +568,7 @@ export class CursoPage implements OnInit, ViewWillEnter {
 
   async marcarCompletada() {
     if (!this.leccionActiva || !this.inscripcionId) return;
+    if (this.leccionActiva.completada) return; // Si ya estaba completada, no hacer nada más
 
     try {
       // 1. Marcar localmente para respuesta inmediata en la UI
@@ -583,7 +592,14 @@ export class CursoPage implements OnInit, ViewWillEnter {
 
       if (updateError) throw updateError;
 
+      // Solo otorgar boost si el curso no estaba completamente finalizado previamente
+      if (!this.cursoCompletadoPreviamente) {
+        await this.supabaseSvc.verificarYOtorgarBoost(this.usuario.id, 'leccion_completada', this.leccionActiva.id, 15);
 
+        if (this.progresoGeneral === 100) {
+          await this.supabaseSvc.verificarYOtorgarBoost(this.usuario.id, 'curso_completado', this.cursoId!, 35);
+        }
+      }
 
     } catch (error) {
       console.error('Error al marcar lección como completada:', error);

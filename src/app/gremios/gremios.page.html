@@ -246,10 +246,10 @@
                 clickear el árbol colectivo.</p>
             </div>
 
-            <button (click)="mostrarFormularioCreacion = true"
-              class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-8 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3 border-none cursor-pointer text-lg">
+            <button [disabled]="competenciaActiva" (click)="mostrarFormularioCreacion = true"
+              class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-8 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3 border-none cursor-pointer text-lg disabled:opacity-40">
               <ion-icon name="create-outline" class="text-xl shrink-0"></ion-icon>
-              <span>Fundar Gremio</span>
+              <span>{{ competenciaActiva ? 'En Competencia' : 'Fundar Gremio' }}</span>
             </button>
           </div>
 
@@ -274,10 +274,10 @@
                     class="text-primary-900">Smart</span></span> y recluta a tus compañeros de estudio.</p>
 
               <div class="flex justify-center w-full">
-                <button (click)="mostrarFormularioCreacion = true"
-                  class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-8 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3 border-none cursor-pointer text-lg">
+                <button [disabled]="competenciaActiva" (click)="mostrarFormularioCreacion = true"
+                  class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-4 px-8 rounded-2xl transition-all shadow-2xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3 border-none cursor-pointer text-lg disabled:opacity-40">
                   <ion-icon name="create-outline"></ion-icon>
-                  <span>Crear Primer Gremio</span>
+                  <span>{{ competenciaActiva ? 'En Competencia' : 'Crear Primer Gremio' }}</span>
                 </button>
               </div>
             </div>
@@ -313,9 +313,9 @@
                   <span>{{ formatearNumero(g.hojas_globales) }}</span>
                 </div>
 
-                <button [disabled]="g.miembrosCount >= 5" (click)="unirseAGremio(g.id)"
+                <button [disabled]="g.miembrosCount >= 5 || competenciaActiva" (click)="unirseAGremio(g.id)"
                   class="bg-primary-500 hover:bg-primary-400 text-slate-950 font-black py-2.5 px-6 rounded-xl transition-all shadow-lg active:scale-95 border-none cursor-pointer disabled:opacity-40 text-xs">
-                  <span>{{ g.miembrosCount >= 5 ? 'Lleno' : 'Unirse' }}</span>
+                  <span>{{ g.miembrosCount >= 5 ? 'Lleno' : (competenciaActiva ? 'En Competencia' : 'Unirse') }}</span>
                 </button>
               </div>
             </div>
@@ -427,6 +427,9 @@
             </div>
           </div>
 
+          <!-- Formulario Confirmación de Abandono -->
+
+
           <!-- Ficha Gremio -->
           <div
             class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] pt-6 pb-8 px-6 sm:px-8 shadow-2xl relative overflow-hidden group space-y-6"
@@ -512,10 +515,11 @@
 
             <!-- Botón Salir -->
             <div class="flex justify-end pt-4 border-t border-white/5">
-              <button (click)="abandonarGremio()" [disabled]="!diaResto"
-                class="bg-red-500/10 hover:bg-red-500 hover:text-slate-950 border border-red-500/30 hover:border-transparent text-red-400 font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-40">
+              <button (click)="mostrarConfirmacionAbandono = true" [disabled]="competenciaActiva"
+                [title]="competenciaActiva ? 'No puedes abandonar el gremio durante la competencia.' : ''"
+                class="bg-red-500 border border-red-500/30 hover:border-transparent text-black font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-40">
                 <ion-icon name="log-out-outline" class="text-lg"></ion-icon>
-                <span>{{ diaResto ? 'Abandonar Gremio' : 'Abandono Bloqueado (Competencia)' }}</span>
+                <span>Abandonar gremio</span>
               </button>
             </div>
           </div>
@@ -548,35 +552,46 @@
                         *ngIf="m.usuario_id === usuarioId">Tú</span>
                     </h4>
                     <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block mt-0.5 truncate"
-                      [class.text-amber-400]="m.rol === 'lider'" [class.text-slate-400]="m.rol !== 'lider'">
-                      {{ m.rol === 'lider' ? 'Líder' : 'Miembro Ecológico' }}
+                      [class.text-amber-400]="m.rol === 'lider'" [class.text-primary-400]="m.rol !== 'lider'">
+                      {{ m.rol === 'lider' ? 'Líder' : 'Miembro' }}
                     </span>
-                    <span *ngIf="!esElegibleRecompensa(m)"
-                      class="text-[8px] font-black uppercase tracking-widest bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded mt-1 inline-block truncate max-w-full"
-                      title="Ingresó al gremio faltando menos de 24h para terminar la competencia. Elegible en el próximo ciclo.">
-                      Sin Recompensa
+                    <span *ngIf="esRecienIngresado(m.fecha_ingreso)"
+                      class="text-[8px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded mt-1 inline-block truncate max-w-full"
+                      title="Ingresó hace menos de 24 horas. No recibe recompensas de esta competencia.">
+                      Recién Ingresado
                     </span>
                   </div>
                 </div>
 
-                <!-- Derecha: Aporte en la competencia -->
-                <div class="text-right shrink-0 pl-2">
-                  <span
-                    class="block text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary-50 mb-0.5">Aporte</span>
-                  <span class="block text-sm sm:text-base font-black text-primary-400 leading-none">
-                    {{ formatearNumero(m.hojas_aportadas) }}
-                  </span>
-                  <span class="block text-[9px] text-primary-50 font-bold lowercase mt-0.5">hojas</span>
+                <!-- Derecha: Acciones y Aporte -->
+                <div class="flex items-center gap-3 shrink-0 pl-2">
+                  <!-- Botón Expulsar (Solo Líder) -->
+                  <button *ngIf="miembroActual?.rol === 'lider' && m.usuario_id !== usuarioId"
+                    (click)="expulsarMiembro(m)"
+                    class="p-2 text-red-400 hover:text-white hover:bg-red-500/20 rounded-xl transition-all border border-solid border-red-500/20 active:scale-95 cursor-pointer flex items-center justify-center"
+                    title="Expulsar Miembro">
+                    <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                  </button>
+
+                  <div class="text-right">
+                    <span
+                      class="block text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary-50 mb-0.5">Aporte</span>
+                    <span class="block text-sm sm:text-base font-black text-primary-400 leading-none">
+                      {{ formatearNumero(m.hojas_aportadas) }}
+                    </span>
+                    <span class="block text-[9px] text-primary-50 font-bold lowercase mt-0.5">hojas</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- PESTAÑA B: CLICKER / ÁRBOL COLECTIVO -->
+        <!-- PESTAÑA B: ÁRBOL COLECTIVO -->
         <div
           class="flex flex-col items-center justify-center min-h-[55vh] max-w-2xl mx-auto animate-[fadeIn_0.6s_ease-out] relative select-none w-full"
-          *ngIf="vistaActual === 'clicker' && !diaResto">
+          *ngIf="vistaActual === 'arbol' && !diaResto">
+
 
           <!-- Hojas animadas flotantes -->
           <div class="fixed inset-0 pointer-events-none z-[15] overflow-hidden">
@@ -608,6 +623,13 @@
             </app-eco-smart-logo>
           </div>
 
+          <!-- Indicador de Boost del Árbol (Bottom-Right, Discreto y Elegante) -->
+          <div 
+            class="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 bg-black/40 backdrop-blur-md border border-amber-500/30 rounded-full text-amber-400 font-extrabold text-[10px] sm:text-xs shadow-lg animate-pulse">
+            <ion-icon name="sparkles" class="text-amber-400"></ion-icon>
+            <span>Boost: +{{ gremioBoostPorcentaje || 0 }}%</span>
+          </div>
+
         </div>
 
         <!-- PESTAÑA C: CLASIFICACIONES -->
@@ -624,7 +646,14 @@
               </h3>
             </div>
             <p class="text-primary-50 font-medium text-xs sm:text-sm m-0">Aportaciones de cada miembro del gremio en la
-              competencia activa.</p>
+              competencia activa. Los top 3 reciben EcoTokens al finalizar.</p>
+
+            <!-- Leyenda de premios internos -->
+            <div class="flex gap-2 flex-wrap">
+              <span class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-1 rounded-full">🥇 +20 🏅</span>
+              <span class="flex items-center gap-1 bg-slate-400/10 border border-slate-400/20 text-slate-300 text-[9px] font-black px-2 py-1 rounded-full">🥈 +10 🏅</span>
+              <span class="flex items-center gap-1 bg-amber-700/10 border border-amber-700/20 text-amber-600 text-[9px] font-black px-2 py-1 rounded-full">🥉 +5 🏅</span>
+            </div>
 
             <div class="space-y-2">
               <div class="rounded-2xl px-3 py-3 flex items-center gap-3 transition-all duration-300 border"
@@ -660,11 +689,14 @@
                   </span>
                 </div>
 
-                <!-- Puntaje -->
+                <!-- Puntaje + premio -->
                 <div class="text-right shrink-0 ml-1">
                   <span class="block text-sm font-black text-primary-400">{{ formatearNumero(m.hojas_aportadas)
                     }}</span>
                   <span class="block text-[8px] text-primary-50 font-black uppercase tracking-widest">Hojas</span>
+                  <span *ngIf="i === 0" class="block text-[9px] font-black text-amber-400 mt-0.5">+20 🏅</span>
+                  <span *ngIf="i === 1" class="block text-[9px] font-black text-slate-300 mt-0.5">+10 🏅</span>
+                  <span *ngIf="i === 2" class="block text-[9px] font-black text-amber-600 mt-0.5">+5 🏅</span>
                 </div>
               </div>
             </div>
@@ -681,7 +713,14 @@
               </h3>
             </div>
             <p class="text-primary-50 font-medium text-xs sm:text-sm m-0">Posición de todos los gremios en EcoSmart.
-              ¡Liderad el podio!</p>
+              ¡Liderad el podio! Los top 3 reparten EcoTokens a todos sus miembros.</p>
+
+            <!-- Leyenda de premios globales -->
+            <div class="flex gap-2 flex-wrap">
+              <span class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-1 rounded-full">🥇 +50 🏅 c/miembro</span>
+              <span class="flex items-center gap-1 bg-slate-400/10 border border-slate-400/20 text-slate-300 text-[9px] font-black px-2 py-1 rounded-full">🥈 +30 🏅 c/miembro</span>
+              <span class="flex items-center gap-1 bg-amber-700/10 border border-amber-700/20 text-amber-600 text-[9px] font-black px-2 py-1 rounded-full">🥉 +15 🏅 c/miembro</span>
+            </div>
 
             <div class="space-y-2">
               <div class="rounded-2xl px-3 py-3 flex items-center gap-3 transition-all duration-300 border"
@@ -719,25 +758,43 @@
                   <span class="text-[9px] text-primary-50 font-bold mt-0.5 block">{{ g.miembrosCount }} miembros</span>
                 </div>
 
-                <!-- Score -->
+                <!-- Score + premio -->
                 <div class="text-right shrink-0 ml-1">
                   <span class="block text-sm font-black text-primary-400">{{ formatearNumero(g.hojas_competencia)
                     }}</span>
                   <span class="block text-[8px] text-primary-50 font-black uppercase tracking-widest">Hojas</span>
+                  <span *ngIf="i === 0" class="block text-[9px] font-black text-amber-400 mt-0.5">+50 🏅 c/u</span>
+                  <span *ngIf="i === 1" class="block text-[9px] font-black text-slate-300 mt-0.5">+30 🏅 c/u</span>
+                  <span *ngIf="i === 2" class="block text-[9px] font-black text-amber-600 mt-0.5">+15 🏅 c/u</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- PESTAÑA D: PREGUNTA DIARIA -->
+        <!-- PESTAÑA D: PREGUNTA DE REPASO -->
         <div class="flex flex-col items-center justify-center animate-[fadeIn_0.6s_ease-out]"
           *ngIf="vistaActual === 'pregunta'">
 
-          <!-- Caso A: Pregunta Diaria ya Respondida -->
+          <!-- Caso C: Día de Descanso -->
           <div
             class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-lg text-center shadow-2xl relative overflow-hidden group space-y-6"
-            *ngIf="preguntaDiariaYaRespondida">
+            *ngIf="diaResto">
+            <div
+              class="w-18 h-18 rounded-full flex items-center justify-center text-4xl mx-auto shadow-lg bg-cyan-500/10 text-cyan-400">
+              <ion-icon name="bed-outline"></ion-icon>
+            </div>
+            <h3 class="text-2xl font-black text-white font-heading m-0">Día de Descanso</h3>
+            <p class="text-primary-50 font-medium leading-relaxed m-0 font-sans">
+              Hoy no hay pregunta diaria disponible. ¡Aprovecha para descansar y reclutar nuevos miembros para la
+              competencia!
+            </p>
+          </div>
+
+          <!-- Caso A: Pregunta de Repaso ya Respondida -->
+          <div
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-lg text-center shadow-2xl relative overflow-hidden group space-y-6"
+            *ngIf="preguntaDiariaYaRespondida && !diaResto">
             <div class="w-18 h-18 rounded-full flex items-center justify-center text-4xl mx-auto shadow-lg"
               [class.bg-emerald-500/10]="preguntaResultado && preguntaResultado.correcta"
               [class.text-emerald-400]="preguntaResultado && preguntaResultado.correcta"
@@ -748,19 +805,19 @@
                 [name]="(preguntaResultado && preguntaResultado.correcta) ? 'checkmark-circle-outline' : (preguntaResultado && !preguntaResultado.correcta) ? 'close-outline' : 'alert-circle-outline'"></ion-icon>
             </div>
 
-            <h3 class="text-2xl font-black text-white font-heading m-0">Pregunta diaria completada</h3>
+            <h3 class="text-2xl font-black text-white font-heading m-0">Pregunta de repaso completada</h3>
             <p class="text-primary-50 font-medium leading-relaxed m-0 font-sans" *ngIf="preguntaResultado">
               {{ preguntaResultado.mensaje }}
             </p>
             <p class="text-primary-50 font-medium leading-relaxed m-0 font-sans" *ngIf="!preguntaResultado">
-              ¡Ya has respondido la pregunta del día de hoy! Vuelve mañana para un nuevo repaso de tus cursos y ganar
-              más EcoTokens.
+              ¡Ya respondiste en esta ventana! La próxima pregunta estará disponible a las
+              <span class="text-amber-400 font-black">00:00</span> o a las
+              <span class="text-amber-400 font-black">12:00</span>.
             </p>
 
             <!-- Cronómetro para la siguiente pregunta -->
             <div class="pt-4 flex flex-col items-center gap-2">
-              <span class="text-[10px] font-black uppercase tracking-widest text-primary-500">Siguiente pregunta
-                en</span>
+              <span class="text-[10px] font-black uppercase tracking-widest text-primary-500">Próxima pregunta en</span>
               <div
                 class="px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-amber-400 font-heading text-lg font-black tracking-wider shadow-inner">
                 <ion-icon name="time-outline" class="text-xl"></ion-icon>
@@ -769,18 +826,17 @@
             </div>
           </div>
 
-          <!-- Caso B: Pregunta Diaria Disponible -->
+          <!-- Caso B: Pregunta de Repaso Disponible -->
           <div
             class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-xl w-full shadow-2xl relative overflow-hidden group space-y-8"
-            *ngIf="!preguntaDiariaYaRespondida && preguntaDiaria">
+            *ngIf="!preguntaDiariaYaRespondida && preguntaDiaria && !diaResto">
             <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-500/5 rounded-full blur-[80px]"></div>
 
             <div class="flex justify-between items-center gap-4 flex-wrap">
-              <span class="text-[9px] font-black uppercase tracking-widest text-primary-50">Pregunta Diaria
-                Repaso</span>
+              <span class="text-[9px] font-black uppercase tracking-widest text-primary-50">Pregunta de Repaso</span>
               <div
                 class="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3.5 py-1.5 rounded-full text-xs font-black shrink-0">
-                <span>+5 EcoTokens</span>
+                <span>+3 EcoTokens</span>
               </div>
             </div>
 
@@ -800,11 +856,20 @@
               </div>
             </div>
           </div>
+
+          <!-- Caso C: Cargando Pregunta -->
+          <div
+            class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-md w-full text-center shadow-2xl relative overflow-hidden group space-y-6 flex flex-col items-center justify-center min-h-[300px]"
+            *ngIf="preguntaCargando && !preguntaDiaria && !preguntaDiariaYaRespondida && !diaResto">
+            <div class="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin"></div>
+            <h3 class="text-xl font-black text-white font-heading m-0">Cargando pregunta...</h3>
+            <p class="text-primary-100/70 text-xs font-medium m-0">Preparando tus EcoTokens</p>
+          </div>
         </div>
 
-        <!-- PESTAÑA B: CLICKER CERRADO LOS JUEVES -->
+        <!-- ÁRBOL CERRADO LOS JUEVES -->
         <div class="flex flex-col items-center justify-center animate-[fadeIn_0.6s_ease-out]"
-          *ngIf="vistaActual === 'clicker' && diaResto">
+          *ngIf="vistaActual === 'arbol' && diaResto">
           <div
             class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 max-w-lg text-center shadow-2xl relative overflow-hidden group space-y-6">
             <div
@@ -927,6 +992,11 @@
                 <span class="text-primary-50 font-bold">Total mejoras compradas</span>
                 <span class="text-primary-50 font-black">{{ obtenerTotalNiveles() }}</span>
               </div>
+              <div
+                class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex justify-between items-center">
+                <span class="text-amber-400 font-bold">Boost del árbol</span>
+                <span class="text-amber-400 font-black">+{{ gremioBoostPorcentaje }}%</span>
+              </div>
 
               <!-- Divisor: Tu contribución -->
               <div class="pt-4 pb-1 border-b border-emerald-400/20">
@@ -958,8 +1028,8 @@
                 <span
                   class="text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full bg-slate-900 border border-white/10"
                   [class.text-amber-400]="miembroActual?.rol === 'lider'"
-                  [class.text-slate-300]="miembroActual?.rol !== 'lider'">
-                  {{ miembroActual?.rol === 'lider' ? 'Líder' : 'Miembro Ecológico' }}
+                  [class.text-primary-400]="miembroActual?.rol !== 'lider'">
+                  {{ miembroActual?.rol === 'lider' ? 'Líder' : 'Miembro' }}
                 </span>
               </div>
               <div
@@ -1002,8 +1072,8 @@
               class="text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-wider font-sans">Miembros</span>
           </button>
 
-          <button (click)="cambiarVista('clicker')" class="nav-btn shrink-0 min-w-[55px] sm:min-w-0"
-            [class.active]="vistaActual === 'clicker'" [disabled]="diaResto" [class.opacity-40]="diaResto">
+          <button (click)="cambiarVista('arbol')" class="nav-btn shrink-0 min-w-[55px] sm:min-w-0"
+            [class.active]="vistaActual === 'arbol'" [disabled]="diaResto" [class.opacity-40]="diaResto">
             <ion-icon name="leaf-outline" class="text-xl sm:text-2xl"></ion-icon>
             <span
               class="text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-wider font-sans">Árbol</span>
@@ -1017,14 +1087,14 @@
           </button>
 
           <button (click)="cambiarVista('competencia')" class="nav-btn shrink-0 min-w-[55px] sm:min-w-0"
-            [class.active]="vistaActual === 'competencia'">
+            [class.active]="vistaActual === 'competencia'" [disabled]="diaResto" [class.opacity-40]="diaResto">
             <ion-icon name="trophy-outline" class="text-xl sm:text-2xl"></ion-icon>
             <span
               class="text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-wider font-sans">Podio</span>
           </button>
 
           <button (click)="cambiarVista('estadisticas')" class="nav-btn shrink-0 min-w-[55px] sm:min-w-0"
-            [class.active]="vistaActual === 'estadisticas'">
+            [class.active]="vistaActual === 'estadisticas'" [disabled]="diaResto" [class.opacity-40]="diaResto">
             <ion-icon name="stats-chart-outline" class="text-xl sm:text-2xl"></ion-icon>
             <span
               class="text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-wider font-sans">Estadísticas</span>
@@ -1041,40 +1111,7 @@
 
     </main>
 
-    <!-- GANANCIAS OFFLINE -->
-    <div *ngIf="mostrarAvisoOffline"
-      class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
-      <div
-        class="bg-slate-900/90 border border-white/10 p-8 rounded-[32px] w-full max-w-sm text-center space-y-6 shadow-2xl animate-pop-in backdrop-blur-xl">
-        <div class="relative inline-block">
-          <div class="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full"></div>
-          <div
-            class="relative bg-emerald-500/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/30">
-            <ion-icon name="leaf" class="text-emerald-400 text-4xl"></ion-icon>
-          </div>
-        </div>
 
-        <div class="space-y-2">
-          <h2 class="text-primary-400 font-black text-2xl tracking-tighter uppercase">¡Bienvenido de vuelta!</h2>
-          <p class="text-primary-50 text-sm leading-relaxed">
-            Tu gremio ha producido durante <span
-              class="text-emerald-400 font-bold">{{formatearTiempo(segundosOffline)}}</span> de ausencia, en total:
-          </p>
-        </div>
-
-        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
-          <div class="flex items-center justify-center gap-2">
-            <ion-icon name="leaf" class="text-emerald-400 text-xl"></ion-icon>
-            <span class="text-white text-3xl font-black tabular-nums">{{formatearNumero(hojasGanadasOffline)}}</span>
-          </div>
-        </div>
-
-        <button (click)="cerrarAvisoOffline()"
-          class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-          ¡EXCELENTE!
-        </button>
-      </div>
-    </div>
 
     <!-- ÉXITO CREACIÓN -->
     <app-overlay-confirmacion [mostrar]="mostrarExitoCreacion" titulo="¡Gremio Fundado!"
@@ -1083,8 +1120,16 @@
 
     <!-- ÉXITO EDICIÓN -->
     <app-overlay-confirmacion [mostrar]="mostrarExitoEdicion" titulo="¡Gremio Actualizado!"
-      mensaje="Los cambios han sido guardados con éxito." icono="checkmark-circle-outline"
-      claseConfirmar="bg-emerald-500" textoConfirmar="" textoCancelar="">
+      mensaje="Los cambios del gremio se guardaron con éxito." icono="checkmark-circle-outline" textoConfirmar=""
+      textoCancelar="Entendido" (cancelar)="mostrarExitoEdicion = false">
+    </app-overlay-confirmacion>
+
+    <!-- Overlay Confirmación de Abandono -->
+    <app-overlay-confirmacion [mostrar]="mostrarConfirmacionAbandono" titulo="¿Abandonar gremio?"
+      mensaje="Estás a punto de abandonar tu gremio actual. Perderás todo el progreso. Esta acción es irreversible."
+      icono="alert-outline" textoConfirmar="Confirmar Abandono"
+      claseConfirmar="bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] text-white border border-red-500"
+      textoCancelar="Cancelar" (confirmar)="abandonarGremio()" (cancelar)="mostrarConfirmacionAbandono = false">
     </app-overlay-confirmacion>
 
   </div>
