@@ -1,13 +1,21 @@
 :host {
   --ion-background-color: #020617;
 }
+
 ion-content::part(background) {
   background: radial-gradient(circle at bottom left, #0f172a, #020617);
 }
+
 @keyframes slideInUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -22,7 +30,7 @@ ion-segment {
   position: relative;
   z-index: 999 !important;
   pointer-events: auto !important;
-  
+
   ion-segment-button {
     --color: rgba(255, 255, 255, 0.5);
     --color-checked: #ffffff;
@@ -36,6 +44,7 @@ ion-segment {
     ion-segment-button.segment-button-checked::part(indicator-background) {
       background: #ef4444 !important;
     }
+
     ion-segment-button.segment-button-checked {
       --color-checked: #ffffff !important;
     }
@@ -45,6 +54,7 @@ ion-segment {
     ion-segment-button.segment-button-checked::part(indicator-background) {
       background: #10f981 !important;
     }
+
     ion-segment-button.segment-button-checked {
       --color-checked: #0f172a !important;
     }
@@ -74,7 +84,11 @@ ion-segment {
 }
 
 @keyframes shimmer-swipe {
-  0% { transform: translate(-30%, 30%); }
-  100% { transform: translate(30%, -30%); }
-}
+  0% {
+    transform: translate(-30%, 30%);
+  }
 
+  100% {
+    transform: translate(30%, -30%);
+  }
+}

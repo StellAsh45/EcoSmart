@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  IonContent, IonLabel, IonIcon, IonSegment, IonSegmentButton, IonSpinner, IonFooter,
-  IonInput, IonTextarea
+  IonContent, IonLabel, IonIcon, IonSegment, IonSegmentButton, IonSpinner,
+  IonInput, IonTextarea, IonModal
 } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { addIcons } from 'ionicons';
@@ -26,7 +26,7 @@ import { OverlayConfirmacionComponent } from '../components/overlay-confirmacion
   standalone: true,
   imports: [
     IonContent, IonIcon, IonLabel, IonInput, IonTextarea,
-    IonSegment, IonSegmentButton, IonSpinner, IonFooter, CommonModule, FormsModule,
+    IonSegment, IonSegmentButton, IonSpinner, IonModal, CommonModule, FormsModule,
     FondoVisualComponent, EcoSmartLogoComponent, OverlayConfirmacionComponent
   ]
 })
@@ -41,10 +41,12 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   tickets: any[] = [];
   mensajes: any[] = [];
   ticketSeleccionado: any = null;
+  chatAbierto: boolean = false;
 
   nuevoTicket = { titulo: '', contenido: '' };
   nuevoMensaje: string = '';
   cargando: boolean = false;
+  bloquearClicks: boolean = false;
 
   mostrarOverlayRestriccion: boolean = false;
   mensajeRestriccion: string = '';
@@ -57,7 +59,9 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   };
 
   private realtimeChannel: any;
+  private limpiezaInterval: any;
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(private supabase: SupabaseService) {
     addIcons({
@@ -81,7 +85,6 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.cargando = true;
     try {
       const { data: { user } } = await this.supabase.obtenerUsuario();
       if (user) {
@@ -90,10 +93,36 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
 
         const { data: perfil } = await this.supabase.obtenerPerfil(user.id);
         this.nombreUsuario = perfil?.nombre || user.user_metadata?.['full_name'] || 'Usuario';
-
-        await this.cargarTickets();
-        this.suscribirseARealtime();
       }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async ionViewWillEnter() {
+    this.cargando = true;
+    try {
+      // Garantizar que el usuario esté cargado antes de hacer consultas a Supabase
+      if (!this.usuarioId) {
+        const { data: { user } } = await this.supabase.obtenerUsuario();
+        if (user) {
+          this.usuarioId = user.id;
+          this.correoUsuario = user.email || '';
+          const { data: perfil } = await this.supabase.obtenerPerfil(user.id);
+          this.nombreUsuario = perfil?.nombre || user.user_metadata?.['full_name'] || 'Usuario';
+        }
+      }
+
+      if (!this.usuarioId) return;
+
+      await this.limpiarTicketsAntiguos();
+      await this.cargarTickets();
+      this.suscribirseARealtime();
+
+      // Temporizador para comprobar y limpiar tickets antiguos en tiempo real cada 30 segundos
+      this.limpiezaInterval = setInterval(async () => {
+        await this.limpiarTicketsAntiguos();
+      }, 30000);
     } catch (e) {
       console.error(e);
     } finally {
@@ -101,9 +130,23 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
     }
   }
 
+  ionViewDidLeave() {
+    if (this.realtimeChannel) {
+      this.supabase.cliente.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+    if (this.limpiezaInterval) {
+      clearInterval(this.limpiezaInterval);
+      this.limpiezaInterval = null;
+    }
+  }
+
   ngOnDestroy() {
     if (this.realtimeChannel) {
       this.supabase.cliente.removeChannel(this.realtimeChannel);
+    }
+    if (this.limpiezaInterval) {
+      clearInterval(this.limpiezaInterval);
     }
   }
 
@@ -116,15 +159,22 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
 
     if (data) {
       this.tickets = data;
-      // Para cada ticket, contar mensajes no leídos del admin
+
+      const { data: noLeidosData } = await this.supabase.cliente
+        .from('mensajes_ticket')
+        .select('ticket_id')
+        .eq('rol_remitente', 'admin')
+        .eq('leido', false);
+
+      const counts: { [key: string]: number } = {};
+      if (noLeidosData) {
+        for (const msg of noLeidosData) {
+          counts[msg.ticket_id] = (counts[msg.ticket_id] || 0) + 1;
+        }
+      }
+
       for (let ticket of this.tickets) {
-        const { count } = await this.supabase.cliente
-          .from('mensajes_ticket')
-          .select('*', { count: 'exact', head: true })
-          .eq('ticket_id', ticket.id)
-          .eq('rol_remitente', 'admin')
-          .eq('leido', false);
-        ticket.no_leidos = count || 0;
+        ticket.no_leidos = counts[ticket.id] || 0;
       }
     }
   }
@@ -182,13 +232,20 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   }
 
   async abrirChat(ticket: any) {
+    if (this.bloquearClicks) return;
     this.ticketSeleccionado = ticket;
+    this.chatAbierto = true;
     await this.cargarMensajes();
     await this.marcarComoLeidos();
     this.scrollChatToBottom();
   }
 
   cerrarChat() {
+    this.chatAbierto = false;
+  }
+
+  onChatDismissed() {
+    this.chatAbierto = false;
     this.ticketSeleccionado = null;
     this.mensajes = [];
     this.cargarTickets(); // Recargar para limpiar notificaciones
@@ -202,7 +259,29 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
       .eq('ticket_id', this.ticketSeleccionado.id)
       .order('creado_en', { ascending: true });
 
-    if (data) this.mensajes = data;
+    if (data) {
+      this.mensajes = data;
+      this.procesarMensajes();
+    }
+  }
+
+  procesarMensajes() {
+    for (let i = 0; i < this.mensajes.length; i++) {
+      const msg = this.mensajes[i];
+      const prevMsg = i > 0 ? this.mensajes[i - 1] : null;
+
+      if (!prevMsg) {
+        msg.mostrarFechaHeader = true;
+      } else {
+        const anterior = new Date(prevMsg.creado_en);
+        const actual = new Date(msg.creado_en);
+        msg.mostrarFechaHeader = anterior.toDateString() !== actual.toDateString();
+      }
+
+      if (msg.mostrarFechaHeader) {
+        msg.etiquetaDia = this.obtenerEtiquetaDia(msg.creado_en);
+      }
+    }
   }
 
   ajustarAltura(event: any) {
@@ -222,21 +301,40 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   async enviarMensaje() {
     if (!this.nuevoMensaje || !this.ticketSeleccionado) return;
 
+    const textoMensaje = this.nuevoMensaje;
+    this.nuevoMensaje = '';
+
+    const tempId = 'temp-' + Date.now();
     const msgData = {
       ticket_id: this.ticketSeleccionado.id,
       remitente_id: this.usuarioId,
       rol_remitente: 'estudiante',
-      mensaje: this.nuevoMensaje,
+      mensaje: textoMensaje,
       leido: false
     };
 
-    const { error } = await this.supabase.cliente
-      .from('mensajes_ticket')
-      .insert([msgData]);
+    const msgOptimista = {
+      ...msgData,
+      id: tempId,
+      creado_en: new Date().toISOString()
+    };
 
-    if (!error) {
-      this.nuevoMensaje = '';
-      this.scrollChatToBottom();
+    this.mensajes.push(msgOptimista);
+    this.procesarMensajes();
+    this.scrollChatToBottom();
+
+    const { error, data } = await this.supabase.cliente
+      .from('mensajes_ticket')
+      .insert([msgData])
+      .select()
+      .single();
+
+    if (!error && data) {
+      const index = this.mensajes.findIndex(m => m.id === tempId);
+      if (index !== -1) {
+        this.mensajes[index] = data;
+        this.procesarMensajes();
+      }
     }
   }
 
@@ -251,18 +349,23 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
   }
 
   suscribirseARealtime() {
+    if (this.realtimeChannel) {
+      this.supabase.cliente.removeChannel(this.realtimeChannel);
+    }
     this.realtimeChannel = this.supabase.cliente.channel('chat-estudiante')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes_ticket' }, (payload) => {
         if (this.ticketSeleccionado && payload.new['ticket_id'] === this.ticketSeleccionado.id) {
           // Evitar duplicados
-          const existe = this.mensajes.some(m => m.id === payload.new['id']);
+          const existe = this.mensajes.some(m => m.id === payload.new['id'] || (m.mensaje === payload.new['mensaje'] && typeof m.id === 'string' && m.id.startsWith('temp-')));
           if (!existe) {
             this.mensajes.push(payload.new);
+            this.procesarMensajes();
             if (payload.new['rol_remitente'] === 'admin') {
               this.marcarComoLeidos();
             }
             this.scrollChatToBottom();
           }
+          this.cdr.detectChanges();
         } else {
           this.cargarTickets();
         }
@@ -270,6 +373,14 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets_soporte' }, (payload) => {
         if (this.ticketSeleccionado && payload.new['id'] === this.ticketSeleccionado.id) {
           this.ticketSeleccionado.estado = payload.new['estado'];
+          this.ticketSeleccionado.actualizado_en = payload.new['actualizado_en'];
+          this.cdr.detectChanges();
+        }
+        this.cargarTickets();
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'tickets_soporte' }, (payload) => {
+        if (this.ticketSeleccionado && payload.old['id'] === this.ticketSeleccionado.id) {
+          this.cerrarChat();
         }
         this.cargarTickets();
       })
@@ -284,15 +395,42 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
     }, 100);
   }
 
+  esNuevoDia(fechaAnterior: string | null, fechaActual: string): boolean {
+    if (!fechaAnterior) return true;
+    const anterior = new Date(fechaAnterior);
+    const actual = new Date(fechaActual);
+    return anterior.toDateString() !== actual.toDateString();
+  }
+
+  obtenerEtiquetaDia(fechaStr: string): string {
+    const fecha = new Date(fechaStr);
+    const hoy = new Date();
+    const ayer = new Date();
+    ayer.setDate(hoy.getDate() - 1);
+
+    if (fecha.toDateString() === hoy.toDateString()) {
+      return 'Hoy';
+    } else if (fecha.toDateString() === ayer.toDateString()) {
+      return 'Ayer';
+    } else {
+      const opciones: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+      return fecha.toLocaleDateString('es-ES', opciones);
+    }
+  }
+
   async cambiarVista(event: any) {
     const vista = event.detail.value;
     this.vistaActual = vista;
-    
+
+    this.bloquearClicks = true;
+    setTimeout(() => {
+      this.bloquearClicks = false;
+    }, 500);
+
     if (vista === 'lista') {
       this.cargando = true;
       try {
         await this.cargarTickets();
-        // Delay artificial para que el usuario aprecie el feedback visual premium
         await new Promise(resolve => setTimeout(resolve, 800));
       } finally {
         this.cargando = false;
@@ -300,7 +438,50 @@ export class SoporteEstudiantePage implements OnInit, OnDestroy {
     }
   }
 
+  async limpiarTicketsAntiguos() {
+    const tresDiasAtras = new Date();
+    tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
+
+    const { data: ticketsViejos, error: errFiltro } = await this.supabase.cliente
+      .from('tickets_soporte')
+      .select('id')
+      .eq('usuario_id', this.usuarioId)
+      .eq('estado', 'Cerrado')
+      .lt('actualizado_en', tresDiasAtras.toISOString());
+
+    if (errFiltro) {
+      console.error('Error al filtrar tickets viejos:', errFiltro);
+    }
+
+    if (ticketsViejos && ticketsViejos.length > 0) {
+      const ids = ticketsViejos.map(t => t.id);
+
+      const { error: errDelMsg } = await this.supabase.cliente
+        .from('mensajes_ticket')
+        .delete()
+        .in('ticket_id', ids);
+      if (errDelMsg) console.error('Error al eliminar mensajes:', errDelMsg);
+
+      const { error: errDelTicket } = await this.supabase.cliente
+        .from('tickets_soporte')
+        .delete()
+        .in('id', ids);
+      if (errDelTicket) console.error('Error al eliminar tickets:', errDelTicket);
+
+      this.tickets = this.tickets.filter(t => !ids.includes(t.id));
+      this.cdr.detectChanges();
+    }
+  }
+
   volverAlDashboard() {
     this.router.navigate(['/dashboard-estudiante']);
+  }
+
+  trackByTicketId(index: number, ticket: any): string {
+    return ticket.id;
+  }
+
+  trackByMessageId(index: number, msg: any): string {
+    return msg.id;
   }
 }

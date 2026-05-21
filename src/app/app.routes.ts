@@ -8,6 +8,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: 'home',
+    canActivate: [PublicGuard],
     loadComponent: () => import('./home/home.page').then(m => m.HomePage)
   },
   {
@@ -76,20 +77,18 @@ export const routes: Routes = [
     loadComponent: () => import('./certificados/certificados.page').then(m => m.CertificadosPage)
   },
   {
-    path: 'clicker',
+    path: 'gremios',
     canActivate: [AuthGuard],
-    loadComponent: () => import('./clicker/clicker.page').then(m => m.ClickerPage)
-  },  {
+    loadComponent: () => import('./gremios/gremios.page').then(m => m.GremiosPage)
+  },
+  {
     path: 'soporte-estudiante',
     canActivate: [AuthGuard],
-    loadComponent: () => import('./soporte-estudiante/soporte-estudiante.page').then( m => m.SoporteEstudiantePage)
+    loadComponent: () => import('./soporte-estudiante/soporte-estudiante.page').then(m => m.SoporteEstudiantePage)
   },
   {
     path: 'soporte-admin',
     canActivate: [AdminGuard],
-    loadComponent: () => import('./soporte-admin/soporte-admin.page').then( m => m.SoporteAdminPage)
+    loadComponent: () => import('./soporte-admin/soporte-admin.page').then(m => m.SoporteAdminPage)
   }
-
-
-
 ];

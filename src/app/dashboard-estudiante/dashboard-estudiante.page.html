@@ -36,7 +36,7 @@
                         </p>
                         <div *ngIf="!nombreUsuario" class="w-24 h-4 bg-white/10 rounded-lg animate-pulse"></div>
                     </div>
-                    
+
                     <!-- Botón del buzón de soporte -->
 
 
@@ -101,16 +101,32 @@
 
                             <div
                                 class="w-full h-64 sm:h-80 lg:h-[400px] bg-slate-900/40 rounded-[2.5rem] border border-white/20 relative z-10 shadow-2xl flex items-center justify-center overflow-hidden backdrop-blur-sm group-hover/img:border-primary-500/40 transition-colors duration-500">
-                                <!-- Brillo de fondo -->
                                 <div
                                     class="absolute inset-0 bg-primary-400 blur-3xl opacity-10 group-hover/img:opacity-30 transition-opacity duration-500 rounded-full">
                                 </div>
+                                <div
+                                    class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 bg-primary-500/10 border border-primary-500/30 text-primary-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest z-20 pointer-events-none whitespace-nowrap min-w-max">
+                                    <ion-icon name="people-outline" class="text-sm shrink-0"></ion-icon>
+                                    <span class="whitespace-nowrap">Gremios EcoSmart</span>
+                                </div>
 
-                                <!-- Logo para clicker -->
                                 <div [class.anim-shake]="animacionSacudida"
                                     class="relative active:scale-95 transition-transform duration-300">
                                     <app-eco-smart-logo
                                         clasePersonalizada="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 drop-shadow-[0_0_20px_rgba(34,197,94,0.4)]"></app-eco-smart-logo>
+                                </div>
+
+                                <!-- Leyenda de Hover Inferior de Acceso -->
+                                <div
+                                    class="absolute bottom-6 flex flex-col items-center gap-1.5 z-20 pointer-events-none transition-all duration-300 transform translate-y-1 group-hover/img:translate-y-0">
+                                    <span
+                                        class="text-[10px] font-black uppercase tracking-[0.25em] text-primary-400 group-hover/img:text-primary-400 transition-colors duration-300">
+                                        Acceder a gremios
+                                    </span>
+                                    <span
+                                        class="text-[8px] font-bold text-primary-50 uppercase tracking-widest group-hover/img:text-accent-gold transition-colors duration-300">
+                                        Toca aquí para ingresar a los gremios
+                                    </span>
                                 </div>
                             </div>
                         </div>

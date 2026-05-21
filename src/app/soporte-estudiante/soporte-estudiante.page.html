@@ -41,12 +41,13 @@
     </header>
 
     <!-- Contenedor principal -->
-    <main
+    <main *ngIf="!chatAbierto"
       class="flex-1 pt-32 pb-20 px-6 max-w-5xl mx-auto w-full space-y-12 relative z-10 animate-[fadeIn_0.8s_ease-out]">
 
       <!-- Selector de Vista -->
       <div class="flex justify-center">
         <ion-segment [ngModel]="vistaActual" (ionChange)="cambiarVista($event)" mode="ios"
+          [disabled]="bloquearClicks || cargando"
           [ngClass]="vistaActual === 'nuevo' ? 'segmento-primario' : 'segmento-azul'"
           class="bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md w-full max-w-md transition-all duration-500 shadow-2xl">
           <ion-segment-button value="nuevo">
@@ -107,8 +108,13 @@
               <div class="relative group/input">
                 <ion-icon name="text-outline"
                   class="absolute left-6 top-1/2 -translate-y-1/2 text-xl text-primary-400 z-20 pointer-events-none group-focus-within/input:scale-110 transition-transform duration-300"></ion-icon>
-                <ion-input [(ngModel)]="nuevoTicket.titulo" placeholder="Ej: No cargan los cursos"
+                <ion-input [(ngModel)]="nuevoTicket.titulo" placeholder="Ej: No cargan los cursos" maxlength="100"
                   class="bg-white/5 border border-white/10 rounded-2xl px-6 text-white font-bold [--placeholder-color:rgba(255,255,255,0.2)] h-16 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all duration-300 [--padding-start:3.5rem] [--highlight-height:0] [--border-style:none]"></ion-input>
+              </div>
+              <div class="flex justify-end px-4 mt-1.5">
+                <span class="text-[9px] font-bold tracking-widest transition-colors"
+                  [ngClass]="nuevoTicket.titulo.length > 90 ? 'text-red-400' : 'text-primary-400/50'">{{
+                  nuevoTicket.titulo.length }}/100</span>
               </div>
             </div>
 
@@ -118,9 +124,14 @@
               <div class="relative group/input">
                 <ion-icon name="document-text-outline"
                   class="absolute left-6 top-1/2 -translate-y-1/2 text-xl text-primary-400 z-20 pointer-events-none group-focus-within/input:scale-110 transition-transform duration-300"></ion-icon>
-                <ion-textarea [(ngModel)]="nuevoTicket.contenido" rows="6"
+                <ion-textarea [(ngModel)]="nuevoTicket.contenido" rows="6" maxlength="2000"
                   placeholder="Cuéntanos con detalle qué sucede"
                   class="bg-white/5 border border-white/10 rounded-[2rem] text-white font-bold [--placeholder-color:rgba(255,255,255,0.2)] focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all duration-300 [--padding-start:3.5rem] [--highlight-height:0] [--border-style:none]"></ion-textarea>
+              </div>
+              <div class="flex justify-end px-4 mt-1.5">
+                <span class="text-[9px] font-bold tracking-widest transition-colors"
+                  [ngClass]="nuevoTicket.contenido.length > 1900 ? 'text-red-400' : 'text-primary-400/50'">{{
+                  nuevoTicket.contenido.length }}/2000</span>
               </div>
             </div>
 
@@ -141,24 +152,23 @@
         <!-- Estado de carga -->
         <div *ngIf="cargando" class="col-span-full py-32 flex flex-col items-center gap-4">
           <div class="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
-          <p class="text-primary-50/80 font-black italic animate-pulse tracking-widest uppercase text-xs">
+          <p class="text-primary-50/90 font-black italic animate-pulse tracking-widest uppercase text-xs">
             Sincronizando tus solicitudes...</p>
         </div>
 
         <div *ngIf="tickets.length === 0 && !cargando"
           class="text-center py-32 bg-white/5 rounded-[3rem] border border-dashed border-white/10">
-          <ion-icon name="chatbubbles-outline" class="text-7xl text-white/10 mb-6 animate-pulse"></ion-icon>
-          <p class="text-white/30 font-bold italic text-lg">Aún no has creado ninguna solicitud de soporte.</p>
+          <ion-icon name="chatbubbles-outline" class="text-7xl text-white/40 mb-6 animate-pulse"></ion-icon>
+          <p class="text-white/50 font-bold italic text-lg">Aún no has creado ninguna solicitud de soporte.</p>
         </div>
 
         <div *ngIf="!cargando" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div *ngFor="let ticket of tickets; let i = index" class="animate-[slideUp_0.6s_ease-out_both]"
-            [style.animation-delay]="(i * 0.1) + 's'">
+          <div *ngFor="let ticket of tickets; let i = index; trackBy: trackByTicketId"
+            class="animate-[slideUp_0.6s_ease-out_both]" [style.animation-delay]="(i * 0.1) + 's'">
 
             <div (click)="abrirChat(ticket)"
               class="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 transition-all cursor-pointer group shadow-2xl relative overflow-hidden flex flex-col h-full active:scale-[0.97] active:bg-white/10"
-              [style.animation-delay]="(i * 0.5) + 's'"
-              [ngClass]="{
+              [style.animation-delay]="(i * 0.5) + 's'" [ngClass]="{
                 'border-primary-500/30 ring-1 ring-primary-500/20 shadow-primary-500/5': ticket.no_leidos > 0,
                 'hover:border-primary-500/30 hover:shadow-primary-500/10': ticket.estado === 'Abierto',
                 'hover:border-red-500/40 hover:shadow-red-500/10': ticket.estado === 'Cerrado'
@@ -206,117 +216,155 @@
       </div>
     </main>
 
-    <!-- Chat Overlay -->
-    <div *ngIf="ticketSeleccionado"
-      class="fixed inset-0 z-[100] flex flex-col bg-slate-950 animate-[slideInUp_0.4s_cubic-bezier(0.16,1,0.3,1)]">
-      <!-- Header del Chat -->
-      <header
-        class="relative z-[110] bg-slate-900 border-b border-primary-800/40 px-6 py-5 flex justify-between items-center shadow-2xl">
-        <div class="flex items-center gap-6">
-          <button (click)="cerrarChat()"
-            class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all border border-white/5 active:scale-90 cursor-pointer">
-            <ion-icon name="arrow-back-outline" class="text-2xl"></ion-icon>
-          </button>
-          <div class="flex flex-col">
-            <div class="flex items-center gap-3">
-              <span class="text-white font-black text-xl tracking-tight uppercase">Chat</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <span class="text-[10px] uppercase font-bold text-primary-50 tracking-widest">Estado:</span>
-              <span class="text-[10px] uppercase font-black tracking-widest"
-                [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'text-primary-400' : 'text-red-500'">
-                {{ ticketSeleccionado.estado }}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="group relative">
-          <div
-            class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity duration-500">
-          </div>
-          <app-eco-smart-logo
-            clasePersonalizada="w-10 h-10 relative group-hover:scale-110 transition-transform duration-500"></app-eco-smart-logo>
-        </div>
-      </header>
-
-      <ion-content #chatContent class="[--background:transparent] ion-padding relative z-10">
-        <app-fondo-visual variante="estudiante"></app-fondo-visual>
-        <div class="max-w-3xl mx-auto space-y-6 py-8 relative z-10">
-
-          <!-- Mensaje Inicial del Ticket (Compactado) -->
-          <div class="flex flex-col items-start w-full animate-[fadeIn_0.6s_ease-out]">
-            <div
-              class="bg-white/5 backdrop-blur-xl border border-primary-400/30 p-6 rounded-[2.5rem] rounded-tl-none text-white shadow-2xl relative overflow-hidden w-full space-y-1">
-              <div class="absolute top-0 left-0 w-1.5 h-full bg-primary-500 shadow-[0_0_20px_rgba(16,249,129,0.6)]">
+    <!-- Chat Overlay (Nativo) -->
+    <ion-modal [isOpen]="chatAbierto" (didDismiss)="onChatDismissed()"
+      style="--width: 100%; --height: 100%; --max-width: 100%; --max-height: 100%; --border-radius: 0;">
+      <ng-template>
+        <div *ngIf="ticketSeleccionado" class="flex flex-col h-full w-full bg-slate-950">
+          <header
+            class="w-full relative z-[110] bg-slate-900 border-b border-primary-800/40 px-6 py-5 flex justify-between items-center shadow-2xl shrink-0">
+            <div class="flex items-center gap-6">
+              <button (click)="cerrarChat()"
+                class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all border border-white/5 active:scale-90 cursor-pointer">
+                <ion-icon name="arrow-back-outline" class="text-2xl"></ion-icon>
+              </button>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-3">
+                  <span class="text-white font-black text-xl tracking-tight uppercase">Chat</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] uppercase font-bold text-primary-50 tracking-widest">Estado:</span>
+                  <span class="text-[10px] uppercase font-black tracking-widest"
+                    [ngClass]="ticketSeleccionado.estado === 'Abierto' ? 'text-primary-400' : 'text-red-500'">
+                    {{ ticketSeleccionado.estado }}
+                  </span>
+                </div>
               </div>
-
-              <div>
-                <p class="text-[14px] font-black text-primary-400 uppercase tracking-[0.2em] mb-2">Detalles de tu
-                  solicitud</p>
-                <h4 class="text-2xl font-black text-white leading-tight">{{ ticketSeleccionado.titulo }}</h4>
-              </div>
-
-              <p class="text-md leading-relaxed italic tracking-tight text-white/80" [style.font-weight]="900">{{
-                ticketSeleccionado.contenido }}</p>
-
+            </div>
+            <div class="group relative">
               <div
-                class="pt-4 border-t border-accent-neon/50 flex justify-between items-center text-[9px] font-black text-white uppercase tracking-widest">
-                <div class="flex items-center gap-2">
-                  <ion-icon name="calendar-outline" class="text-xs"></ion-icon>
-                  <span>{{ ticketSeleccionado.creado_en | date:'MMM d, y' }}</span>
-                </div>
-                <div class="flex items-center gap-2 text-primary-500">
-                  <ion-icon name="time-outline" class="text-xs"></ion-icon>
-                  <span>{{ ticketSeleccionado.creado_en | date:'HH:mm' }}</span>
+                class="absolute inset-0 bg-primary-400 blur-xl opacity-20 group-hover:opacity-50 transition-opacity duration-500">
+              </div>
+              <app-eco-smart-logo
+                clasePersonalizada="w-10 h-10 relative group-hover:scale-110 transition-transform duration-500 ease-out"></app-eco-smart-logo>
+            </div>
+          </header>
+
+          <ion-content #chatContent class="[--background:transparent] ion-padding relative z-10 flex-1">
+            <app-fondo-visual variante="estudiante"></app-fondo-visual>
+            <div class="max-w-3xl mx-auto space-y-6 py-8 relative z-10">
+
+              <!-- Mensaje Inicial del Ticket (Compactado) -->
+              <div class="flex flex-col items-start w-full animate-[fadeIn_0.6s_ease-out]">
+                <div
+                  class="bg-slate-900/80 border border-primary-400/30 p-6 rounded-[2.5rem] rounded-tl-none text-white shadow-2xl relative overflow-hidden w-full space-y-1">
+                  <div class="absolute top-0 left-0 w-1.5 h-full bg-primary-500 shadow-[0_0_20px_rgba(16,249,129,0.6)]">
+                  </div>
+
+                  <div>
+                    <p class="text-[14px] font-black text-primary-400 uppercase tracking-[0.2em] mb-2">Detalles de tu
+                      solicitud</p>
+                    <h4 class="text-2xl font-black text-white leading-tight">{{ ticketSeleccionado.titulo }}</h4>
+                  </div>
+
+                  <p class="text-md leading-relaxed italic tracking-tight text-white/80" [style.font-weight]="900">{{
+                    ticketSeleccionado.contenido }}</p>
+
+                  <div
+                    class="pt-4 border-t border-accent-neon/50 flex justify-between items-center text-[9px] font-black text-white uppercase tracking-widest">
+                    <div class="flex items-center gap-2">
+                      <ion-icon name="calendar-outline" class="text-xs"></ion-icon>
+                      <span>{{ ticketSeleccionado.creado_en | date:'MMM d, y' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-primary-500">
+                      <ion-icon name="time-outline" class="text-xs"></ion-icon>
+                      <span>{{ ticketSeleccionado.creado_en | date:'HH:mm' }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Separador -->
-          <div class="w-full flex items-center gap-4 py-2 text-primary-900">
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-accent-neon to-transparent"></div>
-            <span class="text-[9px] font-black text-primary-500 uppercase tracking-[0.4em]">Chat</span>
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-accent-neon to-transparent"></div>
-          </div>
-
-          <!-- Burbujas de Chat -->
-          <div *ngFor="let msg of mensajes" class="flex flex-col animate-[slideUp_0.4s_ease-out_both]"
-            [ngClass]="{'items-end': msg.rol_remitente === 'estudiante', 'items-start': msg.rol_remitente === 'admin'}">
-            <div class="max-w-[85%] p-5 rounded-[1.8rem] shadow-2xl text-sm leading-relaxed relative group/msg"
-              [ngClass]="{
-                'bg-gradient-to-br from-primary-600/80 to-primary-700/80 text-white rounded-tr-none border border-primary-400/30 shadow-primary-500/10': msg.rol_remitente === 'estudiante',
-                'bg-rose-950/60 backdrop-blur-xl text-white border border-rose-500/20 rounded-tl-none shadow-rose-950/20': msg.rol_remitente === 'admin'
-              }" [style.font-weight]="900">
-              <div *ngIf="msg.rol_remitente === 'admin'"
-                class="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-1.5 opacity-80 flex items-center gap-2">
-                <div class="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
-                Soporte
+              <!-- Separador -->
+              <div class="w-full flex items-center gap-4 py-2 text-primary-900">
+                <div class="flex-1 h-px bg-gradient-to-r from-transparent via-accent-neon to-transparent"></div>
+                <span class="text-[9px] font-black text-primary-500 uppercase tracking-[0.4em]">Chat</span>
+                <div class="flex-1 h-px bg-gradient-to-r from-transparent via-accent-neon to-transparent"></div>
               </div>
-              {{ msg.mensaje }}
-            </div>
-            <span class="text-[9px] text-accent-neon font-bold mt-2 mx-3 uppercase tracking-widest">{{ msg.creado_en |
-              date:'HH:mm' }}</span>
-          </div>
-        </div>
-      </ion-content>
 
-      <!-- Footer del Chat-->
-      <ion-footer *ngIf="ticketSeleccionado.estado !== 'Cerrado'"
-        class="ion-no-border bg-slate-900 border-t border-white/5 p-6 relative z-[110]">
-        <div class="max-w-4xl mx-auto flex gap-4 items-end">
-          <div class="flex-1 relative">
-            <textarea [(ngModel)]="nuevoMensaje" (input)="ajustarAltura($event)" placeholder="Escribe tu mensaje..."
-              rows="1"
-              class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] text-white font-medium placeholder:text-white/20 px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white/10 transition-all shadow-inner min-h-[56px] max-h-[100px] resize-none overflow-y-hidden block"></textarea>
-          </div>
-          <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje || cargando"
-            class="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-slate-950 shadow-[0_10px_20px_rgba(16,249,129,0.2)] hover:scale-105 hover:bg-primary-400 active:scale-95 transition-all disabled:opacity-30 group mb-1">
-            <ion-icon name="send-outline" class="text-xl group-hover:translate-x-1 transition-transform"></ion-icon>
-          </button>
+              <!-- Burbujas de Chat -->
+              <ng-container *ngFor="let msg of mensajes; let i = index; trackBy: trackByMessageId">
+                <!-- Separador de Fecha -->
+                <div *ngIf="msg.mostrarFechaHeader"
+                  class="w-full flex justify-center py-2 my-2 animate-[fadeIn_0.5s_ease-out]">
+                  <div
+                    class="bg-slate-900/90 border border-accent-gold/40 px-5 py-1.5 rounded-2xl shadow-[0_0_15px_rgba(253,224,71,0.2)]">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-accent-gold drop-shadow-md">
+                      {{ msg.etiquetaDia }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Contenedor Burbuja -->
+                <div class="flex flex-col animate-[slideUp_0.4s_ease-out_both] mb-4"
+                  [ngClass]="{'items-end': msg.rol_remitente === 'estudiante', 'items-start': msg.rol_remitente === 'admin'}">
+                  <div class="max-w-[85%] p-5 rounded-[1.8rem] shadow-2xl text-sm leading-relaxed relative group/msg"
+                    [ngClass]="{
+                  'bg-gradient-to-br from-primary-600/80 to-primary-700/80 !text-white rounded-tr-none border border-primary-400 shadow-primary-500/20': msg.rol_remitente === 'estudiante',
+                  'bg-rose-950 !text-white border border-rose-500/20 rounded-tl-none shadow-rose-950/20': msg.rol_remitente === 'admin'
+                }" [style.font-weight]="900" [style.color]="'#ffffff'">
+                    <div *ngIf="msg.rol_remitente === 'admin'"
+                      class="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-1.5 opacity-80 flex items-center gap-2">
+                      <div class="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
+                      Soporte
+                    </div>
+                    {{ msg.mensaje }}
+                  </div>
+                  <span class="text-[9px] text-primary-500/80 font-bold mt-2 mx-3 uppercase tracking-widest">{{
+                    msg.creado_en |
+                    date:'HH:mm' }}</span>
+                </div>
+              </ng-container>
+
+              <!-- Mensaje de Cierre -->
+              <div *ngIf="ticketSeleccionado?.estado === 'Cerrado'"
+                class="w-full flex justify-center py-6 mt-4 mb-8 animate-[fadeIn_0.5s_ease-out]">
+                <div
+                  class="bg-red-950/40 border border-red-500/30 px-6 py-4 rounded-3xl shadow-[0_0_20px_rgba(239,68,68,0.15)] flex flex-col items-center text-center max-w-[85%]">
+                  <ion-icon name="close-circle-outline"
+                    class="text-red-400 text-3xl mb-2 drop-shadow-[0_0_10px_rgba(248,113,113,0.5)]"></ion-icon>
+                  <span class="text-[11px] font-bold text-red-100 uppercase tracking-[0.15em] leading-relaxed">
+                    El administrador ha cerrado el chat<br>
+                    el <strong class="text-red-400 font-black">{{ ticketSeleccionado.actualizado_en | date:'dd MMM yyyy'
+                      }}</strong> a las <strong class="text-red-400 font-black">{{ ticketSeleccionado.actualizado_en |
+                      date:'HH:mm' }}</strong>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </ion-content>
+
+          <!-- Footer del Chat-->
+          <footer *ngIf="ticketSeleccionado?.estado !== 'Cerrado'"
+            class="w-full bg-slate-900 border-t border-white/5 p-6 relative z-[110] shrink-0">
+            <div class="max-w-4xl mx-auto flex gap-4 items-end">
+              <div class="flex-1 flex flex-col items-end">
+                <textarea [(ngModel)]="nuevoMensaje" (input)="ajustarAltura($event)" placeholder="Escribe tu mensaje..."
+                  rows="1" maxlength="1000"
+                  class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] text-white font-medium placeholder:text-white/20 px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white/10 transition-all shadow-inner min-h-[56px] max-h-[100px] resize-none overflow-y-hidden block"></textarea>
+                <span class="text-[9px] font-bold mt-1.5 mr-4 tracking-widest transition-colors"
+                  [ngClass]="nuevoMensaje.length > 900 ? 'text-red-400' : 'text-white/30'">{{ nuevoMensaje.length
+                  }}/1000</span>
+              </div>
+              <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje || cargando"
+                class="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-slate-950 shadow-[0_10px_20px_rgba(16,249,129,0.2)] hover:scale-105 hover:bg-primary-400 active:scale-95 transition-all disabled:opacity-30 group mb-1">
+                <ion-icon name="send-outline" class="text-xl group-hover:translate-x-1 transition-transform"></ion-icon>
+              </button>
+            </div>
+          </footer>
         </div>
-      </ion-footer>
-    </div>
+      </ng-template>
+    </ion-modal>
 
     <!-- Overlay de Restricción -->
     <app-overlay-confirmacion [mostrar]="mostrarOverlayRestriccion" [titulo]="tituloRestriccion"

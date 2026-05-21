@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon, ViewWillEnter } from '@ionic/angular/standalone';
 import { Router, RouterLink } from '@angular/router';
@@ -75,8 +75,9 @@ interface UsuarioAdmin {
     TarjetaEstadisticaComponent
   ]
 })
-export class DashboardAdminPage implements OnInit, ViewWillEnter {
+export class DashboardAdminPage implements OnInit, ViewWillEnter, OnDestroy {
   @ViewChild(IonContent) content!: IonContent;
+  private realtimeChannel: any;
 
   nombreUsuario: string = '';
   usuarioActualId: string = '';
@@ -147,6 +148,43 @@ export class DashboardAdminPage implements OnInit, ViewWillEnter {
 
   async ngOnInit() {
     await this.inicializarDashboard();
+    this.suscribirseARealtime();
+  }
+
+  ngOnDestroy() {
+    if (this.realtimeChannel) {
+      this.supabaseSvc.cliente.removeChannel(this.realtimeChannel);
+    }
+  }
+
+  suscribirseARealtime() {
+    this.realtimeChannel = this.supabaseSvc.cliente.channel('notificaciones-dashboard-admin')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'mensajes_ticket'
+        },
+        () => {
+          this.actualizarTicketsPendientes();
+        }
+      )
+      .subscribe();
+  }
+
+  async actualizarTicketsPendientes() {
+    try {
+      const { count } = await this.supabaseSvc.cliente
+        .from('mensajes_ticket')
+        .select('*', { count: 'exact', head: true })
+        .eq('rol_remitente', 'estudiante')
+        .eq('leido', false);
+
+      this.estadisticas.ticketsPendientes = count || 0;
+    } catch (e) {
+      console.error('Error al actualizar tickets pendientes', e);
+    }
   }
 
   async ionViewWillEnter() {
