@@ -65,6 +65,7 @@ export class AppComponent implements OnInit {
       '/restablecer-contrasena',
       '/gremios',
       '/dashboard-admin',
+      '/constructor-curso',
       '/soporte-admin',
       '/soporte-estudiante'
     ];

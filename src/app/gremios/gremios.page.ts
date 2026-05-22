@@ -120,6 +120,43 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     { hex: '#047857', nombre: 'Verde Jade' }
   ];
 
+  readonly CLAVE_COLORES_COMPRADOS_LEGACY = '__coloresHojaComprados';
+  coloresDesbloqueadosGremio: string[] = [];
+
+  coloresTiendaHoja = [
+    { id: 'aurora', nombre: 'Aurora', precio: 50, css: 'linear-gradient(135deg, #34d399 0%, #22d3ee 55%, #a78bfa 100%)', texto: '#67e8f9' },
+    { id: 'atardecer', nombre: 'Atardecer', precio: 70, css: 'linear-gradient(135deg, #f97316 0%, #facc15 48%, #fb7185 100%)', texto: '#fbbf24' },
+    { id: 'oceano', nombre: 'Oceano', precio: 95, css: 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 55%, #22c55e 100%)', texto: '#38bdf8' },
+    { id: 'lavanda', nombre: 'Lavanda', precio: 115, css: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 52%, #f0abfc 100%)', texto: '#c084fc' },
+    { id: 'solar', nombre: 'Solar', precio: 135, css: 'linear-gradient(135deg, #fde047 0%, #f59e0b 55%, #ef4444 100%)', texto: '#facc15' },
+    { id: 'menta_neon', nombre: 'Menta Neon', precio: 160, css: 'linear-gradient(135deg, #bbf7d0 0%, #5eead4 45%, #22c55e 100%)', texto: '#86efac' },
+    { id: 'cereza', nombre: 'Cereza', precio: 200, css: 'linear-gradient(135deg, #be123c 0%, #fb7185 55%, #fda4af 100%)', texto: '#fb7185' },
+    { id: 'galaxia', nombre: 'Galaxia', precio: 225, css: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 45%, #22d3ee 100%)', texto: '#818cf8' },
+    { id: 'jade_dorado', nombre: 'Jade Dorado', precio: 240, css: 'linear-gradient(135deg, #047857 0%, #10b981 45%, #facc15 100%)', texto: '#34d399' },
+    { id: 'hielo', nombre: 'Hielo', precio: 250, css: 'linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 48%, #38bdf8 100%)', texto: '#7dd3fc' },
+    { id: 'volcan', nombre: 'Volcan', precio: 270, css: 'linear-gradient(135deg, #450a0a 0%, #dc2626 48%, #fb923c 100%)', texto: '#f87171' },
+    { id: 'bosque_real', nombre: 'Bosque Real', precio: 280, css: 'linear-gradient(135deg, #052e16 0%, #16a34a 48%, #bef264 100%)', texto: '#4ade80' },
+    { id: 'citrico', nombre: 'Citrico', precio: 300, css: 'linear-gradient(135deg, #84cc16 0%, #fef08a 48%, #fb923c 100%)', texto: '#bef264' },
+    { id: 'laguna', nombre: 'Laguna', precio: 315, css: 'linear-gradient(135deg, #164e63 0%, #06b6d4 52%, #99f6e4 100%)', texto: '#22d3ee' },
+    { id: 'orquidea', nombre: 'Orquidea', precio: 325, css: 'linear-gradient(135deg, #581c87 0%, #d946ef 50%, #f5d0fe 100%)', texto: '#e879f9' },
+    { id: 'rubi', nombre: 'Rubi', precio: 340, css: 'linear-gradient(135deg, #7f1d1d 0%, #ef4444 48%, #fca5a5 100%)', texto: '#fca5a5' },
+    { id: 'obsidiana', nombre: 'Obsidiana', precio: 350, css: 'linear-gradient(135deg, #020617 0%, #334155 48%, #22c55e 100%)', texto: '#94a3b8' },
+    { id: 'prisma', nombre: 'Prisma', precio: 375, css: 'linear-gradient(135deg, #22c55e 0%, #eab308 25%, #f97316 50%, #ec4899 75%, #38bdf8 100%)', texto: '#f0abfc' },
+    { id: 'amanecer', nombre: 'Amanecer', precio: 390, css: 'linear-gradient(135deg, #fde68a 0%, #fb7185 45%, #a78bfa 100%)', texto: '#f9a8d4' },
+    { id: 'selva_nocturna', nombre: 'Selva Nocturna', precio: 400, css: 'linear-gradient(135deg, #022c22 0%, #14532d 42%, #2dd4bf 100%)', texto: '#5eead4' },
+    { id: 'coral', nombre: 'Coral', precio: 420, css: 'linear-gradient(135deg, #fb7185 0%, #fdba74 48%, #fde68a 100%)', texto: '#fb7185' },
+    { id: 'electrico', nombre: 'Electrico', precio: 440, css: 'linear-gradient(135deg, #1d4ed8 0%, #22d3ee 45%, #a3e635 100%)', texto: '#60a5fa' },
+    { id: 'real_eco', nombre: 'Real Eco', precio: 460, css: 'linear-gradient(135deg, #064e3b 0%, #059669 35%, #d9f99d 70%, #fef3c7 100%)', texto: '#6ee7b7' },
+    { id: 'cosmico', nombre: 'Cosmico', precio: 500, css: 'linear-gradient(135deg, #0f172a 0%, #312e81 35%, #7c3aed 70%, #f472b6 100%)', texto: '#a78bfa' },
+    { id: 'tundra_magica', nombre: 'Tundra Magica', precio: 525, css: 'linear-gradient(135deg, #cffafe 0%, #38bdf8 50%, #14b8a6 100%)', texto: '#14b8a6' },
+    { id: 'flor_de_fuego', nombre: 'Flor de Fuego', precio: 550, css: 'linear-gradient(135deg, #7f1d1d 0%, #f97316 50%, #fde047 100%)', texto: '#f97316' },
+    { id: 'loto_lunar', nombre: 'Loto Lunar', precio: 575, css: 'linear-gradient(135deg, #312e81 0%, #d946ef 48%, #f0abfc 100%)', texto: '#d946ef' },
+    { id: 'templo_tropical', nombre: 'Templo Tropical', precio: 625, css: 'linear-gradient(135deg, #14532d 0%, #22c55e 30%, #eab308 65%, #f97316 100%)', texto: '#eab308' },
+    { id: 'arcoiris', nombre: 'Arcoiris', precio: 700, css: 'linear-gradient(135deg, #ef4444 0%, #f97316 16%, #facc15 32%, #22c55e 48%, #06b6d4 64%, #3b82f6 80%, #a855f7 100%)', texto: '#f43f5e' }
+  ];
+  mensajeTiendaColor: { tipo: 'exito' | 'error'; texto: string } | null = null;
+  comprandoColorHojaId: string | null = null;
+
   // Clasificaciones
   leaderboardGlobal: any[] = [];
   leaderboardInterno: any[] = [];
@@ -484,7 +521,8 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
       this.miembros = todosMiembros || [];
       this.hojasColectivas = Number(this.gremio.hojas_globales || 0);
-      this.mejorasColectivas = this.gremio.mejoras || this.mejorasColectivas;
+      this.mejorasColectivas = this.normalizarMejorasGremio(this.gremio.mejoras);
+      this.coloresDesbloqueadosGremio = this.normalizarColoresDesbloqueados(this.gremio.colores_desbloqueados, this.gremio.mejoras);
       await this.cargarBoostsGremio();
 
 
@@ -548,7 +586,8 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
           nombre: this.nuevoNombre.trim(),
           descripcion: this.nuevaDescripcion.trim(),
           icono: this.nuevoIcono,
-          creador_id: this.usuarioId
+          creador_id: this.usuarioId,
+          colores_desbloqueados: this.coloresBaseDesbloqueados()
         })
         .select()
         .single();
@@ -659,6 +698,10 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
   async cambiarColorHoja(colorHex: string) {
     if (!this.usuarioId || !this.miembroActual) return;
+    if (!this.colorHojaDisponible(colorHex) && this.miembroActual.color_hoja !== colorHex) {
+      this.mostrarMensajeTiendaColor('error', 'Ese color aun no pertenece a tu gremio.');
+      return;
+    }
 
     try {
       const { error } = await this.supabaseSvc.cliente
@@ -676,7 +719,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       const mLeader = this.leaderboardInterno.find(m => m.usuario_id === this.usuarioId);
       if (mLeader) mLeader.color_hoja = colorHex;
     } catch (e: any) {
-      alert(e.message || 'Este color ya fue elegido por otro miembro de tu gremio.');
+      this.mostrarMensajeTiendaColor('error', e.message || 'Este color ya fue elegido por otro miembro de tu gremio.');
     }
   }
 
@@ -728,12 +771,13 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   }
 
   mergeMejoras(incomingMejoras: any): any {
-    if (!incomingMejoras) return this.mejorasColectivas;
+    if (!incomingMejoras) return this.normalizarMejorasGremio(this.mejorasColectivas);
     const merged = { ...this.mejorasColectivas };
     for (const key of Object.keys(incomingMejoras)) {
+      if (key === this.CLAVE_COLORES_COMPRADOS_LEGACY) continue;
       merged[key] = Math.max(Number(merged[key] || 0), Number(incomingMejoras[key] || 0));
     }
-    return merged;
+    return this.normalizarMejorasGremio(merged);
   }
 
   private aplicarHojasConfirmadas(dbHojas: number, permitirDisminucion = false) {
@@ -778,11 +822,17 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
           
           const nuevasMejoras = this.mergeMejoras(payload.mejoras);
           const mejorasCambiaron = JSON.stringify(nuevasMejoras) !== JSON.stringify(this.mejorasColectivas);
+          const nuevosColores = payload.colores_desbloqueados
+            ? this.normalizarColoresDesbloqueados(payload.colores_desbloqueados)
+            : this.coloresDesbloqueadosGremio;
+          const coloresCambiaron = JSON.stringify(nuevosColores) !== JSON.stringify(this.coloresDesbloqueadosGremio);
           const esResetCompetencia = dbHojas === 0 && Number(payload.hojas_competencia || 0) === 0 && anteriorDbHojas > 0;
           
           this.mejorasColectivas = nuevasMejoras;
+          this.coloresDesbloqueadosGremio = nuevosColores;
           if (this.gremio) {
             this.gremio.mejoras = nuevasMejoras;
+            this.gremio.colores_desbloqueados = nuevosColores;
             if (payload.hojas_competencia !== undefined) {
               this.gremio.hojas_competencia = payload.hojas_competencia;
             }
@@ -792,7 +842,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
             }
           }
           
-          this.aplicarHojasConfirmadas(dbHojas, mejorasCambiaron || esResetCompetencia);
+          this.aplicarHojasConfirmadas(dbHojas, mejorasCambiaron || coloresCambiaron || esResetCompetencia);
         });
       })
       // Escuchar cambios de mejoras o resets estacionales en la DB de nuestro gremio y del leaderboard global
@@ -820,15 +870,19 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
             
             const nuevasMejoras = this.mergeMejoras(updatedGuild.mejoras);
             const mejorasCambiaron = JSON.stringify(nuevasMejoras) !== JSON.stringify(this.mejorasColectivas);
+            const nuevosColores = this.normalizarColoresDesbloqueados(updatedGuild.colores_desbloqueados);
+            const coloresCambiaron = JSON.stringify(nuevosColores) !== JSON.stringify(this.coloresDesbloqueadosGremio);
             const esResetCompetencia = dbHojas === 0 && Number(updatedGuild.hojas_competencia || 0) === 0 && anteriorDbHojas > 0;
             
             this.mejorasColectivas = nuevasMejoras;
+            this.coloresDesbloqueadosGremio = nuevosColores;
             this.gremio.mejoras = nuevasMejoras;
+            this.gremio.colores_desbloqueados = nuevosColores;
             this.gremio.hojas_competencia = updatedGuild.hojas_competencia;
             this.gremio.hojas_globales = dbHojas;
             this.gremio.updated_at = updatedGuild.updated_at;
             
-            this.aplicarHojasConfirmadas(dbHojas, mejorasCambiaron || esResetCompetencia);
+            this.aplicarHojasConfirmadas(dbHojas, mejorasCambiaron || coloresCambiaron || esResetCompetencia);
           }
 
           // 2. Si está en el leaderboardGlobal, actualizar y reordenar
@@ -1038,10 +1092,15 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
   generarHojaFlotante(x: number, y: number, valor: number, color: string, usuario: string, esCritico: boolean = false, esSuperCritico: boolean = false) {
     const id = this.hojaIdCounter++;
+    const colorHoja = this.obtenerColorHoja(color);
+    const colorTexto = colorHoja.texto;
+    const colorCss = colorHoja.css;
     this.hojasAnimadas.push({
       id,
       valor: `+${this.formatearNumero(Math.floor(valor))}`,
       color,
+      colorTexto,
+      colorCss,
       usuario,
       esCritico,
       esSuperCritico,
@@ -1154,7 +1213,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       // Obtener el valor actualizado de la DB para difundirlo via broadcast e impedir desincronizaciones
       const { data: updatedGuild } = await this.supabaseSvc.cliente
         .from('gremios')
-        .select('hojas_globales, hojas_competencia, mejoras, updated_at')
+        .select('hojas_globales, hojas_competencia, mejoras, colores_desbloqueados, updated_at')
         .eq('id', this.gremio.id)
         .single();
 
@@ -1162,6 +1221,8 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         this.gremio.hojas_globales = Number(updatedGuild.hojas_globales || 0);
         this.gremio.hojas_competencia = Number(updatedGuild.hojas_competencia || 0);
         this.gremio.mejoras = updatedGuild.mejoras || this.gremio.mejoras;
+        this.gremio.colores_desbloqueados = updatedGuild.colores_desbloqueados || this.gremio.colores_desbloqueados;
+        this.coloresDesbloqueadosGremio = this.normalizarColoresDesbloqueados(this.gremio.colores_desbloqueados);
         this.gremio.updated_at = updatedGuild.updated_at;
         this.aplicarHojasConfirmadas(this.gremio.hojas_globales);
 
@@ -1173,6 +1234,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
               hojas_globales: updatedGuild.hojas_globales,
               hojas_competencia: updatedGuild.hojas_competencia,
               mejoras: updatedGuild.mejoras,
+              colores_desbloqueados: updatedGuild.colores_desbloqueados,
               updated_at: updatedGuild.updated_at
             }
           });
@@ -1458,6 +1520,165 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   // ==========================================
   // GESTIÓN DE TIENDA Y MEJORAS COLECTIVAS
   // ==========================================
+  private normalizarMejorasGremio(mejoras: any): any {
+    const normalizadas = { ...(mejoras || this.mejorasColectivas || {}) };
+    delete normalizadas[this.CLAVE_COLORES_COMPRADOS_LEGACY];
+    return normalizadas;
+  }
+
+  private coloresBaseDesbloqueados(): string[] {
+    return this.paletaVerdes.map(color => color.hex);
+  }
+
+  private normalizarColoresDesbloqueados(colores: any, mejorasLegacy?: any): string[] {
+    const desdeColumna = Array.isArray(colores) ? colores.filter(Boolean).map(String) : [];
+    const idsLegacy = Array.isArray(mejorasLegacy?.[this.CLAVE_COLORES_COMPRADOS_LEGACY])
+      ? mejorasLegacy[this.CLAVE_COLORES_COMPRADOS_LEGACY]
+      : [];
+    const desdeLegacy = idsLegacy.map((id: string) => {
+      const color = this.coloresTiendaHoja.find(c => c.id === id);
+      return color ? this.valorColorHoja(color) : id;
+    });
+
+    return Array.from(new Set([
+      ...this.coloresBaseDesbloqueados(),
+      ...desdeColumna,
+      ...desdeLegacy
+    ]));
+  }
+
+  get coloresHojaDisponibles() {
+    return [
+      ...this.paletaVerdes.map(color => ({
+        id: color.hex,
+        nombre: color.nombre,
+        css: color.hex,
+        texto: color.hex,
+        precio: 0,
+        base: true
+      })),
+      ...this.coloresTiendaHoja
+    ];
+  }
+
+  coloresCompradosGremio(): string[] {
+    return this.normalizarColoresDesbloqueados(this.coloresDesbloqueadosGremio, this.gremio?.mejoras);
+  }
+
+  colorHojaComprado(color: any): boolean {
+    const desbloqueados = this.coloresCompradosGremio();
+    return color.base || desbloqueados.includes(color.id) || desbloqueados.includes(this.valorColorHoja(color));
+  }
+
+  valorColorHoja(color: any): string {
+    return color?.valor || color?.hex || (color?.base ? color?.css : color?.texto) || color?.css || '#10b981';
+  }
+
+  colorHojaDisponible(colorCss: string): boolean {
+    const color = this.coloresHojaDisponibles.find(c => c.css === colorCss || this.valorColorHoja(c) === colorCss);
+    return !!color && this.colorHojaComprado(color);
+  }
+
+  obtenerColorHoja(colorCss: string | null | undefined) {
+    return this.coloresHojaDisponibles.find(c => c.css === colorCss || this.valorColorHoja(c) === colorCss)
+      || this.coloresHojaDisponibles[0];
+  }
+
+  obtenerColorTextoHoja(colorCss: string | null | undefined): string {
+    return this.obtenerColorHoja(colorCss).texto;
+  }
+
+  mostrarMensajeTiendaColor(tipo: 'exito' | 'error', texto: string) {
+    this.mensajeTiendaColor = { tipo, texto };
+    window.setTimeout(() => {
+      if (this.mensajeTiendaColor?.texto === texto) {
+        this.mensajeTiendaColor = null;
+      }
+    }, 3500);
+  }
+
+  async seleccionarOComprarColorHoja(color: any) {
+    if (!color) return;
+
+    const colorValor = this.valorColorHoja(color);
+    const miembroConColor = this.obtenerMiembroPorColor(colorValor);
+    if (miembroConColor && miembroConColor.usuario_id !== this.usuarioId) {
+      this.mostrarMensajeTiendaColor('error', `${color.nombre} ya esta en uso por otro miembro del gremio.`);
+      return;
+    }
+
+    if (this.colorHojaComprado(color)) {
+      await this.cambiarColorHoja(colorValor);
+      return;
+    }
+
+    await this.comprarColorHoja(color);
+  }
+
+  async comprarColorHoja(color: any) {
+    if (!this.gremio || !this.usuarioId || color.base || this.colorHojaComprado(color)) return;
+
+    if (this.ecoTokens < color.precio) {
+      this.mostrarMensajeTiendaColor('error', `Te faltan ${color.precio - this.ecoTokens} EcoTokens para comprar ${color.nombre}.`);
+      return;
+    }
+
+    const tokensAnteriores = this.ecoTokens;
+    const coloresAnteriores = [...this.coloresDesbloqueadosGremio];
+    const nuevosColores = this.normalizarColoresDesbloqueados([
+      ...coloresAnteriores,
+      this.valorColorHoja(color)
+    ]);
+
+    this.ecoTokens -= color.precio;
+    this.coloresDesbloqueadosGremio = nuevosColores;
+    this.gremio.colores_desbloqueados = nuevosColores;
+    this.comprandoColorHojaId = color.id;
+
+    try {
+      const { data: perfil } = await this.supabaseSvc.obtenerPerfil(this.usuarioId);
+      const tokensActuales = Number(perfil?.eco_tokens || 0);
+      if (tokensActuales < color.precio) {
+        throw new Error('Saldo insuficiente');
+      }
+
+      const { error: errorPerfil } = await this.supabaseSvc.actualizarPerfil(this.usuarioId, {
+        eco_tokens: tokensActuales - color.precio
+      });
+      if (errorPerfil) throw errorPerfil;
+
+      const { error: errorGremio } = await this.supabaseSvc.cliente
+        .from('gremios')
+        .update({ colores_desbloqueados: nuevosColores })
+        .eq('id', this.gremio.id);
+      if (errorGremio) throw errorGremio;
+
+      this.ecoTokens = tokensActuales - color.precio;
+      this.mostrarMensajeTiendaColor('exito', `${color.nombre} ahora pertenece a este gremio.`);
+      await this.cambiarColorHoja(this.valorColorHoja(color));
+
+      if (this.canalRealtime) {
+        this.canalRealtime.send({
+          type: 'broadcast',
+          event: 'gremio-actualizado',
+          payload: {
+            hojas_globales: this.hojasColectivas,
+            mejoras: this.mejorasColectivas,
+            colores_desbloqueados: nuevosColores
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error al comprar color de hoja:', err);
+      this.ecoTokens = tokensAnteriores;
+      this.coloresDesbloqueadosGremio = coloresAnteriores;
+      if (this.gremio) this.gremio.colores_desbloqueados = coloresAnteriores;
+      this.mostrarMensajeTiendaColor('error', 'No fue posible comprar el color. Tu saldo fue restaurado.');
+    } finally {
+      this.comprandoColorHojaId = null;
+    }
+  }
+
   calcularPrecioMejora(tipo: string): number {
     const nivel = this.mejorasColectivas[tipo] || 0;
     const base = (this.PRECIOS_BASE as any)[tipo];
@@ -1789,7 +2010,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       if (this.gremio) {
         this.gremio.hojas_competencia = 0;
         this.gremio.hojas_globales = 0;
-        this.gremio.mejoras = {};
+        this.gremio.mejoras = this.mejorasColectivas;
       }
       this.leaderboardGlobal.forEach((g: any) => g.hojas_competencia = 0);
 
@@ -1829,8 +2050,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
   obtenerNombreColor(hex: string | null | undefined): string {
     if (!hex) return 'Personalizado';
-    const c = this.paletaVerdes.find(item => item.hex === hex);
-    return c ? c.nombre : 'Personalizado';
+    return this.obtenerColorHoja(hex).nombre || 'Personalizado';
   }
 
   obtenerConfigIcono(iconName: string) {
@@ -1903,7 +2123,9 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
 
   obtenerTotalNiveles(): number {
     if (!this.mejorasColectivas) return 0;
-    return Object.values(this.mejorasColectivas).reduce((a: any, b: any) => a + (Number(b) || 0), 0) as number;
+    return Object.entries(this.mejorasColectivas)
+      .filter(([key]) => key !== this.CLAVE_COLORES_COMPRADOS_LEGACY)
+      .reduce((acc: number, [, value]: any) => acc + (Number(value) || 0), 0);
   }
 
   // ==========================================
