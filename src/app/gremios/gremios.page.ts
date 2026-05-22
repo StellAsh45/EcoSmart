@@ -1,7 +1,7 @@
 import { Component, OnDestroy, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IonContent, IonIcon, Platform, ViewWillEnter } from '@ionic/angular/standalone';
 import { SupabaseService } from '../services/supabase';
 import { addIcons } from 'ionicons';
@@ -36,6 +36,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   // Servicios
   private supabaseSvc = inject(SupabaseService);
   public router = inject(Router);
+  private route = inject(ActivatedRoute);
   private platform = inject(Platform);
   private zone = inject(NgZone);
 
@@ -77,8 +78,10 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
   mostrarFormularioCreacion = false;
   mostrarFormularioEdicion = false;
   mostrarConfirmacionAbandono = false;
+  mostrarConfirmacionExpulsion = false;
   mostrarExitoCreacion = false;
   mostrarExitoEdicion = false;
+  miembroAExpulsar: any = null;
   editNombre = '';
   editDescripcion = '';
   editIcono = 'leaf';
@@ -243,6 +246,11 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     this.hojasClicsNuevos = 0;
     this.filtroNombre = '';
     this.vistaActual = 'hub';
+
+    const vistaInicial = this.route.snapshot.queryParamMap.get('vista');
+    if (vistaInicial && ['hub', 'arbol', 'competencia', 'pregunta', 'tienda', 'estadisticas'].includes(vistaInicial)) {
+      this.vistaActual = vistaInicial as typeof this.vistaActual;
+    }
 
     try {
       const { data: { user } } = await this.supabaseSvc.obtenerUsuario();
@@ -631,20 +639,9 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       this.desconectarRealtime();
       if (this.passiveInterval) clearInterval(this.passiveInterval);
 
-      const { error } = await this.supabaseSvc.cliente
-        .from('gremio_miembros')
-        .delete()
-        .eq('usuario_id', this.usuarioId);
+      const { error } = await this.supabaseSvc.cliente.rpc('abandonar_gremio_actual');
 
       if (error) throw error;
-
-      if (this.miembros.length <= 1) {
-        const { error: errG } = await this.supabaseSvc.cliente
-          .from('gremios')
-          .delete()
-          .eq('id', this.gremio?.id);
-        if (errG) console.error('Error al eliminar gremio vacío:', errG);
-      }
 
       // Resetear estados locales
       this.enGremio = false;
@@ -683,18 +680,34 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     }
   }
 
-  async expulsarMiembro(miembro: any) {
+  abrirConfirmacionExpulsion(miembro: any) {
     if (!this.gremio || this.miembroActual?.rol !== 'lider') return;
     if (miembro.usuario_id === this.usuarioId) {
       alert('No puedes expulsarte a ti mismo.');
       return;
     }
 
-    const confirmar = confirm(`¿Estás seguro de que quieres expulsar a ${miembro.profiles?.nombre || 'este estudiante'} del gremio?`);
-    if (!confirmar) return;
+    this.miembroAExpulsar = miembro;
+    this.mostrarConfirmacionExpulsion = true;
+  }
+
+  cerrarConfirmacionExpulsion() {
+    this.mostrarConfirmacionExpulsion = false;
+    this.miembroAExpulsar = null;
+  }
+
+  async expulsarMiembro() {
+    const miembro = this.miembroAExpulsar;
+    if (!this.gremio || this.miembroActual?.rol !== 'lider' || !miembro) return;
+    if (miembro.usuario_id === this.usuarioId) {
+      this.cerrarConfirmacionExpulsion();
+      alert('No puedes expulsarte a ti mismo.');
+      return;
+    }
 
     try {
       this.cargando = true;
+      this.mostrarConfirmacionExpulsion = false;
       const { error } = await this.supabaseSvc.cliente
         .from('gremio_miembros')
         .delete()
@@ -706,6 +719,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
       // Actualizar localmente la lista de miembros
       this.miembros = this.miembros.filter(m => m.usuario_id !== miembro.usuario_id);
       this.leaderboardInterno = this.leaderboardInterno.filter(m => m.usuario_id !== miembro.usuario_id);
+      this.miembroAExpulsar = null;
     } catch (e: any) {
       alert(e.message || 'Error al expulsar al miembro.');
     } finally {
@@ -722,8 +736,17 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
     return merged;
   }
 
+  private aplicarHojasConfirmadas(dbHojas: number, permitirDisminucion = false) {
+    const pendientesLocales = this.hojasAportadasHoy + this.hojasEnTransito;
+    const valorConPendientes = dbHojas + pendientesLocales;
+
+    this.hojasColectivas = permitirDisminucion
+      ? valorConPendientes
+      : Math.max(this.hojasColectivas, valorConPendientes);
+  }
+
   // ==========================================
-  // REALTIME SYNCHRONIZATION
+  // Sincronizacion en tiempo real
   // ==========================================
   conectarRealtime() {
     if (!this.gremio) return;
@@ -755,7 +778,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
           
           const nuevasMejoras = this.mergeMejoras(payload.mejoras);
           const mejorasCambiaron = JSON.stringify(nuevasMejoras) !== JSON.stringify(this.mejorasColectivas);
-          const hojasBajaron = dbHojas < anteriorDbHojas;
+          const esResetCompetencia = dbHojas === 0 && Number(payload.hojas_competencia || 0) === 0 && anteriorDbHojas > 0;
           
           this.mejorasColectivas = nuevasMejoras;
           if (this.gremio) {
@@ -769,10 +792,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
             }
           }
           
-          const valorCalculado = dbHojas + this.hojasAportadasHoy + this.hojasEnTransito;
-          if (mejorasCambiaron || hojasBajaron || valorCalculado > this.hojasColectivas) {
-            this.hojasColectivas = valorCalculado;
-          }
+          this.aplicarHojasConfirmadas(dbHojas, mejorasCambiaron || esResetCompetencia);
         });
       })
       // Escuchar cambios de mejoras o resets estacionales en la DB de nuestro gremio y del leaderboard global
@@ -800,7 +820,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
             
             const nuevasMejoras = this.mergeMejoras(updatedGuild.mejoras);
             const mejorasCambiaron = JSON.stringify(nuevasMejoras) !== JSON.stringify(this.mejorasColectivas);
-            const hojasBajaron = dbHojas < anteriorDbHojas;
+            const esResetCompetencia = dbHojas === 0 && Number(updatedGuild.hojas_competencia || 0) === 0 && anteriorDbHojas > 0;
             
             this.mejorasColectivas = nuevasMejoras;
             this.gremio.mejoras = nuevasMejoras;
@@ -808,10 +828,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
             this.gremio.hojas_globales = dbHojas;
             this.gremio.updated_at = updatedGuild.updated_at;
             
-            const valorCalculado = dbHojas + this.hojasAportadasHoy + this.hojasEnTransito;
-            if (mejorasCambiaron || hojasBajaron || valorCalculado > this.hojasColectivas) {
-              this.hojasColectivas = valorCalculado;
-            }
+            this.aplicarHojasConfirmadas(dbHojas, mejorasCambiaron || esResetCompetencia);
           }
 
           // 2. Si está en el leaderboardGlobal, actualizar y reordenar
@@ -1146,7 +1163,7 @@ export class GremiosPage implements ViewWillEnter, OnDestroy {
         this.gremio.hojas_competencia = Number(updatedGuild.hojas_competencia || 0);
         this.gremio.mejoras = updatedGuild.mejoras || this.gremio.mejoras;
         this.gremio.updated_at = updatedGuild.updated_at;
-        this.hojasColectivas = this.gremio.hojas_globales;
+        this.aplicarHojasConfirmadas(this.gremio.hojas_globales);
 
         if (this.canalRealtime) {
           this.canalRealtime.send({

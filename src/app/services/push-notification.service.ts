@@ -2,12 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { PushNotifications, Token, ActionPerformed, PushNotificationSchema } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { SupabaseService } from './supabase';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PushNotificationService {
   private supabaseService = inject(SupabaseService);
+  private router = inject(Router);
 
   constructor() { }
 
@@ -88,6 +90,11 @@ export class PushNotificationService {
         if (data && data.ticket_id) {
           console.log(`Redirigiendo al chat del ticket: ${data.ticket_id}`);
           // Aquí puedes inyectar el Router de Angular y redirigir
+        }
+
+        if (data && data.pantalla) {
+          const extras = data.vista ? { queryParams: { vista: data.vista } } : undefined;
+          this.router.navigate([`/${data.pantalla}`], extras);
         }
       }
     );
