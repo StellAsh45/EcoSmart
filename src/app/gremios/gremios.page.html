@@ -567,7 +567,7 @@
                 <div class="flex items-center gap-3 shrink-0 pl-2">
                   <!-- Botón Expulsar (Solo Líder) -->
                   <button *ngIf="miembroActual?.rol === 'lider' && m.usuario_id !== usuarioId"
-                    (click)="expulsarMiembro(m)"
+                    (click)="abrirConfirmacionExpulsion(m)"
                     class="p-2 text-red-400 hover:text-white hover:bg-red-500/20 rounded-xl transition-all border border-solid border-red-500/20 active:scale-95 cursor-pointer flex items-center justify-center"
                     title="Expulsar Miembro">
                     <ion-icon name="trash-outline" class="text-base"></ion-icon>
@@ -623,8 +623,8 @@
             </app-eco-smart-logo>
           </div>
 
-          <!-- Indicador de Boost del Árbol (Bottom-Right, Discreto y Elegante) -->
-          <div 
+          <!-- Indicador de Boost del Árbol -->
+          <div
             class="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 bg-black/40 backdrop-blur-md border border-amber-500/30 rounded-full text-amber-400 font-extrabold text-[10px] sm:text-xs shadow-lg animate-pulse">
             <ion-icon name="sparkles" class="text-amber-400"></ion-icon>
             <span>Boost: +{{ gremioBoostPorcentaje || 0 }}%</span>
@@ -650,9 +650,15 @@
 
             <!-- Leyenda de premios internos -->
             <div class="flex gap-2 flex-wrap">
-              <span class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-1 rounded-full">🥇 +20 🏅</span>
-              <span class="flex items-center gap-1 bg-slate-400/10 border border-slate-400/20 text-slate-300 text-[9px] font-black px-2 py-1 rounded-full">🥈 +10 🏅</span>
-              <span class="flex items-center gap-1 bg-amber-700/10 border border-amber-700/20 text-amber-600 text-[9px] font-black px-2 py-1 rounded-full">🥉 +5 🏅</span>
+              <span
+                class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-1 rounded-full">🥇
+                +20 🏅</span>
+              <span
+                class="flex items-center gap-1 bg-slate-400/10 border border-slate-400/20 text-slate-300 text-[9px] font-black px-2 py-1 rounded-full">🥈
+                +10 🏅</span>
+              <span
+                class="flex items-center gap-1 bg-amber-700/10 border border-amber-700/20 text-amber-600 text-[9px] font-black px-2 py-1 rounded-full">🥉
+                +5 🏅</span>
             </div>
 
             <div class="space-y-2">
@@ -684,7 +690,7 @@
                       }}</span>
                   </div>
                   <span class="text-[10px] font-bold mt-0.5 block" [class.text-amber-400]="m.rol === 'lider'"
-                    [class.text-slate-500]="m.rol !== 'lider'">
+                    [class.text-primary-400]="m.rol !== 'lider'">
                     {{ m.rol === 'lider' ? 'Líder' : 'Miembro' }}
                   </span>
                 </div>
@@ -717,9 +723,15 @@
 
             <!-- Leyenda de premios globales -->
             <div class="flex gap-2 flex-wrap">
-              <span class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-1 rounded-full">🥇 +50 🏅 c/miembro</span>
-              <span class="flex items-center gap-1 bg-slate-400/10 border border-slate-400/20 text-slate-300 text-[9px] font-black px-2 py-1 rounded-full">🥈 +30 🏅 c/miembro</span>
-              <span class="flex items-center gap-1 bg-amber-700/10 border border-amber-700/20 text-amber-600 text-[9px] font-black px-2 py-1 rounded-full">🥉 +15 🏅 c/miembro</span>
+              <span
+                class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-1 rounded-full">🥇
+                +50 🏅 c/miembro</span>
+              <span
+                class="flex items-center gap-1 bg-slate-400/10 border border-slate-400/20 text-slate-300 text-[9px] font-black px-2 py-1 rounded-full">🥈
+                +30 🏅 c/miembro</span>
+              <span
+                class="flex items-center gap-1 bg-amber-700/10 border border-amber-700/20 text-amber-600 text-[9px] font-black px-2 py-1 rounded-full">🥉
+                +15 🏅 c/miembro</span>
             </div>
 
             <div class="space-y-2">
@@ -1127,9 +1139,17 @@
     <!-- Overlay Confirmación de Abandono -->
     <app-overlay-confirmacion [mostrar]="mostrarConfirmacionAbandono" titulo="¿Abandonar gremio?"
       mensaje="Estás a punto de abandonar tu gremio actual. Perderás todo el progreso. Esta acción es irreversible."
-      icono="alert-outline" textoConfirmar="Confirmar Abandono"
-      claseConfirmar="bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] text-white border border-red-500"
+      icono="alert-outline" textoConfirmar="Abandonar"
+      claseConfirmar="bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] text-black border border-red-500"
       textoCancelar="Cancelar" (confirmar)="abandonarGremio()" (cancelar)="mostrarConfirmacionAbandono = false">
+    </app-overlay-confirmacion>
+
+    <!-- Overlay Confirmacion de Expulsion -->
+    <app-overlay-confirmacion [mostrar]="mostrarConfirmacionExpulsion" titulo="¿Expulsar miembro?"
+      [mensaje]="'Estas a punto de expulsar a ' + (miembroAExpulsar?.profiles?.nombre || 'este estudiante') + ' del gremio. Esta acción no se puede deshacer.'"
+      icono="alert-outline" textoConfirmar="Expulsar miembro"
+      claseConfirmar="bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] text-black border border-red-500"
+      textoCancelar="Cancelar" (confirmar)="expulsarMiembro()" (cancelar)="cerrarConfirmacionExpulsion()">
     </app-overlay-confirmacion>
 
   </div>
