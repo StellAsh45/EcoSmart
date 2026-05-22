@@ -486,22 +486,41 @@
             <div class="bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-4">
               <h4 class="text-md font-black text-white uppercase tracking-wider m-0">Tu Color de Hoja Exclusivo</h4>
               <p class="text-xs text-primary-50/60 leading-normal font-medium m-0 font-sans">
-                Elige con qué tonalidad de verde pintarás el árbol cooperativo. Queda prohibido repetir color en tu
-                gremio.
+                Elige un color libre o compra nuevos estilos para que queden desbloqueados en este gremio. No se puede
+                repetir color entre miembros.
               </p>
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <div
+                  class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  <span>{{ ecoTokens }}</span>
+                  <span>EcoTokens</span>
+                </div>
+                <div *ngIf="mensajeTiendaColor"
+                  class="flex-1 min-w-[190px] rounded-2xl border px-4 py-2 text-[10px] font-black uppercase tracking-wider"
+                  [class.bg-red-500/10]="mensajeTiendaColor.tipo === 'error'"
+                  [class.border-red-500/30]="mensajeTiendaColor.tipo === 'error'"
+                  [class.text-red-300]="mensajeTiendaColor.tipo === 'error'"
+                  [class.bg-emerald-500/10]="mensajeTiendaColor.tipo === 'exito'"
+                  [class.border-emerald-500/30]="mensajeTiendaColor.tipo === 'exito'"
+                  [class.text-emerald-300]="mensajeTiendaColor.tipo === 'exito'">
+                  {{ mensajeTiendaColor.texto }}
+                </div>
+              </div>
+
               <div class="flex gap-3 flex-wrap pt-2">
-                <button *ngFor="let c of paletaVerdes"
-                  class="w-10 h-10 rounded-full border-3 border-transparent cursor-pointer transition-all hover:scale-115 relative flex items-center justify-center"
-                  [style.background]="c.hex" [class.!border-white]="miembroActual?.color_hoja === c.hex"
-                  [class.shadow-[0_0_15px_rgba(255,255,255,0.4)]]="miembroActual?.color_hoja === c.hex"
-                  [disabled]="obtenerMiembroPorColor(c.hex) && miembroActual?.color_hoja !== c.hex"
-                  [class.opacity-45]="obtenerMiembroPorColor(c.hex) && miembroActual?.color_hoja !== c.hex"
-                  [class.cursor-not-allowed]="obtenerMiembroPorColor(c.hex) && miembroActual?.color_hoja !== c.hex"
-                  [title]="c.nombre + (obtenerMiembroPorColor(c.hex) ? ' (Ocupado por ' + obtenerMiembroPorColor(c.hex).profiles?.nombre + ')' : '')"
-                  (click)="cambiarColorHoja(c.hex)">
+                <div *ngFor="let c of coloresHojaDisponibles" class="flex flex-col items-center gap-1.5">
+                  <button
+                    class="w-10 h-10 rounded-full border-3 border-transparent cursor-pointer transition-all hover:scale-115 relative flex items-center justify-center"
+                    [style.background]="c.css" [class.!border-white]="miembroActual?.color_hoja === valorColorHoja(c)"
+                    [class.shadow-[0_0_15px_rgba(255,255,255,0.4)]]="miembroActual?.color_hoja === valorColorHoja(c)"
+                    [disabled]="comprandoColorHojaId === c.id || (obtenerMiembroPorColor(valorColorHoja(c)) && miembroActual?.color_hoja !== valorColorHoja(c))"
+                    [class.opacity-45]="!colorHojaComprado(c) || (obtenerMiembroPorColor(valorColorHoja(c)) && miembroActual?.color_hoja !== valorColorHoja(c))"
+                    [class.cursor-not-allowed]="obtenerMiembroPorColor(valorColorHoja(c)) && miembroActual?.color_hoja !== valorColorHoja(c)"
+                    [title]="c.nombre + (obtenerMiembroPorColor(valorColorHoja(c)) ? ' (Ocupado por ' + obtenerMiembroPorColor(valorColorHoja(c)).profiles?.nombre + ')' : '')"
+                    (click)="seleccionarOComprarColorHoja(c)">
 
                   <!-- Iniciales del compañero o Tú flotante si el color está ocupado -->
-                  <div *ngIf="obtenerMiembroPorColor(c.hex) as m"
+                  <div *ngIf="obtenerMiembroPorColor(valorColorHoja(c)) as m"
                     class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full border flex items-center justify-center text-[9px] font-black uppercase shadow-2xl z-10"
                     [style.background]="'#000000'" [class.border-emerald-500]="m.usuario_id === usuarioId"
                     [class.text-emerald-400]="m.usuario_id === usuarioId"
@@ -509,7 +528,11 @@
                     [class.text-slate-300]="m.usuario_id !== usuarioId">
                     {{ (m.profiles?.nombre || '?').substring(0, 2) }}
                   </div>
-                </button>
+                  </button>
+                  <span class="text-[8px] font-black uppercase tracking-tight text-primary-50/80 leading-none">
+                    {{ c.precio === 0 ? 'Gratis' : c.precio + ' ET' }}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -537,8 +560,8 @@
                   <!-- Avatar con color exclusivo del miembro -->
                   <div
                     class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/5 border-2 flex items-center justify-center text-lg shrink-0 transition-colors"
-                    [style.border-color]="m.color_hoja" [style.color]="m.color_hoja"
-                    [style.box-shadow]="'0 0 15px ' + m.color_hoja + '30'">
+                    [style.background]="obtenerColorHoja(m.color_hoja).css" [style.border-color]="obtenerColorTextoHoja(m.color_hoja)"
+                    [style.color]="'#ffffff'" [style.box-shadow]="'0 0 15px ' + obtenerColorTextoHoja(m.color_hoja) + '30'">
                     <ion-icon name="person-outline"></ion-icon>
                   </div>
 
@@ -598,15 +621,15 @@
             <div *ngFor="let h of hojasAnimadas" class="absolute hoja-cayendo flex items-center gap-2"
               [style.left.px]="h.x" [style.top.px]="h.y" [style.--rot]="h.rotacion + 'deg'" [style.--scale]="h.escala"
               [style.--drift]="h.drift + 'px'" [style.animation-duration.s]="h.duracion">
-              <ion-icon name="leaf" [class.text-purple-400]="h.esSuperCritico"
-                [class.drop-shadow-purple]="h.esSuperCritico" [class.text-yellow-400]="h.esCritico && !h.esSuperCritico"
-                [class.drop-shadow-gold]="h.esCritico && !h.esSuperCritico" class="text-4xl opacity-90"
-                [style.color]="h.esCritico ? null : h.color"
-                [style.filter]="h.esCritico ? null : 'drop-shadow(0 0 8px ' + h.color + ')'">
-              </ion-icon>
+              <div class="hoja-particula-icon"
+                [class.hoja-particula-icon--critica]="h.esCritico && !h.esSuperCritico"
+                [class.hoja-particula-icon--supercritica]="h.esSuperCritico"
+                [style.--leaf-fill]="h.esSuperCritico ? 'linear-gradient(135deg, #a855f7 0%, #d8b4fe 100%)' : (h.esCritico ? 'linear-gradient(135deg, #f59e0b 0%, #fef08a 100%)' : h.colorCss)"
+                [style.--leaf-glow]="h.esSuperCritico ? '#a855f7' : (h.esCritico ? '#fbbf24' : h.colorTexto)">
+              </div>
               <span class="font-black text-xl texto-plus pointer-events-none drop-shadow-lg"
-                [style.color]="h.esSuperCritico ? '#d8b4fe' : (h.esCritico ? '#fef08a' : h.color)"
-                [style.--glow-color]="h.esSuperCritico ? '#a855f7' : (h.esCritico ? '#fbbf24' : h.color)">{{ h.valor
+                [style.--leaf-text-fill]="h.esSuperCritico ? 'linear-gradient(135deg, #a855f7 0%, #d8b4fe 100%)' : (h.esCritico ? 'linear-gradient(135deg, #f59e0b 0%, #fef08a 100%)' : h.colorCss)"
+                [style.--glow-color]="h.esSuperCritico ? '#a855f7' : (h.esCritico ? '#fbbf24' : h.colorTexto)">{{ h.valor
                 }}</span>
             </div>
           </div>
@@ -646,7 +669,7 @@
               </h3>
             </div>
             <p class="text-primary-50 font-medium text-xs sm:text-sm m-0">Aportaciones de cada miembro del gremio en la
-              competencia activa. Los top 3 reciben EcoTokens al finalizar.</p>
+              competencia activa. Los top 3 reciben EcoTokens al finalizar. Si no aporta no recibira EcoTokens</p>
 
             <!-- Leyenda de premios internos -->
             <div class="flex gap-2 flex-wrap">
@@ -680,8 +703,8 @@
                 </span>
 
                 <!-- Avatar (color hoja) -->
-                <div class="w-7 h-7 rounded-full border-2 shrink-0" [style.background]="m.color_hoja"
-                  [style.border-color]="m.color_hoja"></div>
+                <div class="w-7 h-7 rounded-full border-2 shrink-0" [style.background]="obtenerColorHoja(m.color_hoja).css"
+                  [style.border-color]="obtenerColorTextoHoja(m.color_hoja)"></div>
 
                 <!-- Nombre + meta -->
                 <div class="min-w-0 flex-1">
@@ -719,7 +742,8 @@
               </h3>
             </div>
             <p class="text-primary-50 font-medium text-xs sm:text-sm m-0">Posición de todos los gremios en EcoSmart.
-              ¡Liderad el podio! Los top 3 reparten EcoTokens a todos sus miembros.</p>
+              ¡Liderad el podio! Los que terminen la competencia en el top 3 reparten EcoTokens a todos sus miembros.
+            </p>
 
             <!-- Leyenda de premios globales -->
             <div class="flex gap-2 flex-wrap">
@@ -1029,7 +1053,7 @@
                 <span class="text-primary-50 font-bold">Tu Color de Hoja</span>
                 <div class="flex items-center gap-2">
                   <div class="w-5 h-5 rounded-full shadow-md border border-white/20"
-                    [style.background]="miembroActual?.color_hoja"></div>
+                    [style.background]="obtenerColorHoja(miembroActual?.color_hoja).css"></div>
                   <span class="text-xs font-black text-primary-400 uppercase tracking-widest">{{
                     obtenerNombreColor(miembroActual?.color_hoja) }}</span>
                 </div>
